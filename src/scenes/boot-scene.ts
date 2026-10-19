@@ -39,6 +39,40 @@ export class BootScene extends Phaser.Scene {
 
     graphics.clear();
 
+    // Wall tile: 16x16.
+    graphics.fillStyle(0x232a32, 1).fillRect(0, 0, 16, 16);
+    graphics.fillStyle(0x2f3842, 1).fillRect(0, 0, 16, 2);
+    graphics.fillStyle(0x171c22, 1).fillRect(0, 14, 16, 2);
+    graphics.fillStyle(0x1b2129, 1).fillRect(2, 5, 3, 2);
+    graphics.fillStyle(0x1b2129, 1).fillRect(10, 9, 4, 2);
+    graphics.fillStyle(0x3a444f, 1).fillRect(6, 3, 2, 2);
+    graphics.fillRect(13, 12, 2, 2);
+    graphics.generateTexture('tile-stone', 16, 16);
+
+    graphics.clear();
+
+    // One-way wooden platform tile: 16x16.
+    graphics.fillStyle(0x5a3d26, 1).fillRect(0, 0, 16, 16);
+    graphics.fillStyle(0x8a5f3a, 1).fillRect(0, 0, 16, 3);
+    graphics.fillStyle(0x3a2818, 1).fillRect(0, 3, 16, 1);
+    graphics.fillStyle(0x3a2818, 1).fillRect(0, 11, 16, 1);
+    graphics.fillStyle(0x6b4930, 1).fillRect(2, 5, 5, 2);
+    graphics.fillRect(9, 13, 5, 2);
+    graphics.generateTexture('tile-wood', 16, 16);
+
+    graphics.clear();
+
+    // Distant cave wall background tile: 16x16.
+    graphics.fillStyle(0x0e1218, 1).fillRect(0, 0, 16, 16);
+    graphics.fillStyle(0x121820, 1).fillRect(0, 0, 16, 6);
+    graphics.fillStyle(0x0a0e13, 1).fillRect(0, 10, 16, 6);
+    graphics.fillStyle(0x151c25, 1).fillRect(3, 7, 3, 3);
+    graphics.fillRect(11, 3, 3, 3);
+    graphics.fillStyle(0x090c10, 1).fillRect(6, 12, 4, 2);
+    graphics.generateTexture('bg-cave', 16, 16);
+
+    graphics.clear();
+
     // Rock placeholder: 6x6.
     graphics.fillStyle(0x8b949e, 1).fillRect(1, 1, 4, 4);
     graphics.fillStyle(0xb8c0c8, 1).fillRect(2, 1, 2, 1);

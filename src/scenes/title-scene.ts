@@ -5,6 +5,7 @@ import { setTestHook } from '../utils/test-hooks';
 interface MenuItem {
   label: string;
   message: string;
+  action?: 'start-run';
 }
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
@@ -12,7 +13,8 @@ const FONT_FAMILY = '"Courier New", Courier, monospace';
 const MENU_ITEMS: readonly MenuItem[] = [
   {
     label: 'Start Run',
-    message: 'Movement and rock throwing arrive in M1. The scaffold is ready.',
+    message: 'Entering the movement test...',
+    action: 'start-run',
   },
   {
     label: 'Achievements',
@@ -32,6 +34,7 @@ export class TitleScene extends Phaser.Scene {
   private menuTexts: Phaser.GameObjects.Text[] = [];
   private messageText!: Phaser.GameObjects.Text;
   private selectedIndex = 0;
+  private startingRun = false;
 
   constructor() {
     super('Title');
@@ -45,7 +48,7 @@ export class TitleScene extends Phaser.Scene {
     this.installInput();
 
     this.select(0);
-    this.showMessage('M0 scaffold is live. Use UP/DOWN and ENTER.');
+    this.showMessage('M1 movement test is live. A/D or arrows to move, SPACE to jump.');
 
     setTestHook({
       ready: true,
@@ -185,7 +188,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0, 0.5);
 
     this.add
-      .text(GAME_WIDTH - 8, 260, 'FOUNDATIONS BUILD', {
+      .text(GAME_WIDTH - 8, 260, 'M1 MOVEMENT BUILD', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',
@@ -254,7 +257,25 @@ export class TitleScene extends Phaser.Scene {
       return;
     }
 
+    if (item.action === 'start-run') {
+      this.startRun();
+      return;
+    }
+
     this.showMessage(item.message);
+  }
+
+  private startRun(): void {
+    if (this.startingRun) {
+      return;
+    }
+
+    this.startingRun = true;
+    this.showMessage('Entering the movement test...');
+    this.cameras.main.fadeOut(200, 0, 0, 0);
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      this.scene.start('Level', { levelId: 'movement-test' });
+    });
   }
 
   private showMessage(message: string): void {

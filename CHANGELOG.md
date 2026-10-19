@@ -6,9 +6,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- M1.1: player movement with acceleration, friction, variable jump, jump cut, coyote time, jump buffering, and one-way platform drop-through.
+- M1.1: `LevelScene` with a provisional JSON level format, validation, camera follow, and level bounds.
+- M1.1: movement test level, parallax-free cave placeholder art, props, and loading progress.
+- M1.1: title screen Start Run transitions into the level.
+- M1.1: buffered keyboard input so fast taps are not eaten.
+- M1.1: unit tests for level validation and an end-to-end movement/jump/drop-through test.
+
 ### Planned
 
-- M1: movement vertical slice with jumping, rock throwing, damage, and retry flow.
+- M1: rock throwing, practice dummy, damage, death, and retry loop.
+- M1: HUD, debug overlay, placeholder SFX, and playtest notes.
 
 ## [0.0.1] - 2026-10-19
 

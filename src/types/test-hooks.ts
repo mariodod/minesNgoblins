@@ -4,6 +4,13 @@ export interface MinesTestHook {
   version: string;
   titleSelection?: string;
   message?: string;
+  levelId?: string;
+  playerX?: number;
+  playerY?: number;
+  playerVx?: number;
+  playerVy?: number;
+  grounded?: boolean;
+  hp?: number;
 }
 
 declare global {
