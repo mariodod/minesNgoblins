@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+*.tsbuildinfo
+
+# Test output
+coverage/
+playwright-report/
+test-results/
+artifacts/
+
+# Local tooling
+.vite/
+.cache/
+.idea/
+.vscode/
+*.log
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

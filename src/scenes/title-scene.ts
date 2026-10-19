@@ -1,0 +1,271 @@
+import Phaser from 'phaser';
+import { APP_VERSION, GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
+import { setTestHook } from '../utils/test-hooks';
+
+interface MenuItem {
+  label: string;
+  message: string;
+}
+
+const FONT_FAMILY = '"Courier New", Courier, monospace';
+
+const MENU_ITEMS: readonly MenuItem[] = [
+  {
+    label: 'Start Run',
+    message: 'Movement and rock throwing arrive in M1. The scaffold is ready.',
+  },
+  {
+    label: 'Achievements',
+    message: 'Achievements and challenge runs arrive in M5.',
+  },
+  {
+    label: 'Skins',
+    message: 'Skins and unlockables arrive in M5.',
+  },
+  {
+    label: 'Options',
+    message: 'Options and audio settings arrive in M6.',
+  },
+];
+
+export class TitleScene extends Phaser.Scene {
+  private menuTexts: Phaser.GameObjects.Text[] = [];
+  private messageText!: Phaser.GameObjects.Text;
+  private selectedIndex = 0;
+
+  constructor() {
+    super('Title');
+  }
+
+  create(): void {
+    this.drawBackground();
+    this.drawTitle();
+    this.createMenu();
+    this.createFooter();
+    this.installInput();
+
+    this.select(0);
+    this.showMessage('M0 scaffold is live. Use UP/DOWN and ENTER.');
+
+    setTestHook({
+      ready: true,
+      scene: 'Title',
+      titleSelection: MENU_ITEMS[this.selectedIndex]?.label ?? '',
+    });
+  }
+
+  private drawBackground(): void {
+    const graphics = this.add.graphics();
+
+    graphics.fillStyle(0x0b0c10, 1).fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+    // Layered cave silhouettes.
+    graphics.fillStyle(0x10151b, 1);
+    graphics.fillTriangle(0, GAME_HEIGHT, 80, 54, 190, GAME_HEIGHT);
+    graphics.fillTriangle(280, GAME_HEIGHT, 390, 44, 480, GAME_HEIGHT);
+
+    graphics.fillStyle(0x141a21, 1);
+    graphics.fillTriangle(150, GAME_HEIGHT, 250, 92, 350, GAME_HEIGHT);
+
+    // Mine floor and rails.
+    graphics.fillStyle(0x18120e, 1).fillRect(0, 246, GAME_WIDTH, 24);
+    graphics.lineStyle(2, 0x2e343b, 1).lineBetween(0, 246, GAME_WIDTH, 246);
+    graphics.lineStyle(1, 0x3a424a, 1).lineBetween(0, 252, GAME_WIDTH, 252);
+    for (let x = 4; x < GAME_WIDTH; x += 34) {
+      graphics.lineStyle(1, 0x241f1b, 1).lineBetween(x, 246, x + 12, 252);
+    }
+
+    // Timber supports.
+    graphics.fillStyle(0x241a13, 1).fillRect(26, 64, 10, 182);
+    graphics.fillRect(444, 52, 10, 194);
+    graphics.fillRect(0, 78, GAME_WIDTH, 8);
+    graphics.fillStyle(0x3a2a1d, 1).fillRect(28, 64, 3, 182);
+    graphics.fillRect(446, 52, 3, 194);
+
+    // Crystals and dust.
+    graphics.fillStyle(0x1f6f68, 0.95).fillTriangle(398, 246, 410, 212, 422, 246);
+    graphics.fillStyle(0x2a8c82, 0.9).fillTriangle(416, 246, 429, 196, 442, 246);
+    graphics.fillStyle(0x9fd8cb, 0.5).fillCircle(100, 120, 1);
+    graphics.fillCircle(178, 160, 1);
+    graphics.fillCircle(330, 112, 1);
+    graphics.fillCircle(388, 176, 1);
+
+    // Menu backing panel.
+    this.add
+      .rectangle(GAME_WIDTH / 2, 155, 300, 126, 0x0b0c10, 0.72)
+      .setStrokeStyle(1, 0x3a3f45, 0.9);
+
+    // Placeholder miner and props.
+    this.add.image(54, 205, 'lantern-glow').setScale(2).setAlpha(0.7);
+    this.add.image(54, 217, 'miner').setScale(3);
+    this.add.image(94, 248, 'rock').setScale(2);
+    this.add.image(422, 232, 'crate').setScale(2);
+  }
+
+  private drawTitle(): void {
+    this.add
+      .text(GAME_WIDTH / 2, 39, 'MINES & GOBLINS', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '26px',
+        color: '#000000',
+      })
+      .setOrigin(0.5);
+
+    this.add
+      .text(GAME_WIDTH / 2, 37, 'MINES & GOBLINS', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '26px',
+        color: '#f4d35e',
+      })
+      .setOrigin(0.5)
+      .setShadow(2, 2, '#000000', 0, true, true);
+
+    this.add
+      .text(GAME_WIDTH / 2, 66, 'ONE ROCK. MANY PROBLEMS.', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '8px',
+        color: '#9aa0a6',
+      })
+      .setOrigin(0.5);
+
+    const divider = this.add.graphics();
+    divider.lineStyle(1, 0x3a3f45, 0.8).lineBetween(138, 82, 342, 82);
+  }
+
+  private createMenu(): void {
+    const style: Phaser.Types.GameObjects.Text.TextStyle = {
+      fontFamily: FONT_FAMILY,
+      fontSize: '11px',
+      color: '#cfd2d6',
+    };
+
+    this.menuTexts = MENU_ITEMS.map((item, index) => {
+      const text = this.add
+        .text(GAME_WIDTH / 2, 112 + index * 26, item.label, style)
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+
+      text.on('pointerover', () => {
+        this.select(index);
+      });
+
+      text.on('pointerdown', () => {
+        this.activate(index);
+      });
+
+      return text;
+    });
+  }
+
+  private createFooter(): void {
+    this.messageText = this.add
+      .text(GAME_WIDTH / 2, 224, '', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '8px',
+        color: '#9fd8cb',
+        align: 'center',
+        wordWrap: { width: 410 },
+      })
+      .setOrigin(0.5);
+
+    this.add
+      .text(GAME_WIDTH / 2, 242, 'UP / DOWN TO SELECT   ENTER TO CONFIRM', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '7px',
+        color: '#5f6b73',
+      })
+      .setOrigin(0.5);
+
+    this.add
+      .text(8, 260, `v${APP_VERSION} / M0`, {
+        fontFamily: FONT_FAMILY,
+        fontSize: '7px',
+        color: '#5f6b73',
+      })
+      .setOrigin(0, 0.5);
+
+    this.add
+      .text(GAME_WIDTH - 8, 260, 'FOUNDATIONS BUILD', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '7px',
+        color: '#5f6b73',
+      })
+      .setOrigin(1, 0.5);
+  }
+
+  private installInput(): void {
+    this.input.keyboard?.on('keydown', this.handleKeyDown);
+
+    this.events.once('shutdown', () => {
+      this.input.keyboard?.off('keydown', this.handleKeyDown);
+    });
+  }
+
+  private readonly handleKeyDown = (event: KeyboardEvent): void => {
+    if (event.repeat) {
+      return;
+    }
+
+    switch (event.code) {
+      case 'ArrowUp':
+      case 'KeyW':
+        event.preventDefault();
+        this.select(this.selectedIndex - 1);
+        break;
+      case 'ArrowDown':
+      case 'KeyS':
+        event.preventDefault();
+        this.select(this.selectedIndex + 1);
+        break;
+      case 'Enter':
+      case 'Space':
+        event.preventDefault();
+        this.activate(this.selectedIndex);
+        break;
+      default:
+        break;
+    }
+  };
+
+  private select(index: number): void {
+    const count = MENU_ITEMS.length;
+    this.selectedIndex = ((index % count) + count) % count;
+
+    this.menuTexts.forEach((text, textIndex) => {
+      const item = MENU_ITEMS[textIndex];
+      if (!item) {
+        return;
+      }
+
+      const selected = textIndex === this.selectedIndex;
+      text.setText(`${selected ? '> ' : '  '}${item.label}`);
+      text.setColor(selected ? '#f4d35e' : '#cfd2d6');
+    });
+
+    const selectedItem = MENU_ITEMS[this.selectedIndex];
+    if (selectedItem) {
+      setTestHook({ titleSelection: selectedItem.label });
+    }
+  }
+
+  private activate(index: number): void {
+    const item = MENU_ITEMS[index];
+    if (!item) {
+      return;
+    }
+
+    this.showMessage(item.message);
+  }
+
+  private showMessage(message: string): void {
+    this.messageText.setText(message);
+    this.messageText.setAlpha(0.45);
+    this.tweens.add({
+      targets: this.messageText,
+      alpha: 1,
+      duration: 160,
+      ease: 'Quad.Out',
+    });
+    setTestHook({ message });
+  }
+}
