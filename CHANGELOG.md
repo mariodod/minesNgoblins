@@ -15,10 +15,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - M1.1: buffered keyboard input so fast taps are not eaten.
 - M1.1: unit tests for level validation and an end-to-end movement/jump/drop-through test.
 
+### Added (M1.2)
+
+- M1.2: rock throwing with horizontal/up/down aim, cooldown, arcs, one bounce, and cleanup.
+- M1.2: practice dummy enemy with three HP, hit flash, HP pips, and death feedback.
+- M1.2: player damage with knockback, invulnerability blink, hearts, and camera feedback.
+- M1.2: death and automatic retry flow (level restarts in under two seconds).
+- M1.2: `HudScene` with hearts, infinite-rock indicator, level name, and death overlay.
+- M1.2: level gap and kill plane for fall deaths; two practice dummies in the test level.
+- M1.2: end-to-end tests for rock combat and death/retry.
+
 ### Planned
 
-- M1: rock throwing, practice dummy, damage, death, and retry loop.
-- M1: HUD, debug overlay, placeholder SFX, and playtest notes.
+- M1: debug overlay, placeholder SFX, and playtest notes.
 
 ## [0.0.1] - 2026-10-19
 

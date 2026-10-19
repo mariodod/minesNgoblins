@@ -73,6 +73,58 @@ export class BootScene extends Phaser.Scene {
 
     graphics.clear();
 
+    // Practice dummy: 16x20.
+    graphics.fillStyle(0x4a3320, 1).fillRect(6, 10, 4, 10);
+    graphics.fillStyle(0x3a2818, 1).fillRect(4, 18, 8, 2);
+    graphics.fillStyle(0x8a5f3a, 1).fillRect(1, 6, 2, 6);
+    graphics.fillRect(13, 6, 2, 6);
+    graphics.fillStyle(0xc9a227, 1).fillRect(3, 5, 10, 7);
+    graphics.fillStyle(0xa8841d, 1).fillRect(3, 10, 10, 2);
+    graphics.fillStyle(0xd9b44a, 1).fillRect(5, 1, 6, 5);
+    graphics.fillStyle(0x11161b, 1).fillRect(6, 3, 1, 1);
+    graphics.fillRect(9, 3, 1, 1);
+    graphics.fillStyle(0xf2f2f2, 1).fillCircle(8, 8, 4);
+    graphics.fillStyle(0xd64545, 1).fillCircle(8, 8, 3);
+    graphics.fillStyle(0xf2f2f2, 1).fillCircle(8, 8, 2);
+    graphics.fillStyle(0xd64545, 1).fillCircle(8, 8, 1);
+    graphics.generateTexture('dummy', 16, 20);
+
+    graphics.clear();
+
+    // Hearts: 7x7.
+    graphics.fillStyle(0xe74c3c, 1);
+    graphics.fillRect(1, 1, 2, 1);
+    graphics.fillRect(4, 1, 2, 1);
+    graphics.fillRect(0, 2, 7, 2);
+    graphics.fillRect(1, 4, 5, 1);
+    graphics.fillRect(2, 5, 3, 1);
+    graphics.fillRect(3, 6, 1, 1);
+    graphics.fillStyle(0xff9a8a, 1).fillRect(1, 1, 1, 1);
+    graphics.fillStyle(0xa83227, 1).fillRect(2, 5, 3, 1);
+    graphics.generateTexture('heart-full', 7, 7);
+
+    graphics.clear();
+
+    graphics.fillStyle(0x2a3038, 1);
+    graphics.fillRect(1, 1, 2, 1);
+    graphics.fillRect(4, 1, 2, 1);
+    graphics.fillRect(0, 2, 7, 2);
+    graphics.fillRect(1, 4, 5, 1);
+    graphics.fillRect(2, 5, 3, 1);
+    graphics.fillRect(3, 6, 1, 1);
+    graphics.fillStyle(0x3d454f, 1).fillRect(1, 2, 2, 1);
+    graphics.generateTexture('heart-empty', 7, 7);
+
+    graphics.clear();
+
+    // Infinite-ammo glyph for the HUD: 10x5.
+    graphics.lineStyle(1, 0xf4d35e, 1);
+    graphics.strokeCircle(3, 2.5, 2);
+    graphics.strokeCircle(7, 2.5, 2);
+    graphics.generateTexture('infinity', 10, 5);
+
+    graphics.clear();
+
     // Rock placeholder: 6x6.
     graphics.fillStyle(0x8b949e, 1).fillRect(1, 1, 4, 4);
     graphics.fillStyle(0xb8c0c8, 1).fillRect(2, 1, 2, 1);

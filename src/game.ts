@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { APP_VERSION, GAME_HEIGHT, GAME_TITLE, GAME_WIDTH } from './config/constants';
 import { PLAYER_TUNING } from './config/tuning';
 import { BootScene } from './scenes/boot-scene';
+import { HudScene } from './scenes/hud-scene';
 import { LevelScene } from './scenes/level-scene';
 import { PreloadScene } from './scenes/preload-scene';
 import { TitleScene } from './scenes/title-scene';
@@ -28,7 +29,7 @@ export function createGame(): Phaser.Game {
         debug: false,
       },
     },
-    scene: [BootScene, PreloadScene, TitleScene, LevelScene],
+    scene: [BootScene, PreloadScene, TitleScene, LevelScene, HudScene],
   };
 
   return new Phaser.Game(config);

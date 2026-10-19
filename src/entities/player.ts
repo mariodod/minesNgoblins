@@ -1,10 +1,12 @@
 import Phaser from 'phaser';
-import { PLAYER_TUNING } from '../config/tuning';
+import { PLAYER_TUNING, ROCK_TUNING } from '../config/tuning';
 import type { InputService } from '../services/input-service';
 import type { LevelPoint } from '../data/level-definition';
+import type { RockLaunch } from './rock';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
-  hp = PLAYER_TUNING.maxHp;
+  hp: number = PLAYER_TUNING.maxHp;
+  isDead = false;
 
   private readonly inputService: InputService;
   private facing = 1;
@@ -14,6 +16,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private dropThroughUntil = 0;
   private wasOnGround = true;
   private lastFallSpeed = 0;
+  private invulnerableUntil = 0;
+  private nextThrowAt = 0;
 
   constructor(scene: Phaser.Scene, x: number, y: number, inputService: InputService) {
     super(scene, x, y, 'miner');
@@ -32,7 +36,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   override update(time: number, delta: number): void {
-    if (!this.active) {
+    if (!this.active || this.isDead) {
       return;
     }
 
@@ -89,12 +93,63 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.emit('player-landed', this.lastFallSpeed);
     }
 
+    this.handleThrow(time);
+    this.updateInvulnerabilityVisual(time);
+
     this.wasOnGround = onGround;
     this.lastFallSpeed = body.velocity.y;
   }
 
   get facingDirection(): number {
     return this.facing;
+  }
+
+  get isInvulnerable(): boolean {
+    return this.scene.time.now < this.invulnerableUntil;
+  }
+
+  takeDamage(amount: number, sourceX: number): boolean {
+    const time = this.scene.time.now;
+
+    if (this.isDead || time < this.invulnerableUntil) {
+      return false;
+    }
+
+    this.hp = Math.max(0, this.hp - amount);
+    this.invulnerableUntil = time + PLAYER_TUNING.invulnerableMs;
+
+    this.setTint(0xff6b6b).setTintMode(Phaser.TintModes.FILL);
+    this.scene.time.delayedCall(90, () => {
+      if (this.active) {
+        this.clearTint();
+      }
+    });
+
+    const knockbackDirection = this.x < sourceX ? -1 : 1;
+    this.arcadeBody.setVelocity(
+      knockbackDirection * PLAYER_TUNING.knockbackX,
+      -PLAYER_TUNING.knockbackY,
+    );
+
+    this.emit('player-damaged', this.hp);
+
+    if (this.hp <= 0) {
+      this.die();
+    }
+
+    return true;
+  }
+
+  die(): void {
+    if (this.isDead) {
+      return;
+    }
+
+    this.isDead = true;
+    this.setAlpha(1);
+    this.arcadeBody.setVelocity(0, 0);
+    this.arcadeBody.enable = false;
+    this.emit('player-died');
   }
 
   get arcadeBody(): Phaser.Physics.Arcade.Body {
@@ -127,6 +182,37 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     return right ? 1 : -1;
+  }
+
+  private handleThrow(time: number): void {
+    if (!this.inputService.isThrowJustPressed() || time < this.nextThrowAt) {
+      return;
+    }
+
+    this.nextThrowAt = time + ROCK_TUNING.cooldownMs;
+    this.emit('player-throw', this.createRockLaunch());
+  }
+
+  private createRockLaunch(): RockLaunch {
+    const aimUp = this.inputService.isAimUpDown();
+    const aimDown = !aimUp && this.inputService.isAimDownDown();
+    const angle = aimUp ? -Math.PI / 4 : aimDown ? Math.PI / 4 : 0;
+
+    return {
+      x: this.x + this.facing * 7,
+      y: this.y - 2,
+      velocityX: Math.cos(angle) * ROCK_TUNING.speed * this.facing,
+      velocityY: Math.sin(angle) * ROCK_TUNING.speed,
+    };
+  }
+
+  private updateInvulnerabilityVisual(time: number): void {
+    if (time < this.invulnerableUntil) {
+      this.setAlpha(Math.floor(time / 80) % 2 === 0 ? 0.35 : 1);
+      return;
+    }
+
+    this.setAlpha(1);
   }
 }
 

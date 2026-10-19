@@ -11,6 +11,10 @@ export interface MinesTestHook {
   playerVy?: number;
   grounded?: boolean;
   hp?: number;
+  rocksThrown?: number;
+  enemyCount?: number;
+  dummyHp?: number;
+  dead?: boolean;
 }
 
 declare global {

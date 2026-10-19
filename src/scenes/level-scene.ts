@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
+import { ROCK_TUNING } from '../config/tuning';
 import {
   parseLevelDefinition,
   type LevelDefinition,
@@ -7,6 +8,8 @@ import {
 } from '../data/level-definition';
 import { levelCacheKey } from '../data/level-registry';
 import { Player } from '../entities/player';
+import { PracticeDummy } from '../entities/practice-dummy';
+import { Rock, type RockLaunch } from '../entities/rock';
 import { InputService } from '../services/input-service';
 import { setTestHook } from '../utils/test-hooks';
 
@@ -29,6 +32,11 @@ export class LevelScene extends Phaser.Scene {
   private inputService!: InputService;
   private solidGroup!: Phaser.GameObjects.Group;
   private oneWayGroup!: Phaser.GameObjects.Group;
+  private enemyGroup!: Phaser.GameObjects.Group;
+  private rockGroup!: Phaser.GameObjects.Group;
+  private firstDummy: PracticeDummy | undefined;
+  private rocksThrown = 0;
+  private restarting = false;
   private testHookAccumulator = 0;
 
   constructor() {
@@ -51,6 +59,10 @@ export class LevelScene extends Phaser.Scene {
       return;
     }
 
+    this.rocksThrown = 0;
+    this.restarting = false;
+    this.firstDummy = undefined;
+
     this.physics.world.setBounds(0, 0, this.level.worldWidth, this.level.worldHeight + 160);
     this.cameras.main.setBounds(0, 0, this.level.worldWidth, this.level.worldHeight);
     this.cameras.main.setBackgroundColor('#0b0c10');
@@ -71,20 +83,30 @@ export class LevelScene extends Phaser.Scene {
       this,
     );
 
+    this.createEnemies();
+    this.createCombatColliders();
+
+    this.player.on('player-throw', this.handlePlayerThrow, this);
+    this.player.on('player-damaged', this.handlePlayerDamaged, this);
+    this.player.on('player-died', this.handlePlayerDied, this);
+
     this.cameras.main.startFollow(this.player, true, 0.18, 0.18);
     this.cameras.main.setDeadzone(80, 48);
     this.cameras.main.fadeIn(200, 0, 0, 0);
 
-    this.createLabels();
-    this.publishTestHook();
-    setTestHook({
-      ready: true,
-      scene: 'Level',
-      levelId: this.level.id,
+    this.scene.launch('HUD', {
+      levelName: this.level.name,
+      player: this.player,
     });
 
+    this.publishTestHook();
+
     this.events.once('shutdown', () => {
+      this.player.off('player-throw', this.handlePlayerThrow, this);
+      this.player.off('player-damaged', this.handlePlayerDamaged, this);
+      this.player.off('player-died', this.handlePlayerDied, this);
       this.inputService.destroy();
+      this.scene.stop('HUD');
     });
   }
 
@@ -95,9 +117,8 @@ export class LevelScene extends Phaser.Scene {
 
     this.player.update(time, delta);
 
-    if (this.player.y > this.level.killY) {
-      this.cameras.main.flash(120, 120, 40, 40);
-      this.player.respawn(this.level.spawn);
+    if (!this.player.isDead && this.player.y > this.level.killY) {
+      this.player.die();
     }
 
     this.testHookAccumulator += delta;
@@ -191,48 +212,158 @@ export class LevelScene extends Phaser.Scene {
     });
   }
 
-  private createLabels(): void {
-    this.add
-      .rectangle(0, 0, GAME_WIDTH, 18, 0x050608, 0.78)
-      .setOrigin(0)
-      .setScrollFactor(0)
-      .setDepth(90);
+  private createEnemies(): void {
+    this.enemyGroup = this.add.group();
+    this.rockGroup = this.add.group();
 
-    this.add
-      .text(6, 5, this.level.name.toUpperCase(), {
-        fontFamily: FONT_FAMILY,
-        fontSize: '7px',
-        color: '#f4d35e',
-      })
-      .setScrollFactor(0)
-      .setDepth(91);
+    for (const spawn of this.level.enemies) {
+      if (spawn.type === 'practice-dummy') {
+        const dummy = new PracticeDummy(this, spawn.x, spawn.y);
+        this.enemyGroup.add(dummy);
 
-    this.add
-      .text(GAME_WIDTH - 6, 5, 'M1 MOVEMENT TEST', {
-        fontFamily: FONT_FAMILY,
-        fontSize: '7px',
-        color: '#5f6b73',
-      })
-      .setOrigin(1, 0)
-      .setScrollFactor(0)
-      .setDepth(91);
+        if (!this.firstDummy) {
+          this.firstDummy = dummy;
+        }
+      }
+    }
+  }
+
+  private createCombatColliders(): void {
+    this.physics.add.collider(
+      this.rockGroup,
+      this.solidGroup,
+      this.handleRockBounce,
+      undefined,
+      this,
+    );
+    this.physics.add.collider(
+      this.rockGroup,
+      this.oneWayGroup,
+      this.handleRockBounce,
+      this.shouldCollideOneWay,
+      this,
+    );
+    this.physics.add.overlap(
+      this.rockGroup,
+      this.enemyGroup,
+      this.handleRockHitEnemy,
+      undefined,
+      this,
+    );
+    this.physics.add.overlap(
+      this.player,
+      this.enemyGroup,
+      this.handlePlayerEnemyContact,
+      undefined,
+      this,
+    );
+  }
+
+  private handlePlayerThrow(launch: RockLaunch): void {
+    if (this.restarting) {
+      return;
+    }
+
+    const rock = new Rock(this, launch);
+    this.rockGroup.add(rock);
+    this.rocksThrown += 1;
+    this.spawnHitBurst(launch.x, launch.y, 0xc9a227, 3);
+  }
+
+  private handleRockBounce(rockObject: ColliderTarget): void {
+    const rock = rockObject as Rock;
+
+    if (!rock.active) {
+      return;
+    }
+
+    if (!rock.registerBounce()) {
+      rock.destroy();
+    }
+  }
+
+  private handleRockHitEnemy(rockObject: ColliderTarget, enemyObject: ColliderTarget): void {
+    const rock = rockObject as Rock;
+    const enemy = enemyObject as PracticeDummy;
+
+    if (!rock.active || !enemy.isAlive) {
+      return;
+    }
+
+    enemy.takeDamage(ROCK_TUNING.damage, rock.x);
+    this.spawnHitBurst(rock.x, rock.y, 0xf2f2f2, 5);
+    rock.destroy();
+  }
+
+  private handlePlayerEnemyContact(
+    _playerObject: ColliderTarget,
+    enemyObject: ColliderTarget,
+  ): void {
+    const enemy = enemyObject as PracticeDummy;
+
+    if (!enemy.isAlive || this.player.isDead) {
+      return;
+    }
+
+    this.player.takeDamage(1, enemy.x);
+  }
+
+  private handlePlayerDamaged(): void {
+    this.cameras.main.shake(120, 0.006);
+  }
+
+  private handlePlayerDied(): void {
+    if (this.restarting) {
+      return;
+    }
+
+    this.restarting = true;
+    this.cameras.main.shake(220, 0.01);
+    this.time.delayedCall(1300, () => {
+      this.restartLevel();
+    });
+  }
+
+  private restartLevel(): void {
+    this.cameras.main.fadeOut(150, 0, 0, 0);
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      this.scene.restart({ levelId: this.level.id });
+    });
+  }
+
+  private spawnHitBurst(x: number, y: number, color: number, count: number): void {
+    for (let index = 0; index < count; index += 1) {
+      const angle = (index / count) * Math.PI * 2;
+      const particle = this.add.rectangle(x, y, 2, 2, color).setDepth(16);
+
+      this.tweens.add({
+        targets: particle,
+        x: x + Math.cos(angle) * 12,
+        y: y + Math.sin(angle) * 12,
+        alpha: 0,
+        duration: 220,
+        onComplete: () => {
+          particle.destroy();
+        },
+      });
+    }
   }
 
   private shouldCollideOneWay(object1: ColliderTarget, object2: ColliderTarget): boolean {
-    const playerObject = object1 as Phaser.Types.Physics.Arcade.GameObjectWithBody;
-    const platformObject = object2 as Phaser.Types.Physics.Arcade.GameObjectWithBody;
-    const playerBody = playerObject.body as Phaser.Physics.Arcade.Body;
-    const platformBody = platformObject.body as Phaser.Physics.Arcade.StaticBody;
+    const mover = object1 as Phaser.Types.Physics.Arcade.GameObjectWithBody;
+    const platform = object2 as Phaser.Types.Physics.Arcade.GameObjectWithBody;
+    const moverBody = mover.body as Phaser.Physics.Arcade.Body;
+    const platformBody = platform.body as Phaser.Physics.Arcade.StaticBody;
 
-    if (this.player.isDroppingThrough()) {
+    if (mover === this.player && this.player.isDroppingThrough()) {
       return false;
     }
 
-    if (playerBody.velocity.y < 0) {
+    if (moverBody.velocity.y < 0) {
       return false;
     }
 
-    return playerBody.bottom <= platformBody.top + 6;
+    return moverBody.bottom <= platformBody.top + 6;
   }
 
   private publishTestHook(): void {
@@ -242,6 +373,7 @@ export class LevelScene extends Phaser.Scene {
 
     const body = this.player.arcadeBody;
     setTestHook({
+      ready: true,
       scene: 'Level',
       levelId: this.level.id,
       playerX: Math.round(this.player.x),
@@ -250,7 +382,23 @@ export class LevelScene extends Phaser.Scene {
       playerVy: Math.round(body.velocity.y),
       grounded: this.player.isGrounded(),
       hp: this.player.hp,
+      rocksThrown: this.rocksThrown,
+      enemyCount: this.countAliveEnemies(),
+      dummyHp: this.firstDummy && this.firstDummy.active ? this.firstDummy.hp : 0,
+      dead: this.player.isDead,
     });
+  }
+
+  private countAliveEnemies(): number {
+    let count = 0;
+
+    for (const child of this.enemyGroup.getChildren()) {
+      if ((child as PracticeDummy).isAlive) {
+        count += 1;
+      }
+    }
+
+    return count;
   }
 
   private showLevelError(message: string): void {
