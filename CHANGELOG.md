@@ -4,7 +4,7 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses semantic versioning once public releases begin.
 
-## [Unreleased]
+## [0.1.0] - 2026-10-19
 
 ### Added
 
@@ -14,9 +14,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - M1.1: title screen Start Run transitions into the level.
 - M1.1: buffered keyboard input so fast taps are not eaten.
 - M1.1: unit tests for level validation and an end-to-end movement/jump/drop-through test.
-
-### Added (M1.2)
-
 - M1.2: rock throwing with horizontal/up/down aim, cooldown, arcs, one bounce, and cleanup.
 - M1.2: practice dummy enemy with three HP, hit flash, HP pips, and death feedback.
 - M1.2: player damage with knockback, invulnerability blink, hearts, and camera feedback.
@@ -24,10 +21,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - M1.2: `HudScene` with hearts, infinite-rock indicator, level name, and death overlay.
 - M1.2: level gap and kill plane for fall deaths; two practice dummies in the test level.
 - M1.2: end-to-end tests for rock combat and death/retry.
+- M1.3: development-only debug overlay (`F3`) with FPS, player state, and Arcade Physics hitboxes.
+- M1.3: synthesized WebAudio placeholder SFX for jump, land, throw, bounce, hit, hurt, and death.
+- M1.3: rock-aim math extracted to a pure module with unit tests.
+- M1.3: `docs/m1-playtest.md` with three internal passes, tuning snapshot, and known limitations.
+- M1.3: performance check and frame-count test hook; 60.2 FPS measured at 1920×1080 in headed Chromium.
 
-### Planned
+### Changed
 
-- M1: debug overlay, placeholder SFX, and playtest notes.
+- M1.3: movement test spawns on a one-way scaffold so drop-through coverage is deterministic; local Playwright runs use two workers for stability.
+
+### Fixed
+
+- HUD infinite-rock label now reads `ROCK INF` instead of a glyph that rendered as `00`.
 
 ## [0.0.1] - 2026-10-19
 

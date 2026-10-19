@@ -2,7 +2,7 @@
 
 **Version:** 0.1 (draft for review)  
 **Date:** 2026-10-19  
-**Status:** M0 scaffold implemented; M1 next
+**Status:** M1 movement vertical slice implemented; M2 next
 
 ---
 
@@ -587,16 +587,17 @@ Then:
 
 ## 14. Decision log
 
-| Date       | Decision                                                                       | Status               |
-| ---------- | ------------------------------------------------------------------------------ | -------------------- |
-| 2026-10-19 | M0 scaffold implemented (Vite, TypeScript, Phaser, ESLint, Vitest, Playwright) | Done                 |
-| 2026-10-19 | Use Phaser 4.2.x + TypeScript + Vite                                           | Accepted             |
-| 2026-10-19 | Browser-first, static hosting on GitHub Pages                                  | Accepted             |
-| 2026-10-19 | Handcrafted Tiled levels, no procedural generation in v1                       | Accepted             |
-| 2026-10-19 | One secondary item slot; deterministic authored pickups                        | Accepted             |
-| 2026-10-19 | Local-only save data; no backend                                               | Accepted             |
-| 2026-10-19 | Internal resolution 480×270, 16×16 tiles                                       | Provisional until M1 |
-| TBD        | "5 lives" = 5 HP vs. retry stock                                               | Open                 |
-| TBD        | Boss-specific HP curve vs. full difficulty multiplier                          | Open                 |
-| TBD        | Game UI localization scope                                                     | Open                 |
-| TBD        | Repository and asset licenses                                                  | Open                 |
+| Date       | Decision                                                                       | Status         |
+| ---------- | ------------------------------------------------------------------------------ | -------------- |
+| 2026-10-19 | M0 scaffold implemented (Vite, TypeScript, Phaser, ESLint, Vitest, Playwright) | Done           |
+| 2026-10-19 | M1 movement slice implemented (player, level scene, rocks, dummy, HUD, debug)  | Done           |
+| 2026-10-19 | Use Phaser 4.2.x + TypeScript + Vite                                           | Accepted       |
+| 2026-10-19 | Browser-first, static hosting on GitHub Pages                                  | Accepted       |
+| 2026-10-19 | Handcrafted Tiled levels, no procedural generation in v1                       | Accepted       |
+| 2026-10-19 | One secondary item slot; deterministic authored pickups                        | Accepted       |
+| 2026-10-19 | Local-only save data; no backend                                               | Accepted       |
+| 2026-10-19 | Internal resolution 480×270, 16×16 tiles                                       | Accepted in M1 |
+| TBD        | "5 lives" = 5 HP vs. retry stock                                               | Open           |
+| TBD        | Boss-specific HP curve vs. full difficulty multiplier                          | Open           |
+| TBD        | Game UI localization scope                                                     | Open           |
+| TBD        | Repository and asset licenses                                                  | Open           |

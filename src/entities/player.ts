@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { PLAYER_TUNING, ROCK_TUNING } from '../config/tuning';
 import type { InputService } from '../services/input-service';
 import type { LevelPoint } from '../data/level-definition';
-import type { RockLaunch } from './rock';
+import { computeRockLaunch, type AimDirection } from './rock-aim';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   hp: number = PLAYER_TUNING.maxHp;
@@ -190,20 +190,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     this.nextThrowAt = time + ROCK_TUNING.cooldownMs;
-    this.emit('player-throw', this.createRockLaunch());
+    this.emit('player-throw', this.readRockLaunch());
   }
 
-  private createRockLaunch(): RockLaunch {
-    const aimUp = this.inputService.isAimUpDown();
-    const aimDown = !aimUp && this.inputService.isAimDownDown();
-    const angle = aimUp ? -Math.PI / 4 : aimDown ? Math.PI / 4 : 0;
+  private readRockLaunch(): ReturnType<typeof computeRockLaunch> {
+    const aim: AimDirection = this.inputService.isAimUpDown()
+      ? 'up'
+      : this.inputService.isAimDownDown()
+        ? 'down'
+        : 'level';
 
-    return {
-      x: this.x + this.facing * 7,
-      y: this.y - 2,
-      velocityX: Math.cos(angle) * ROCK_TUNING.speed * this.facing,
-      velocityY: Math.sin(angle) * ROCK_TUNING.speed,
-    };
+    return computeRockLaunch({
+      originX: this.x,
+      originY: this.y,
+      facing: this.facing,
+      aim,
+    });
   }
 
   private updateInvulnerabilityVisual(time: number): void {

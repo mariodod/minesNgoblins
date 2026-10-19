@@ -2,7 +2,7 @@
 
 **Version:** 0.2 (draft for review)  
 **Date:** 2026-10-19  
-**Status:** M0 complete; M1 next
+**Status:** M1 complete; M2 next
 
 ---
 
@@ -33,7 +33,7 @@ These numbers are planning aids, not promises. The art/audio pass in M6 can run 
 | ID     | Milestone                    | Primary outcome                                                 |    Estimate |
 | ------ | ---------------------------- | --------------------------------------------------------------- | ----------: |
 | **M0** | Foundations                  | Reproducible project, CI, deployable title screen               | 2–3 days ✅ |
-| **M1** | Movement vertical slice      | Player traversal, rock throwing, damage, retry loop             |    5–7 days |
+| **M1** | Movement vertical slice      | Player traversal, rock throwing, damage, retry loop             | 5–7 days ✅ |
 | **M2** | Combat and items             | Enemy roster, item arsenal, crates, HUD, feedback               |   8–10 days |
 | **M3** | Levels and progression       | Four levels, transitions, hazards, Normal playable end to end   |   8–10 days |
 | **M4** | Boss                         | Great Worm with phases, arena, victory flow                     |    6–8 days |
@@ -87,6 +87,8 @@ These numbers are planning aids, not promises. The art/audio pass in M6 can run 
 ### M1 — Movement vertical slice
 
 **Goal:** Prove that the core game feel works before building content around it.
+
+**Status:** Complete (2026-10-19). Internal checks are recorded in [M1 Playtest Notes](m1-playtest.md).
 
 **Deliverables**
 

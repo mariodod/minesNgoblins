@@ -9,7 +9,9 @@ import {
 import { levelCacheKey } from '../data/level-registry';
 import { Player } from '../entities/player';
 import { PracticeDummy } from '../entities/practice-dummy';
-import { Rock, type RockLaunch } from '../entities/rock';
+import { Rock } from '../entities/rock';
+import type { RockLaunch } from '../entities/rock-aim';
+import type { AudioService } from '../services/audio-service';
 import { InputService } from '../services/input-service';
 import { setTestHook } from '../utils/test-hooks';
 
@@ -30,6 +32,7 @@ export class LevelScene extends Phaser.Scene {
   private level!: LevelDefinition;
   private player!: Player;
   private inputService!: InputService;
+  private audio!: AudioService;
   private solidGroup!: Phaser.GameObjects.Group;
   private oneWayGroup!: Phaser.GameObjects.Group;
   private enemyGroup!: Phaser.GameObjects.Group;
@@ -38,6 +41,9 @@ export class LevelScene extends Phaser.Scene {
   private rocksThrown = 0;
   private restarting = false;
   private testHookAccumulator = 0;
+  private frameCount = 0;
+  private debugEnabled = false;
+  private debugText: Phaser.GameObjects.Text | undefined;
 
   constructor() {
     super('Level');
@@ -62,12 +68,14 @@ export class LevelScene extends Phaser.Scene {
     this.rocksThrown = 0;
     this.restarting = false;
     this.firstDummy = undefined;
+    this.frameCount = 0;
 
     this.physics.world.setBounds(0, 0, this.level.worldWidth, this.level.worldHeight + 160);
     this.cameras.main.setBounds(0, 0, this.level.worldWidth, this.level.worldHeight);
     this.cameras.main.setBackgroundColor('#0b0c10');
 
     this.inputService = new InputService(this);
+    this.audio = this.registry.get('audioService') as AudioService;
     this.createBackground();
     this.createPlatforms();
     this.createProps();
@@ -87,12 +95,16 @@ export class LevelScene extends Phaser.Scene {
     this.createCombatColliders();
 
     this.player.on('player-throw', this.handlePlayerThrow, this);
+    this.player.on('player-jumped', this.handlePlayerJumped, this);
+    this.player.on('player-landed', this.handlePlayerLanded, this);
     this.player.on('player-damaged', this.handlePlayerDamaged, this);
     this.player.on('player-died', this.handlePlayerDied, this);
 
     this.cameras.main.startFollow(this.player, true, 0.18, 0.18);
     this.cameras.main.setDeadzone(80, 48);
     this.cameras.main.fadeIn(200, 0, 0, 0);
+
+    this.setupDebugOverlay();
 
     this.scene.launch('HUD', {
       levelName: this.level.name,
@@ -103,6 +115,8 @@ export class LevelScene extends Phaser.Scene {
 
     this.events.once('shutdown', () => {
       this.player.off('player-throw', this.handlePlayerThrow, this);
+      this.player.off('player-jumped', this.handlePlayerJumped, this);
+      this.player.off('player-landed', this.handlePlayerLanded, this);
       this.player.off('player-damaged', this.handlePlayerDamaged, this);
       this.player.off('player-died', this.handlePlayerDied, this);
       this.inputService.destroy();
@@ -115,6 +129,7 @@ export class LevelScene extends Phaser.Scene {
       return;
     }
 
+    this.frameCount += 1;
     this.player.update(time, delta);
 
     if (!this.player.isDead && this.player.y > this.level.killY) {
@@ -126,6 +141,8 @@ export class LevelScene extends Phaser.Scene {
       this.testHookAccumulator = 0;
       this.publishTestHook();
     }
+
+    this.updateDebugOverlay();
   }
 
   private createBackground(): void {
@@ -267,7 +284,16 @@ export class LevelScene extends Phaser.Scene {
     const rock = new Rock(this, launch);
     this.rockGroup.add(rock);
     this.rocksThrown += 1;
+    this.audio.play('throw');
     this.spawnHitBurst(launch.x, launch.y, 0xc9a227, 3);
+  }
+
+  private handlePlayerJumped(): void {
+    this.audio.play('jump');
+  }
+
+  private handlePlayerLanded(): void {
+    this.audio.play('land');
   }
 
   private handleRockBounce(rockObject: ColliderTarget): void {
@@ -276,6 +302,8 @@ export class LevelScene extends Phaser.Scene {
     if (!rock.active) {
       return;
     }
+
+    this.audio.play('bounce');
 
     if (!rock.registerBounce()) {
       rock.destroy();
@@ -291,6 +319,7 @@ export class LevelScene extends Phaser.Scene {
     }
 
     enemy.takeDamage(ROCK_TUNING.damage, rock.x);
+    this.audio.play(enemy.isAlive ? 'hit' : 'enemy-down');
     this.spawnHitBurst(rock.x, rock.y, 0xf2f2f2, 5);
     rock.destroy();
   }
@@ -309,6 +338,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private handlePlayerDamaged(): void {
+    this.audio.play('hurt');
     this.cameras.main.shake(120, 0.006);
   }
 
@@ -318,6 +348,7 @@ export class LevelScene extends Phaser.Scene {
     }
 
     this.restarting = true;
+    this.audio.play('death');
     this.cameras.main.shake(220, 0.01);
     this.time.delayedCall(1300, () => {
       this.restartLevel();
@@ -347,6 +378,74 @@ export class LevelScene extends Phaser.Scene {
         },
       });
     }
+  }
+
+  private setupDebugOverlay(): void {
+    this.debugEnabled = false;
+    this.physics.world.drawDebug = false;
+
+    if (this.physics.world.debugGraphic) {
+      this.physics.world.debugGraphic.setVisible(false);
+    }
+
+    if (!import.meta.env.DEV) {
+      return;
+    }
+
+    this.debugText = this.add
+      .text(6, 24, '', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '7px',
+        color: '#7fffd4',
+        backgroundColor: 'rgba(0, 0, 0, 0.65)',
+        padding: { x: 2, y: 2 },
+      })
+      .setScrollFactor(0)
+      .setDepth(150)
+      .setVisible(false);
+
+    const keyboard = this.input.keyboard;
+
+    if (!keyboard) {
+      return;
+    }
+
+    keyboard.addCapture([Phaser.Input.Keyboard.KeyCodes.F3]);
+    keyboard.on('keydown-F3', this.toggleDebug, this);
+
+    this.events.once('shutdown', () => {
+      keyboard.off('keydown-F3', this.toggleDebug, this);
+    });
+  }
+
+  private toggleDebug(): void {
+    this.debugEnabled = !this.debugEnabled;
+    this.physics.world.drawDebug = this.debugEnabled;
+
+    if (this.debugEnabled) {
+      if (!this.physics.world.debugGraphic) {
+        this.physics.world.createDebugGraphic();
+      }
+      this.physics.world.debugGraphic.setVisible(true);
+    } else if (this.physics.world.debugGraphic) {
+      this.physics.world.debugGraphic.setVisible(false);
+    }
+
+    this.debugText?.setVisible(this.debugEnabled);
+  }
+
+  private updateDebugOverlay(): void {
+    if (!this.debugEnabled || !this.debugText) {
+      return;
+    }
+
+    const body = this.player.arcadeBody;
+
+    this.debugText.setText([
+      `FPS ${Math.round(this.game.loop.actualFps)}  HP ${this.player.hp}  DEAD ${this.player.isDead}`,
+      `POS ${Math.round(this.player.x)},${Math.round(this.player.y)}  VEL ${Math.round(body.velocity.x)},${Math.round(body.velocity.y)}`,
+      `GROUND ${this.player.isGrounded()}  ROCKS ${this.rocksThrown}  ENEMIES ${this.countAliveEnemies()}`,
+    ]);
   }
 
   private shouldCollideOneWay(object1: ColliderTarget, object2: ColliderTarget): boolean {
@@ -386,6 +485,9 @@ export class LevelScene extends Phaser.Scene {
       enemyCount: this.countAliveEnemies(),
       dummyHp: this.firstDummy && this.firstDummy.active ? this.firstDummy.hp : 0,
       dead: this.player.isDead,
+      fps: Math.round(this.game.loop.actualFps),
+      frameCount: this.frameCount,
+      debug: this.debugEnabled,
     });
   }
 

@@ -15,6 +15,9 @@ export interface MinesTestHook {
   enemyCount?: number;
   dummyHp?: number;
   dead?: boolean;
+  fps?: number;
+  frameCount?: number;
+  debug?: boolean;
 }
 
 declare global {

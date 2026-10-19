@@ -2,7 +2,7 @@
 
 **A retro mine-crawling action platformer. One rock. Many problems.**
 
-> **Status:** M0 complete — project scaffold, tooling, title screen, CI, and Pages deployment workflows are in place. Next: M1.
+> **Status:** M1 complete — movement, jumping, rock throwing, practice combat, damage, HUD, retry loop, and debug tooling are playable in the test level. Next: M2.
 >
 > The repository was empty when work began, so the documents below define the direction for a new game.
 
@@ -28,6 +28,7 @@ The game is built around short, replayable runs. Players dodge or defeat enemies
 - [Game Design Document](docs/game-design.md) — mechanics, content, balance, runs, and progression.
 - [Technical Plan](docs/technical-plan.md) — technology choices, architecture, testing, and deployment.
 - [Roadmap](docs/roadmap.md) — milestones, estimates, acceptance criteria, and risks.
+- [M1 Playtest Notes](docs/m1-playtest.md) — movement/combat checks, tuning values, and known limitations.
 
 ## Technology at a glance
 
@@ -50,7 +51,7 @@ See [docs/technical-plan.md](docs/technical-plan.md) for the rationale and alter
 | Milestone | Outcome                                                              |
 | --------- | -------------------------------------------------------------------- |
 | M0 ✅     | Repository scaffold, tooling, CI, deployable title screen            |
-| M1        | Responsive movement, jumping, rock throwing, damage, retry loop      |
+| M1 ✅     | Responsive movement, jumping, rock throwing, damage, retry loop      |
 | M2        | Enemy roster, item arsenal, crates, HUD, combat feedback             |
 | M3        | Four levels, transitions, hazards, Normal mode playable end to end   |
 | M4        | Giant worm boss with phases and victory flow                         |
@@ -70,7 +71,20 @@ npm install
 npm run dev
 ```
 
-The dev server runs at `http://127.0.0.1:5173/`. The M0 build boots to the title screen; gameplay arrives in M1.
+The dev server runs at `http://127.0.0.1:5173/`. Choose **Start Run** to play the M1 movement test level.
+
+### Controls
+
+| Action        | Input                     |
+| ------------- | ------------------------- |
+| Move          | `A` / `D` or Left / Right |
+| Jump          | `Space` or `Z`            |
+| Throw rock    | `X` or `J`                |
+| Aim up/down   | `W` / `S` or Up / Down    |
+| Drop through  | `Down` + `Jump`           |
+| Debug overlay | `F3` (development builds) |
+
+Rocks are unlimited and deal 1 damage. The practice dummies take 3 hits. Falling into a gap or losing all five hearts restarts the level after a short death overlay.
 
 ### Scripts
 
@@ -83,7 +97,7 @@ The dev server runs at `http://127.0.0.1:5173/`. The M0 build boots to the title
 | `npm run format`    | Format the repository with Prettier                   |
 | `npm run typecheck` | Run TypeScript without emitting files                 |
 | `npm run test`      | Run Vitest unit tests                                 |
-| `npm run test:e2e`  | Run Playwright browser smoke tests                    |
+| `npm run test:e2e`  | Run Playwright browser tests                          |
 
 Install the Playwright browser once before running E2E tests locally:
 

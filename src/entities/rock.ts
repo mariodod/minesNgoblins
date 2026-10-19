@@ -1,12 +1,6 @@
 import Phaser from 'phaser';
 import { PLAYER_TUNING, ROCK_TUNING } from '../config/tuning';
-
-export interface RockLaunch {
-  x: number;
-  y: number;
-  velocityX: number;
-  velocityY: number;
-}
+import type { RockLaunch } from './rock-aim';
 
 export class Rock extends Phaser.Physics.Arcade.Image {
   private bounceCount = 0;

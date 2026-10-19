@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { AudioService } from '../services/audio-service';
 import { SaveService } from '../services/save-service';
 import { setTestHook } from '../utils/test-hooks';
 
@@ -14,6 +15,7 @@ export class BootScene extends Phaser.Scene {
     const saveService = new SaveService();
     this.registry.set('saveService', saveService);
     this.registry.set('saveData', saveService.data);
+    this.registry.set('audioService', new AudioService());
 
     this.scene.start('Preload');
   }
@@ -114,14 +116,6 @@ export class BootScene extends Phaser.Scene {
     graphics.fillRect(3, 6, 1, 1);
     graphics.fillStyle(0x3d454f, 1).fillRect(1, 2, 2, 1);
     graphics.generateTexture('heart-empty', 7, 7);
-
-    graphics.clear();
-
-    // Infinite-ammo glyph for the HUD: 10x5.
-    graphics.lineStyle(1, 0xf4d35e, 1);
-    graphics.strokeCircle(3, 2.5, 2);
-    graphics.strokeCircle(7, 2.5, 2);
-    graphics.generateTexture('infinity', 10, 5);
 
     graphics.clear();
 

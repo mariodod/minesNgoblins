@@ -142,6 +142,8 @@ The player is a compact, readable pixel-art miner.
 | Coyote time         | 100 ms                                       |
 | Jump buffer         | 120 ms                                       |
 
+**M1 result:** the starting values were retained after the internal passes: a short tap reaches about 34 px and a full jump reaches about 46-50 px. Details are in [M1 Playtest Notes](m1-playtest.md).
+
 - Jumping is the primary defensive verb. The player should be able to jump over most contact enemies and projectiles.
 - There is no melee attack, stomp attack, or dodge roll in v1. The rock is the answer to nearly every combat problem.
 - The player can throw while grounded or airborne.

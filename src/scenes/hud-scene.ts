@@ -39,13 +39,12 @@ export class HudScene extends Phaser.Scene {
     const ammoX = 10 + PLAYER_TUNING.maxHp * 10 + 4;
     this.add.image(ammoX, 10, 'rock').setDepth(101);
     this.add
-      .text(ammoX + 6, 6, 'ROCK', {
+      .text(ammoX + 6, 6, 'ROCK INF', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#f4d35e',
       })
       .setDepth(101);
-    this.add.image(ammoX + 30, 10, 'infinity').setDepth(101);
 
     this.add
       .text(GAME_WIDTH - 8, 10, this.levelName.toUpperCase(), {
@@ -55,6 +54,27 @@ export class HudScene extends Phaser.Scene {
       })
       .setOrigin(1, 0.5)
       .setDepth(101);
+
+    const hint = this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT - 10, 'A/D MOVE   SPACE JUMP   X THROW   DOWN+SPACE DROP', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '7px',
+        color: '#7f8c8d',
+      })
+      .setOrigin(0.5)
+      .setDepth(101)
+      .setAlpha(0.85);
+
+    this.time.delayedCall(7000, () => {
+      this.tweens.add({
+        targets: hint,
+        alpha: 0,
+        duration: 800,
+        onComplete: () => {
+          hint.destroy();
+        },
+      });
+    });
 
     this.player.on('player-damaged', this.handleDamaged, this);
     this.player.on('player-died', this.handleDied, this);

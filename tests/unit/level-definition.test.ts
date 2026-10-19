@@ -17,9 +17,9 @@ describe('parseLevelDefinition', () => {
     expect(level.worldWidth).toBe(1024);
     expect(level.worldHeight).toBe(320);
     expect(level.solids).toHaveLength(4);
-    expect(level.oneWayPlatforms).toHaveLength(6);
+    expect(level.oneWayPlatforms).toHaveLength(7);
     expect(level.enemies).toHaveLength(2);
-    expect(level.spawn).toEqual({ x: 56, y: 276 });
+    expect(level.spawn).toEqual({ x: 56, y: 260 });
     expect(level.killY).toBe(380);
   });
 
