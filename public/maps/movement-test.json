@@ -1,15 +1,13 @@
 {
   "id": "movement-test",
-  "name": "Shaft Entrance - Movement Test",
+  "name": "Shaft Entrance - Combat Test",
   "tileSize": 16,
-  "widthTiles": 64,
+  "widthTiles": 80,
   "heightTiles": 20,
   "spawn": { "x": 56, "y": 260 },
   "solids": [
     { "x": 0, "y": 288, "width": 320, "height": 32 },
-    { "x": 368, "y": 288, "width": 656, "height": 32 },
-    { "x": 448, "y": 256, "width": 48, "height": 32 },
-    { "x": 896, "y": 272, "width": 64, "height": 16 }
+    { "x": 368, "y": 288, "width": 912, "height": 32 }
   ],
   "oneWayPlatforms": [
     { "x": 40, "y": 272, "width": 48, "height": 16 },
@@ -18,19 +16,30 @@
     { "x": 352, "y": 256, "width": 48, "height": 16 },
     { "x": 560, "y": 240, "width": 64, "height": 16 },
     { "x": 688, "y": 208, "width": 80, "height": 16 },
-    { "x": 800, "y": 240, "width": 48, "height": 16 }
+    { "x": 800, "y": 240, "width": 48, "height": 16 },
+    { "x": 1040, "y": 224, "width": 64, "height": 16 },
+    { "x": 1180, "y": 240, "width": 48, "height": 16 }
   ],
   "enemies": [
     { "type": "practice-dummy", "x": 224, "y": 278 },
-    { "type": "practice-dummy", "x": 640, "y": 278 }
+    { "type": "cave-bat", "x": 600, "y": 200 },
+    { "type": "goblin-scavenger", "x": 760, "y": 278 },
+    { "type": "skeleton-thrower", "x": 960, "y": 277 },
+    { "type": "armored-beetle", "x": 1120, "y": 280 }
   ],
+  "hazards": [
+    { "type": "spikes", "x": 660, "y": 280, "width": 32, "height": 8 },
+    { "type": "falling-rock", "x": 1000, "y": 24, "width": 32, "height": 24 }
+  ],
+  "enemyHpBonus": 0,
   "props": [
     { "type": "lantern", "x": 96, "y": 224 },
     { "type": "lantern", "x": 416, "y": 224 },
     { "type": "lantern", "x": 736, "y": 176 },
-    { "type": "crate", "x": 600, "y": 280 },
-    { "type": "crate", "x": 620, "y": 280 },
-    { "type": "crate", "x": 860, "y": 280 }
+    { "type": "lantern", "x": 1000, "y": 176 },
+    { "type": "crate", "x": 520, "y": 280 },
+    { "type": "crate", "x": 540, "y": 280 },
+    { "type": "crate", "x": 1200, "y": 280 }
   ],
   "killY": 380
 }

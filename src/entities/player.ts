@@ -2,7 +2,11 @@ import Phaser from 'phaser';
 import { PLAYER_TUNING, ROCK_TUNING } from '../config/tuning';
 import type { InputService } from '../services/input-service';
 import type { LevelPoint } from '../data/level-definition';
-import { computeRockLaunch, type AimDirection } from './rock-aim';
+import {
+  computeProjectileLaunch,
+  type AimDirection,
+  type ProjectileLaunch,
+} from './projectiles/aim';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   hp: number = PLAYER_TUNING.maxHp;
@@ -193,18 +197,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.emit('player-throw', this.readRockLaunch());
   }
 
-  private readRockLaunch(): ReturnType<typeof computeRockLaunch> {
+  private readRockLaunch(): ProjectileLaunch {
     const aim: AimDirection = this.inputService.isAimUpDown()
       ? 'up'
       : this.inputService.isAimDownDown()
         ? 'down'
         : 'level';
 
-    return computeRockLaunch({
+    return computeProjectileLaunch({
       originX: this.x,
       originY: this.y,
       facing: this.facing,
       aim,
+      speed: ROCK_TUNING.speed,
     });
   }
 

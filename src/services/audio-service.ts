@@ -1,5 +1,16 @@
 export type SfxName =
-  'jump' | 'land' | 'throw' | 'bounce' | 'hit' | 'enemy-down' | 'hurt' | 'death';
+  | 'jump'
+  | 'land'
+  | 'throw'
+  | 'bounce'
+  | 'hit'
+  | 'enemy-down'
+  | 'hurt'
+  | 'death'
+  | 'bone-throw'
+  | 'deflect'
+  | 'rumble'
+  | 'boulder';
 
 interface SfxSpec {
   wave: OscillatorType;
@@ -24,6 +35,34 @@ const SFX_SPECS: Record<SfxName, SfxSpec> = {
   },
   hurt: { wave: 'sawtooth', startFrequency: 150, endFrequency: 65, duration: 0.18, volume: 0.06 },
   death: { wave: 'sawtooth', startFrequency: 110, endFrequency: 28, duration: 0.5, volume: 0.07 },
+  'bone-throw': {
+    wave: 'triangle',
+    startFrequency: 300,
+    endFrequency: 150,
+    duration: 0.09,
+    volume: 0.04,
+  },
+  deflect: {
+    wave: 'square',
+    startFrequency: 900,
+    endFrequency: 300,
+    duration: 0.06,
+    volume: 0.035,
+  },
+  rumble: {
+    wave: 'sawtooth',
+    startFrequency: 55,
+    endFrequency: 25,
+    duration: 0.35,
+    volume: 0.04,
+  },
+  boulder: {
+    wave: 'square',
+    startFrequency: 95,
+    endFrequency: 28,
+    duration: 0.18,
+    volume: 0.055,
+  },
 };
 
 /**

@@ -14,13 +14,35 @@ describe('parseLevelDefinition', () => {
     const level = parseLevelDefinition(movementTestMap);
 
     expect(level.id).toBe('movement-test');
-    expect(level.worldWidth).toBe(1024);
+    expect(level.worldWidth).toBe(1280);
     expect(level.worldHeight).toBe(320);
-    expect(level.solids).toHaveLength(4);
-    expect(level.oneWayPlatforms).toHaveLength(7);
-    expect(level.enemies).toHaveLength(2);
+    expect(level.solids).toHaveLength(2);
+    expect(level.oneWayPlatforms).toHaveLength(9);
+    expect(level.enemies).toHaveLength(5);
+    expect(level.enemies.map((enemy) => enemy.type)).toEqual([
+      'practice-dummy',
+      'cave-bat',
+      'goblin-scavenger',
+      'skeleton-thrower',
+      'armored-beetle',
+    ]);
+    expect(level.hazards).toHaveLength(2);
+    expect(level.hazards[0]).toMatchObject({ type: 'spikes', width: 32, height: 8 });
+    expect(level.hazards[1]).toMatchObject({ type: 'falling-rock', width: 32, height: 24 });
+    expect(level.enemyHpBonus).toBe(0);
     expect(level.spawn).toEqual({ x: 56, y: 260 });
     expect(level.killY).toBe(380);
+  });
+
+  it('defaults hazards and enemy HP bonus when omitted', () => {
+    const map = cloneMap();
+    delete map['hazards'];
+    delete map['enemyHpBonus'];
+
+    const level = parseLevelDefinition(map);
+
+    expect(level.hazards).toEqual([]);
+    expect(level.enemyHpBonus).toBe(0);
   });
 
   it('rejects a missing spawn point', () => {
@@ -32,7 +54,7 @@ describe('parseLevelDefinition', () => {
 
   it('rejects geometry that extends past the level bounds', () => {
     const map = cloneMap();
-    map['solids'] = [{ x: 1000, y: 0, width: 100, height: 16 }];
+    map['solids'] = [{ x: 1200, y: 0, width: 100, height: 16 }];
 
     expect(() => parseLevelDefinition(map)).toThrow(/extends past the level bounds/);
   });
@@ -42,6 +64,20 @@ describe('parseLevelDefinition', () => {
     map['enemies'] = [{ type: 'dragon', x: 64, y: 64 }];
 
     expect(() => parseLevelDefinition(map)).toThrow(/enemies\[0\]\.type/);
+  });
+
+  it('rejects unknown hazard types', () => {
+    const map = cloneMap();
+    map['hazards'] = [{ type: 'lava', x: 64, y: 64, width: 16, height: 16 }];
+
+    expect(() => parseLevelDefinition(map)).toThrow(/hazards\[0\]\.type/);
+  });
+
+  it('rejects a negative enemy HP bonus', () => {
+    const map = cloneMap();
+    map['enemyHpBonus'] = -1;
+
+    expect(() => parseLevelDefinition(map)).toThrow(/enemyHpBonus/);
   });
 
   it('rejects a kill plane above the level floor', () => {

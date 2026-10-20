@@ -177,8 +177,8 @@ The player is a compact, readable pixel-art miner.
 | ------------ | ------------------------ |
 | Ammo         | Unlimited                |
 | Damage       | 1                        |
-| Speed        | 260 px/s initial         |
-| Gravity      | 600 px/s²                |
+| Speed        | 300 px/s initial         |
+| Gravity      | 350 px/s²                |
 | Bounces      | 1                        |
 | Cooldown     | 0.4 s                    |
 | Hit behavior | Single target, no pierce |

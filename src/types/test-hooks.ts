@@ -1,3 +1,13 @@
+export interface TestEnemySnapshot {
+  type: string;
+  hp: number;
+  x: number;
+  y: number;
+  facing: number;
+  phase: string;
+  stunned: boolean;
+}
+
 export interface MinesTestHook {
   ready: boolean;
   scene: string;
@@ -18,6 +28,22 @@ export interface MinesTestHook {
   fps?: number;
   frameCount?: number;
   debug?: boolean;
+  enemies?: TestEnemySnapshot[];
+  enemyProjectiles?: number;
+  enemyProjectilePositions?: Array<{ x: number; y: number }>;
+  fallingRocks?: number;
+  fallingRockPositions?: Array<{
+    x: number;
+    y: number;
+    vy: number;
+    blockedDown: boolean;
+  }>;
+  playerBody?: boolean;
+  deflects?: number;
+  bonesThrown?: number;
+  boneHits?: number;
+  boneBreaks?: number;
+  hazardsTriggered?: number;
 }
 
 declare global {

@@ -19,6 +19,6 @@ test('throws rocks to damage and destroy a practice dummy', async ({ page }) => 
     await page.waitForTimeout(450);
   }
 
-  await expect.poll(() => readHook<number>(page, 'enemyCount')).toBe(1);
+  await expect.poll(() => readHook<number>(page, 'enemyCount')).toBe(4);
   expect(errors).toEqual([]);
 });

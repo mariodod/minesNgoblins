@@ -1,3 +1,5 @@
+import { ENEMY_IDS, type EnemyId } from './enemies';
+
 export interface LevelRect {
   x: number;
   y: number;
@@ -10,8 +12,9 @@ export interface LevelPoint {
   y: number;
 }
 
-export type EnemyType = 'practice-dummy';
+export type EnemyType = EnemyId;
 export type PropType = 'crate' | 'lantern';
+export type HazardType = 'spikes' | 'falling-rock';
 
 export interface EnemySpawn extends LevelPoint {
   type: EnemyType;
@@ -19,6 +22,10 @@ export interface EnemySpawn extends LevelPoint {
 
 export interface PropSpawn extends LevelPoint {
   type: PropType;
+}
+
+export interface HazardSpawn extends LevelRect {
+  type: HazardType;
 }
 
 export interface LevelDefinition {
@@ -32,6 +39,8 @@ export interface LevelDefinition {
   oneWayPlatforms: LevelRect[];
   enemies: EnemySpawn[];
   props: PropSpawn[];
+  hazards: HazardSpawn[];
+  enemyHpBonus: number;
   killY: number;
   worldWidth: number;
   worldHeight: number;
@@ -73,13 +82,13 @@ export function parseLevelDefinition(value: unknown): LevelDefinition {
     worldWidth,
     worldHeight,
   );
-  const enemies = readSpawnList(value['enemies'], 'enemies', worldWidth, worldHeight, [
-    'practice-dummy',
-  ] as const);
+  const enemies = readSpawnList(value['enemies'], 'enemies', worldWidth, worldHeight, ENEMY_IDS);
   const props = readSpawnList(value['props'], 'props', worldWidth, worldHeight, [
     'crate',
     'lantern',
   ] as const);
+  const hazards = readHazardList(value['hazards'], 'hazards', worldWidth, worldHeight);
+  const enemyHpBonus = readOptionalNonNegativeInt(value, 'enemyHpBonus', 0);
 
   const killY = readNumber(value, 'killY');
   if (killY <= worldHeight) {
@@ -97,10 +106,47 @@ export function parseLevelDefinition(value: unknown): LevelDefinition {
     oneWayPlatforms,
     enemies,
     props,
+    hazards,
+    enemyHpBonus,
     killY,
     worldWidth,
     worldHeight,
   };
+}
+
+function readHazardList(
+  value: unknown,
+  path: string,
+  worldWidth: number,
+  worldHeight: number,
+): HazardSpawn[] {
+  if (value === undefined) {
+    return [];
+  }
+
+  if (!Array.isArray(value)) {
+    throw new LevelValidationError(`${path} must be an array.`);
+  }
+
+  const rects = readRectList(value, path, worldWidth, worldHeight);
+
+  return rects.map((rect, index) => {
+    const entry = value[index];
+
+    if (!isRecord(entry)) {
+      throw new LevelValidationError(`${path}[${index}] must be an object.`);
+    }
+
+    const type = readString(entry, 'type', `${path}[${index}]`);
+
+    if (type !== 'spikes' && type !== 'falling-rock') {
+      throw new LevelValidationError(
+        `${path}[${index}].type must be one of: spikes, falling-rock.`,
+      );
+    }
+
+    return { ...rect, type };
+  });
 }
 
 function readRectList(
@@ -197,6 +243,25 @@ function readPositiveInt(record: Record<string, unknown>, key: string, path = 'l
   const value = readNumber(record, key, path);
   if (!Number.isInteger(value) || value <= 0) {
     throw new LevelValidationError(`${path}.${key} must be a positive integer.`);
+  }
+
+  return value;
+}
+
+function readOptionalNonNegativeInt(
+  record: Record<string, unknown>,
+  key: string,
+  fallback: number,
+  path = 'level',
+): number {
+  if (record[key] === undefined) {
+    return fallback;
+  }
+
+  const value = readNumber(record, key, path);
+
+  if (!Number.isInteger(value) || value < 0) {
+    throw new LevelValidationError(`${path}.${key} must be a non-negative integer.`);
   }
 
   return value;

@@ -1,18 +1,29 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
-import { ROCK_TUNING } from '../config/tuning';
+import { FEEDBACK_TUNING, HAZARD_TUNING, ROCK_TUNING } from '../config/tuning';
+import { getDifficulty, scaleEnemyDamage, type DifficultyConfig } from '../data/difficulties';
+import { computeEnemyHp, ENEMIES, type EnemyDefinition } from '../data/enemies';
 import {
   parseLevelDefinition,
+  type HazardSpawn,
   type LevelDefinition,
   type LevelRect,
 } from '../data/level-definition';
 import { levelCacheKey } from '../data/level-registry';
+import { Bat } from '../entities/enemies/bat';
+import { Beetle } from '../entities/enemies/beetle';
+import type { Enemy } from '../entities/enemies/enemy';
+import { Goblin } from '../entities/enemies/goblin';
+import { PracticeDummy } from '../entities/enemies/practice-dummy';
+import { Skeleton } from '../entities/enemies/skeleton';
+import { FallingRock } from '../entities/hazards/falling-rock';
 import { Player } from '../entities/player';
-import { PracticeDummy } from '../entities/practice-dummy';
-import { Rock } from '../entities/rock';
-import type { RockLaunch } from '../entities/rock-aim';
+import type { ProjectileLaunch } from '../entities/projectiles/aim';
+import { Bone, type BoneLaunch } from '../entities/projectiles/bone';
+import { Rock } from '../entities/projectiles/rock';
 import type { AudioService } from '../services/audio-service';
 import { InputService } from '../services/input-service';
+import type { DamageEvent } from '../systems/damage';
 import { setTestHook } from '../utils/test-hooks';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
@@ -30,6 +41,7 @@ type ColliderTarget =
 export class LevelScene extends Phaser.Scene {
   private levelId = 'movement-test';
   private level!: LevelDefinition;
+  private difficulty: DifficultyConfig = getDifficulty('normal');
   private player!: Player;
   private inputService!: InputService;
   private audio!: AudioService;
@@ -37,9 +49,20 @@ export class LevelScene extends Phaser.Scene {
   private oneWayGroup!: Phaser.GameObjects.Group;
   private enemyGroup!: Phaser.GameObjects.Group;
   private rockGroup!: Phaser.GameObjects.Group;
-  private firstDummy: PracticeDummy | undefined;
+  private enemyProjectileGroup!: Phaser.GameObjects.Group;
+  private spikeGroup!: Phaser.GameObjects.Group;
+  private fallingRockGroup!: Phaser.GameObjects.Group;
+  private hazardTriggerGroup!: Phaser.GameObjects.Group;
+  private enemies: Enemy[] = [];
+  private firstDummy: Enemy | undefined;
   private rocksThrown = 0;
+  private bonesThrown = 0;
+  private boneHits = 0;
+  private boneBreaks = 0;
+  private deflects = 0;
+  private hazardsTriggered = 0;
   private restarting = false;
+  private hitStopActive = false;
   private testHookAccumulator = 0;
   private frameCount = 0;
   private debugEnabled = false;
@@ -66,9 +89,17 @@ export class LevelScene extends Phaser.Scene {
     }
 
     this.rocksThrown = 0;
+    this.bonesThrown = 0;
+    this.boneHits = 0;
+    this.boneBreaks = 0;
+    this.deflects = 0;
+    this.hazardsTriggered = 0;
     this.restarting = false;
+    this.hitStopActive = false;
     this.firstDummy = undefined;
+    this.enemies = [];
     this.frameCount = 0;
+    this.difficulty = getDifficulty('normal');
 
     this.physics.world.setBounds(0, 0, this.level.worldWidth, this.level.worldHeight + 160);
     this.cameras.main.setBounds(0, 0, this.level.worldWidth, this.level.worldHeight);
@@ -79,6 +110,7 @@ export class LevelScene extends Phaser.Scene {
     this.createBackground();
     this.createPlatforms();
     this.createProps();
+    this.createHazards();
 
     this.player = new Player(this, this.level.spawn.x, this.level.spawn.y, this.inputService);
 
@@ -130,10 +162,16 @@ export class LevelScene extends Phaser.Scene {
     }
 
     this.frameCount += 1;
-    this.player.update(time, delta);
 
-    if (!this.player.isDead && this.player.y > this.level.killY) {
-      this.player.die();
+    if (!this.hitStopActive) {
+      this.player.update(time, delta);
+
+      if (!this.player.isDead && this.player.y > this.level.killY) {
+        this.player.die();
+      }
+
+      this.updateEnemies(time, delta);
+      this.cleanupFallenEnemies();
     }
 
     this.testHookAccumulator += delta;
@@ -229,23 +267,145 @@ export class LevelScene extends Phaser.Scene {
     });
   }
 
-  private createEnemies(): void {
-    this.enemyGroup = this.add.group();
-    this.rockGroup = this.add.group();
+  private createHazards(): void {
+    this.spikeGroup = this.add.group();
+    this.fallingRockGroup = this.add.group();
+    this.hazardTriggerGroup = this.add.group();
 
-    for (const spawn of this.level.enemies) {
-      if (spawn.type === 'practice-dummy') {
-        const dummy = new PracticeDummy(this, spawn.x, spawn.y);
-        this.enemyGroup.add(dummy);
-
-        if (!this.firstDummy) {
-          this.firstDummy = dummy;
-        }
+    for (const hazard of this.level.hazards) {
+      if (hazard.type === 'spikes') {
+        this.createSpikes(hazard);
+      } else {
+        this.createFallingRockTrigger(hazard);
       }
     }
   }
 
+  private createSpikes(hazard: HazardSpawn): void {
+    this.add
+      .tileSprite(hazard.x, hazard.y, hazard.width, hazard.height, 'spike')
+      .setOrigin(0)
+      .setDepth(4);
+
+    const zone = this.add.zone(
+      hazard.x + hazard.width / 2,
+      hazard.y + hazard.height / 2,
+      hazard.width,
+      hazard.height,
+    );
+    this.physics.add.existing(zone, true);
+    this.spikeGroup.add(zone);
+  }
+
+  private createFallingRockTrigger(hazard: HazardSpawn): void {
+    const centerX = hazard.x + hazard.width / 2;
+    const groundY = this.findGroundY(centerX, hazard.y + hazard.height);
+
+    // The hazard rect marks the ceiling source; the pressure trigger sits on the
+    // floor directly beneath it so walking under the loose rock arms the trap.
+    const zone = this.add.zone(centerX, groundY - 12, hazard.width, 24);
+    this.physics.add.existing(zone, true);
+    zone.setData('hazard', hazard);
+    zone.setData('triggered', false);
+    this.hazardTriggerGroup.add(zone);
+  }
+
+  private createEnemies(): void {
+    this.enemyGroup = this.add.group();
+    this.rockGroup = this.add.group();
+    this.enemyProjectileGroup = this.add.group();
+
+    for (const spawn of this.level.enemies) {
+      const definition = ENEMIES[spawn.type];
+      const hp = computeEnemyHp(
+        definition.baseHp,
+        this.level.enemyHpBonus,
+        this.difficulty.enemyHpMultiplier,
+      );
+      const enemy = this.createEnemy(definition, spawn.x, spawn.y, hp);
+
+      this.enemyGroup.add(enemy);
+      this.enemies.push(enemy);
+
+      if (enemy instanceof Skeleton) {
+        enemy.on('enemy-projectile', this.handleEnemyProjectile, this);
+      }
+
+      if (!this.firstDummy && enemy instanceof PracticeDummy) {
+        this.firstDummy = enemy;
+      }
+    }
+  }
+
+  private createEnemy(definition: EnemyDefinition, x: number, y: number, hp: number): Enemy {
+    switch (definition.behavior) {
+      case 'bat':
+        return new Bat(this, x, y, hp);
+      case 'goblin':
+        return new Goblin(this, x, y, hp);
+      case 'skeleton':
+        return new Skeleton(this, x, y, hp);
+      case 'beetle':
+        return new Beetle(this, x, y, hp);
+      case 'dummy':
+        return new PracticeDummy(this, x, y, hp);
+    }
+  }
+
   private createCombatColliders(): void {
+    // Actor overlaps are registered before terrain collisions so a hit that
+    // lands on the same frame as a floor impact still connects.
+    this.physics.add.overlap(
+      this.player,
+      this.enemyGroup,
+      this.handlePlayerEnemyContact,
+      undefined,
+      this,
+    );
+    this.physics.add.overlap(
+      this.rockGroup,
+      this.enemyGroup,
+      this.handleRockHitEnemy,
+      undefined,
+      this,
+    );
+    this.physics.add.overlap(
+      this.player,
+      this.enemyProjectileGroup,
+      this.handleBoneHitPlayer,
+      undefined,
+      this,
+    );
+    this.physics.add.overlap(
+      this.player,
+      this.spikeGroup,
+      this.handleSpikeOverlap,
+      undefined,
+      this,
+    );
+    this.physics.add.overlap(
+      this.player,
+      this.hazardTriggerGroup,
+      this.handleFallingRockTrigger,
+      undefined,
+      this,
+    );
+    this.physics.add.overlap(
+      this.player,
+      this.fallingRockGroup,
+      this.handleFallingRockHitPlayer,
+      undefined,
+      this,
+    );
+
+    this.physics.add.collider(this.enemyGroup, this.solidGroup);
+    this.physics.add.collider(
+      this.enemyGroup,
+      this.oneWayGroup,
+      undefined,
+      this.shouldCollideOneWay,
+      this,
+    );
     this.physics.add.collider(
       this.rockGroup,
       this.solidGroup,
@@ -260,23 +420,59 @@ export class LevelScene extends Phaser.Scene {
       this.shouldCollideOneWay,
       this,
     );
-    this.physics.add.overlap(
-      this.rockGroup,
-      this.enemyGroup,
-      this.handleRockHitEnemy,
+    this.physics.add.collider(
+      this.enemyProjectileGroup,
+      this.solidGroup,
+      this.handleBoneBreak,
       undefined,
       this,
     );
-    this.physics.add.overlap(
-      this.player,
-      this.enemyGroup,
-      this.handlePlayerEnemyContact,
+    this.physics.add.collider(
+      this.enemyProjectileGroup,
+      this.oneWayGroup,
+      this.handleBoneBreak,
+      this.shouldCollideOneWay,
+      this,
+    );
+    this.physics.add.collider(
+      this.fallingRockGroup,
+      this.solidGroup,
+      this.handleFallingRockImpact,
+      undefined,
+      this,
+    );
+    this.physics.add.collider(
+      this.fallingRockGroup,
+      this.oneWayGroup,
+      this.handleFallingRockImpact,
       undefined,
       this,
     );
   }
 
-  private handlePlayerThrow(launch: RockLaunch): void {
+  private updateEnemies(time: number, delta: number): void {
+    const context = {
+      playerX: this.player.x,
+      playerY: this.player.y,
+      playerAlive: !this.player.isDead,
+    };
+
+    for (const enemy of this.enemies) {
+      if (enemy.active && !enemy.isDead) {
+        enemy.update(time, delta, context);
+      }
+    }
+  }
+
+  private cleanupFallenEnemies(): void {
+    for (const enemy of this.enemies) {
+      if (enemy.active && enemy.y > this.level.killY) {
+        enemy.destroy();
+      }
+    }
+  }
+
+  private handlePlayerThrow(launch: ProjectileLaunch): void {
     if (this.restarting) {
       return;
     }
@@ -312,15 +508,43 @@ export class LevelScene extends Phaser.Scene {
 
   private handleRockHitEnemy(rockObject: ColliderTarget, enemyObject: ColliderTarget): void {
     const rock = rockObject as Rock;
-    const enemy = enemyObject as PracticeDummy;
+    const enemy = enemyObject as Enemy;
 
-    if (!rock.active || !enemy.isAlive) {
+    if (!rock.active || !enemy.active || enemy.isDead) {
       return;
     }
 
-    enemy.takeDamage(ROCK_TUNING.damage, rock.x);
-    this.audio.play(enemy.isAlive ? 'hit' : 'enemy-down');
-    this.spawnHitBurst(rock.x, rock.y, 0xf2f2f2, 5);
+    const event: DamageEvent = {
+      amount: ROCK_TUNING.damage,
+      source: 'rock',
+      sourceX: rock.x,
+      sourceY: rock.y,
+      impactVx: rock.arcadeBody.velocity.x,
+    };
+    const result = enemy.takeDamage(event);
+
+    if (result.deflected) {
+      this.deflects += 1;
+      this.audio.play('deflect');
+      this.spawnHitBurst(rock.x, rock.y, 0xb8c0c8, FEEDBACK_TUNING.hitParticles);
+    } else if (result.applied) {
+      this.audio.play(result.killed ? 'enemy-down' : 'hit');
+      this.spawnHitBurst(
+        rock.x,
+        rock.y,
+        0xf2f2f2,
+        result.killed ? FEEDBACK_TUNING.killParticles : FEEDBACK_TUNING.hitParticles,
+      );
+
+      if (result.killed) {
+        this.cameras.main.shake(
+          FEEDBACK_TUNING.screenShakeMs,
+          FEEDBACK_TUNING.screenShakeIntensity,
+        );
+        this.triggerHitStop();
+      }
+    }
+
     rock.destroy();
   }
 
@@ -328,18 +552,158 @@ export class LevelScene extends Phaser.Scene {
     _playerObject: ColliderTarget,
     enemyObject: ColliderTarget,
   ): void {
-    const enemy = enemyObject as PracticeDummy;
+    const enemy = enemyObject as Enemy;
 
-    if (!enemy.isAlive || this.player.isDead) {
+    if (!enemy.active || enemy.isDead || this.player.isDead) {
       return;
     }
 
-    this.player.takeDamage(1, enemy.x);
+    const damage = scaleEnemyDamage(enemy.contactDamage, this.difficulty);
+    this.player.takeDamage(damage, enemy.x);
+  }
+
+  private handleEnemyProjectile(launch: BoneLaunch): void {
+    if (this.restarting) {
+      return;
+    }
+
+    const bone = new Bone(this, launch);
+    this.enemyProjectileGroup.add(bone);
+    this.bonesThrown += 1;
+    this.audio.play('bone-throw');
+  }
+
+  private handleBoneBreak(boneObject: ColliderTarget): void {
+    const bone = boneObject as Bone;
+
+    if (!bone.active) {
+      return;
+    }
+
+    this.boneBreaks += 1;
+    this.spawnHitBurst(bone.x, bone.y, 0xe8e2d0, 3);
+    bone.destroy();
+  }
+
+  private handleBoneHitPlayer(_playerObject: ColliderTarget, boneObject: ColliderTarget): void {
+    const bone = boneObject as Bone;
+
+    if (!bone.active || this.player.isDead) {
+      return;
+    }
+
+    this.boneHits += 1;
+    this.player.takeDamage(scaleEnemyDamage(bone.damage, this.difficulty), bone.x);
+    this.spawnHitBurst(bone.x, bone.y, 0xe8e2d0, 3);
+    bone.destroy();
+  }
+
+  private handleSpikeOverlap(_playerObject: ColliderTarget, spikeObject: ColliderTarget): void {
+    if (this.player.isDead) {
+      return;
+    }
+
+    const spike = spikeObject as Phaser.GameObjects.Zone;
+    this.player.takeDamage(HAZARD_TUNING.spikeDamage, spike.x);
+  }
+
+  private handleFallingRockTrigger(
+    _playerObject: ColliderTarget,
+    triggerObject: ColliderTarget,
+  ): void {
+    const trigger = triggerObject as Phaser.GameObjects.Zone;
+
+    if (trigger.getData('triggered') === true || this.restarting) {
+      return;
+    }
+
+    trigger.setData('triggered', true);
+    this.hazardsTriggered += 1;
+
+    const hazard = trigger.getData('hazard') as HazardSpawn;
+    const centerX = hazard.x + hazard.width / 2;
+    const groundY = this.findGroundY(centerX, hazard.y + hazard.height);
+    const shadow = this.add
+      .ellipse(
+        centerX,
+        groundY - 2,
+        HAZARD_TUNING.fallingRockShadowWidth,
+        HAZARD_TUNING.fallingRockShadowHeight,
+        0x000000,
+        0.5,
+      )
+      .setDepth(3);
+
+    this.tweens.add({
+      targets: shadow,
+      alpha: 0.2,
+      duration: 180,
+      yoyo: true,
+      repeat: 3,
+    });
+
+    this.audio.play('rumble');
+    this.cameras.main.shake(90, 0.002);
+    this.spawnHitBurst(centerX, hazard.y + hazard.height, 0x8b7d6b, 4);
+
+    this.time.delayedCall(HAZARD_TUNING.fallingRockTelegraphMs, () => {
+      if (this.restarting || !this.scene.isActive()) {
+        return;
+      }
+
+      shadow.destroy();
+      const rock = new FallingRock(this, centerX, hazard.y + hazard.height);
+      this.fallingRockGroup.add(rock);
+      this.audio.play('boulder');
+    });
+  }
+
+  private handleFallingRockImpact(rockObject: ColliderTarget): void {
+    const rock = rockObject as FallingRock;
+
+    if (!rock.active) {
+      return;
+    }
+
+    this.spawnHitBurst(rock.x, rock.y, 0x8b7d6b, 7);
+    this.cameras.main.shake(110, 0.005);
+    this.audio.play('boulder');
+    rock.destroy();
+  }
+
+  private handleFallingRockHitPlayer(
+    _playerObject: ColliderTarget,
+    rockObject: ColliderTarget,
+  ): void {
+    const rock = rockObject as FallingRock;
+
+    if (!rock.active || this.player.isDead) {
+      return;
+    }
+
+    if (this.player.takeDamage(HAZARD_TUNING.fallingRockDamage, rock.x)) {
+      this.spawnHitBurst(rock.x, rock.y, 0x8b7d6b, 5);
+      rock.destroy();
+    }
+  }
+
+  private findGroundY(x: number, fromY: number): number {
+    let groundY = this.level.killY;
+
+    for (const rect of [...this.level.solids, ...this.level.oneWayPlatforms]) {
+      const containsX = x >= rect.x && x <= rect.x + rect.width;
+
+      if (containsX && rect.y >= fromY && rect.y < groundY) {
+        groundY = rect.y;
+      }
+    }
+
+    return groundY;
   }
 
   private handlePlayerDamaged(): void {
     this.audio.play('hurt');
-    this.cameras.main.shake(120, 0.006);
+    this.cameras.main.shake(FEEDBACK_TUNING.screenShakeMs, FEEDBACK_TUNING.screenShakeIntensity);
   }
 
   private handlePlayerDied(): void {
@@ -359,6 +723,22 @@ export class LevelScene extends Phaser.Scene {
     this.cameras.main.fadeOut(150, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.restart({ levelId: this.level.id });
+    });
+  }
+
+  private triggerHitStop(): void {
+    if (this.hitStopActive) {
+      return;
+    }
+
+    this.hitStopActive = true;
+    this.physics.world.pause();
+    this.time.delayedCall(FEEDBACK_TUNING.hitStopMs, () => {
+      this.hitStopActive = false;
+
+      if (this.physics.world) {
+        this.physics.world.resume();
+      }
     });
   }
 
@@ -435,7 +815,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private updateDebugOverlay(): void {
-    if (!this.debugEnabled || !this.debugText) {
+    if (!this.debugEnabled || !this.debugText || !this.player.body) {
       return;
     }
 
@@ -445,6 +825,7 @@ export class LevelScene extends Phaser.Scene {
       `FPS ${Math.round(this.game.loop.actualFps)}  HP ${this.player.hp}  DEAD ${this.player.isDead}`,
       `POS ${Math.round(this.player.x)},${Math.round(this.player.y)}  VEL ${Math.round(body.velocity.x)},${Math.round(body.velocity.y)}`,
       `GROUND ${this.player.isGrounded()}  ROCKS ${this.rocksThrown}  ENEMIES ${this.countAliveEnemies()}`,
+      `DEFLECTS ${this.deflects}  HAZARDS ${this.hazardsTriggered}  BONES ${this.bonesThrown}`,
     ]);
   }
 
@@ -470,11 +851,29 @@ export class LevelScene extends Phaser.Scene {
       return;
     }
 
+    if (!this.player.body) {
+      setTestHook({
+        ready: true,
+        scene: 'Level',
+        levelId: this.level.id,
+        playerX: Math.round(this.player.x),
+        playerY: Math.round(this.player.y),
+        hp: this.player.hp,
+        dead: this.player.isDead,
+        playerBody: false,
+        message: 'Player physics body is missing.',
+      });
+      return;
+    }
+
     const body = this.player.arcadeBody;
+    const livingEnemies = this.enemies.filter((enemy) => enemy.active && !enemy.isDead);
+
     setTestHook({
       ready: true,
       scene: 'Level',
       levelId: this.level.id,
+      playerBody: true,
       playerX: Math.round(this.player.x),
       playerY: Math.round(this.player.y),
       playerVx: Math.round(body.velocity.x),
@@ -482,25 +881,67 @@ export class LevelScene extends Phaser.Scene {
       grounded: this.player.isGrounded(),
       hp: this.player.hp,
       rocksThrown: this.rocksThrown,
-      enemyCount: this.countAliveEnemies(),
-      dummyHp: this.firstDummy && this.firstDummy.active ? this.firstDummy.hp : 0,
+      enemyCount: livingEnemies.length,
+      dummyHp:
+        this.firstDummy && this.firstDummy.active && !this.firstDummy.isDead
+          ? this.firstDummy.hp
+          : 0,
       dead: this.player.isDead,
       fps: Math.round(this.game.loop.actualFps),
       frameCount: this.frameCount,
       debug: this.debugEnabled,
+      enemies: livingEnemies.map((enemy) => ({
+        type: enemy.enemyId,
+        hp: enemy.hp,
+        x: Math.round(enemy.x),
+        y: Math.round(enemy.y),
+        facing: enemy.facing,
+        phase: enemy.attackPhase,
+        stunned: enemy.isStunned,
+      })),
+      enemyProjectiles: this.enemyProjectileGroup
+        ? this.enemyProjectileGroup
+            .getChildren()
+            .filter((child) => (child as Phaser.GameObjects.GameObject).active).length
+        : 0,
+      enemyProjectilePositions: this.enemyProjectileGroup
+        ? this.enemyProjectileGroup
+            .getChildren()
+            .filter((child) => (child as Phaser.GameObjects.GameObject).active)
+            .map((child) => {
+              const bone = child as Bone;
+              return { x: Math.round(bone.x), y: Math.round(bone.y) };
+            })
+        : [],
+      fallingRocks: this.fallingRockGroup
+        ? this.fallingRockGroup
+            .getChildren()
+            .filter((child) => (child as Phaser.GameObjects.GameObject).active).length
+        : 0,
+      fallingRockPositions: this.fallingRockGroup
+        ? this.fallingRockGroup
+            .getChildren()
+            .filter((child) => (child as Phaser.GameObjects.GameObject).active)
+            .map((child) => {
+              const rock = child as FallingRock;
+              return {
+                x: Math.round(rock.x),
+                y: Math.round(rock.y),
+                vy: Math.round(rock.arcadeBody.velocity.y),
+                blockedDown: rock.arcadeBody.blocked.down,
+              };
+            })
+        : [],
+      deflects: this.deflects,
+      bonesThrown: this.bonesThrown,
+      boneHits: this.boneHits,
+      boneBreaks: this.boneBreaks,
+      hazardsTriggered: this.hazardsTriggered,
     });
   }
 
   private countAliveEnemies(): number {
-    let count = 0;
-
-    for (const child of this.enemyGroup.getChildren()) {
-      if ((child as PracticeDummy).isAlive) {
-        count += 1;
-      }
-    }
-
-    return count;
+    return this.enemies.filter((enemy) => enemy.active && !enemy.isDead).length;
   }
 
   private showLevelError(message: string): void {

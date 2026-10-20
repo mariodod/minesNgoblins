@@ -1,11 +1,11 @@
 import Phaser from 'phaser';
-import { PLAYER_TUNING, ROCK_TUNING } from '../config/tuning';
-import type { RockLaunch } from './rock-aim';
+import { PLAYER_TUNING, ROCK_TUNING } from '../../config/tuning';
+import type { ProjectileLaunch } from './aim';
 
 export class Rock extends Phaser.Physics.Arcade.Image {
   private bounceCount = 0;
 
-  constructor(scene: Phaser.Scene, launch: RockLaunch) {
+  constructor(scene: Phaser.Scene, launch: ProjectileLaunch) {
     super(scene, launch.x, launch.y, 'rock');
 
     scene.add.existing(this);

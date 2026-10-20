@@ -126,7 +126,7 @@ These numbers are planning aids, not promises. The art/audio pass in M6 can run 
 
 **Goal:** Make combat and scavenging satisfying and data-driven.
 
-**Status:** In progress (started 2026-10-19). Implementation is split into M2.1 (enemy framework, four enemies, hazards, damage pipeline), M2.2 (weapons, inventory, pickups, HUD item slot), and M2.3 (feedback polish, difficulty HP scaling integration, playtest notes).
+**Status:** In progress (started 2026-10-19). M2.1 (enemy framework, four enemies, hazards, damage pipeline) is complete. M2.2 (weapons, inventory, pickups, HUD item slot) is next, followed by M2.3 (feedback polish, difficulty HP scaling integration, playtest notes).
 
 **Deliverables**
 

@@ -127,6 +127,109 @@ export class BootScene extends Phaser.Scene {
 
     graphics.clear();
 
+    // Cave bat: 14x10. Wings out, small body.
+    graphics.fillStyle(0x6a4a7a, 1);
+    graphics.fillTriangle(0, 2, 5, 4, 1, 8);
+    graphics.fillTriangle(13, 2, 8, 4, 12, 8);
+    graphics.fillStyle(0x3d2c4a, 1).fillRect(4, 2, 6, 5);
+    graphics.fillStyle(0x8a6a9a, 1).fillRect(5, 1, 1, 2);
+    graphics.fillRect(8, 1, 1, 2);
+    graphics.fillStyle(0xffcf5a, 1).fillRect(5, 3, 1, 1);
+    graphics.fillRect(8, 3, 1, 1);
+    graphics.fillStyle(0x2a1c33, 1).fillRect(5, 6, 1, 1);
+    graphics.fillRect(8, 6, 1, 1);
+    graphics.generateTexture('bat', 14, 10);
+
+    graphics.clear();
+
+    // Goblin scavenger: 16x20. Green, big ears, belt.
+    graphics.fillStyle(0x4f7a35, 1).fillRect(4, 6, 8, 8);
+    graphics.fillStyle(0x3d6128, 1).fillRect(3, 8, 2, 3);
+    graphics.fillRect(11, 8, 2, 3);
+    graphics.fillStyle(0x76a84d, 1).fillRect(4, 2, 8, 6);
+    graphics.fillStyle(0x3d6128, 1).fillTriangle(1, 3, 5, 2, 4, 7);
+    graphics.fillTriangle(15, 3, 11, 2, 12, 7);
+    graphics.fillStyle(0xffe066, 1).fillRect(5, 4, 2, 2);
+    graphics.fillRect(9, 4, 2, 2);
+    graphics.fillStyle(0x1b2414, 1).fillRect(6, 5, 1, 1);
+    graphics.fillRect(10, 5, 1, 1);
+    graphics.fillStyle(0x5a3d26, 1).fillRect(3, 13, 10, 3);
+    graphics.fillStyle(0xc9a227, 1).fillRect(7, 13, 2, 2);
+    graphics.fillStyle(0x2f4a1f, 1).fillRect(4, 16, 3, 3);
+    graphics.fillRect(9, 16, 3, 3);
+    graphics.fillStyle(0x1a2912, 1).fillRect(4, 19, 3, 1);
+    graphics.fillRect(9, 19, 3, 1);
+    graphics.generateTexture('goblin', 16, 20);
+
+    graphics.clear();
+
+    // Skeleton thrower: 16x22. Bone white with dark sockets.
+    graphics.fillStyle(0xd8d2c0, 1).fillRect(5, 2, 6, 6);
+    graphics.fillStyle(0x1b1f24, 1).fillRect(6, 4, 1, 2);
+    graphics.fillRect(9, 4, 1, 2);
+    graphics.fillStyle(0x8a8474, 1).fillRect(7, 7, 2, 1);
+    graphics.fillStyle(0xc4bda9, 1).fillRect(7, 9, 2, 7);
+    graphics.fillStyle(0xd8d2c0, 1).fillRect(4, 10, 2, 1);
+    graphics.fillRect(10, 10, 2, 1);
+    graphics.fillRect(3, 11, 2, 4);
+    graphics.fillRect(11, 11, 2, 4);
+    graphics.fillRect(4, 16, 2, 4);
+    graphics.fillRect(10, 16, 2, 4);
+    graphics.fillStyle(0x8a8474, 1).fillRect(4, 19, 2, 2);
+    graphics.fillRect(10, 19, 2, 2);
+    graphics.fillStyle(0x6d6758, 1).fillRect(5, 12, 6, 1);
+    graphics.fillRect(5, 14, 6, 1);
+    graphics.generateTexture('skeleton', 16, 22);
+
+    graphics.clear();
+
+    // Armored beetle: 20x14. Front plate faces right.
+    graphics.fillStyle(0x4a515a, 1).fillRect(2, 3, 14, 9);
+    graphics.fillStyle(0x6c7580, 1).fillRect(4, 2, 10, 2);
+    graphics.fillRect(3, 5, 2, 5);
+    graphics.fillStyle(0x8b949e, 1).fillRect(13, 2, 4, 11);
+    graphics.fillStyle(0xb8c0c8, 1).fillRect(15, 3, 2, 9);
+    graphics.fillStyle(0x30363d, 1).fillRect(2, 12, 4, 2);
+    graphics.fillRect(8, 12, 4, 2);
+    graphics.fillRect(14, 12, 4, 2);
+    graphics.fillStyle(0xffcf5a, 1).fillRect(17, 5, 1, 2);
+    graphics.fillStyle(0x2a2f36, 1).fillRect(6, 4, 1, 6);
+    graphics.fillRect(10, 4, 1, 6);
+    graphics.generateTexture('beetle', 20, 14);
+
+    graphics.clear();
+
+    // Skeleton bone projectile: 6x3.
+    graphics.fillStyle(0xe8e2d0, 1).fillRect(1, 1, 4, 1);
+    graphics.fillStyle(0xd8d2c0, 1).fillRect(0, 0, 2, 3);
+    graphics.fillRect(4, 0, 2, 3);
+    graphics.generateTexture('bone', 6, 3);
+
+    graphics.clear();
+
+    // Falling boulder: 12x12.
+    graphics.fillStyle(0x5b6067, 1).fillRect(1, 1, 10, 10);
+    graphics.fillStyle(0x7a8088, 1).fillRect(2, 1, 5, 2);
+    graphics.fillStyle(0x3d4147, 1).fillRect(2, 9, 8, 2);
+    graphics.fillStyle(0x2a2d31, 1).fillRect(4, 5, 2, 2);
+    graphics.generateTexture('boulder', 12, 12);
+
+    graphics.clear();
+
+    // Spikes: 16x8 tileable strip.
+    graphics.fillStyle(0x2a2f36, 1).fillRect(0, 6, 16, 2);
+    graphics.fillStyle(0xb8c0c8, 1);
+    for (let x = 0; x < 16; x += 4) {
+      graphics.fillTriangle(x, 7, x + 2, 0, x + 4, 7);
+    }
+    graphics.fillStyle(0x7d858e, 1);
+    for (let x = 0; x < 16; x += 4) {
+      graphics.fillRect(x + 2, 2, 1, 5);
+    }
+    graphics.generateTexture('spike', 16, 8);
+
+    graphics.clear();
+
     // Crate placeholder: 16x16.
     graphics.fillStyle(0x7a4f2a, 1).fillRect(0, 0, 16, 16);
     graphics.lineStyle(1, 0x3d2a17, 1).strokeRect(1, 1, 14, 14);

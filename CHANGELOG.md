@@ -4,6 +4,29 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses semantic versioning once public releases begin.
 
+## [Unreleased]
+
+### Added
+
+- M2.1: data-driven enemy definitions and difficulty configs.
+- M2.1: Cave Bat, Goblin Scavenger, Skeleton Thrower, and Armored Beetle with patrol, telegraph, charge, ranged attack, armor deflection, and stun behavior.
+- M2.1: skeleton bone projectiles and the falling-rock hazard, plus floor spike strips.
+- M2.1: shared damage events, enemy HP formula, contact/projectile damage scaling, and frontal-armor checks.
+- M2.1: expanded combat test map with all four enemies, two hazards, and additional platforming space.
+- M2.1: unit tests for damage math, enemy data, HP scaling, armor checks, level hazards, and projectile aim.
+- M2.1: placeholder enemy, bone, boulder, and spike textures plus new placeholder SFX.
+- M2.1: development test hooks for enemy snapshots, projectiles, deflects, and falling rocks.
+
+### Changed
+
+- M2.1: rock speed increased to 300 px/s and gravity reduced to 350 px/s² for more reliable mid-range combat.
+- M2.1: charge attacks now lock direction during their telegraph, so jumping over a charge is a reliable counter.
+- M2.1: enemy and projectile overlaps are resolved before terrain collisions, preventing same-frame hits from being swallowed.
+
+### Fixed
+
+- M2.1: corrected player/projectile overlap argument order so bones and falling rocks damage the player instead of destroying the player object.
+
 ## [0.1.0] - 2026-10-19
 
 ### Added
