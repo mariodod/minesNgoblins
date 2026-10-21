@@ -180,7 +180,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(8, 260, `v${APP_VERSION} / M0`, {
+      .text(8, 260, `v${APP_VERSION} / M2`, {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',

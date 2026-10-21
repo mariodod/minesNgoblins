@@ -1,8 +1,8 @@
 # Mines & Goblins — Roadmap
 
-**Version:** 0.2 (draft for review)  
-**Date:** 2026-10-19  
-**Status:** M1 complete; M2 next
+**Version:** 0.3 (draft for review)  
+**Date:** 2026-10-21  
+**Status:** M2 complete; M3 next
 
 ---
 
@@ -126,7 +126,7 @@ These numbers are planning aids, not promises. The art/audio pass in M6 can run 
 
 **Goal:** Make combat and scavenging satisfying and data-driven.
 
-**Status:** In progress (started 2026-10-19). M2.1 (enemy framework, four enemies, hazards, damage pipeline) and M2.2 (weapons, inventory, crates, pedestals, pickups, HUD item slot) are complete. M2.3 (feedback polish, difficulty HP scaling integration, playtest notes) is next.
+**Status:** Complete (2026-10-21, v0.2.0). M2.1 delivered the enemy framework, four enemies, hazards, and damage pipeline; M2.2 delivered the three weapons, inventory, crates, pedestals, pickups, and HUD item slot; M2.3 delivered difficulty-scaled HP, dynamic HUD layout, expanded hit feedback, and playtest notes.
 
 **Deliverables**
 
@@ -160,11 +160,17 @@ These numbers are planning aids, not promises. The art/audio pass in M6 can run 
 **Dependencies:** M1.  
 **Risks:** Enemy behavior quality; item balance; hit feedback polish.
 
+**Completion:** M2 shipped as `v0.2.0` on 2026-10-21. All acceptance criteria pass; manual results are recorded in [m2-playtest.md](m2-playtest.md). Difficulty data is wired into player HP, enemy HP, and enemy damage. The title-screen difficulty selector and run-rule enforcement stay in M5.
+
+**M3 kickoff:** expand the level registry and authored map data first, then add exits, transitions, RunService, pause, and game-over/retry flow around the existing combat scene.
+
 ---
 
 ### M3 — Levels and progression
 
 **Goal:** Deliver a complete Normal-mode run through the four standard levels, ending at a boss placeholder.
+
+**Status:** Next (kickoff 2026-10-21).
 
 **Deliverables**
 
@@ -511,5 +517,6 @@ Do **not** cut:
 
 | Version | Date       | Notes                                                                        |
 | ------- | ---------- | ---------------------------------------------------------------------------- |
+| 0.3     | 2026-10-21 | M2 combat and items complete at v0.2.0; M3 levels and progression next       |
 | 0.2     | 2026-10-19 | M0 scaffold, title screen, tooling, tests, CI, and deployment workflows done |
 | 0.1     | 2026-10-19 | Initial roadmap based on the project brief and design draft                  |

@@ -2,7 +2,7 @@
 
 **A retro mine-crawling action platformer. One rock. Many problems.**
 
-> **Status:** M1 complete — movement, jumping, rock throwing, practice combat, damage, HUD, retry loop, and debug tooling are playable in the test level. Next: M2.
+> **Status:** M2 complete — four enemies, hazards, three scavenged weapons, crates, pickups, difficulty-scaled HP, and combat feedback are playable in the combat test level. Next: M3.
 >
 > The repository was empty when work began, so the documents below define the direction for a new game.
 
@@ -29,6 +29,7 @@ The game is built around short, replayable runs. Players dodge or defeat enemies
 - [Technical Plan](docs/technical-plan.md) — technology choices, architecture, testing, and deployment.
 - [Roadmap](docs/roadmap.md) — milestones, estimates, acceptance criteria, and risks.
 - [M1 Playtest Notes](docs/m1-playtest.md) — movement/combat checks, tuning values, and known limitations.
+- [M2 Playtest Notes](docs/m2-playtest.md) — enemy, item, difficulty, and feedback checks.
 
 ## Technology at a glance
 
@@ -52,7 +53,7 @@ See [docs/technical-plan.md](docs/technical-plan.md) for the rationale and alter
 | --------- | -------------------------------------------------------------------- |
 | M0 ✅     | Repository scaffold, tooling, CI, deployable title screen            |
 | M1 ✅     | Responsive movement, jumping, rock throwing, damage, retry loop      |
-| M2        | Enemy roster, item arsenal, crates, HUD, combat feedback             |
+| M2 ✅     | Enemy roster, item arsenal, crates, HUD, combat feedback             |
 | M3        | Four levels, transitions, hazards, Normal mode playable end to end   |
 | M4        | Giant worm boss with phases and victory flow                         |
 | M5        | Difficulties, challenge-run tracking, achievements, skins, save data |
@@ -87,6 +88,8 @@ The dev server runs at `http://127.0.0.1:5173/`. Choose **Start Run** to play th
 | Debug overlay | `F3` (development builds) |
 
 Rocks are unlimited and deal 1 damage. The one-slot secondary item holds a limited-use Knife, Flintlock, or Rune Scroll; picking up the same item adds ammo up to its cap, while a different item replaces it. Crates contain authored ore, salves, or items, and pedestals hold items that require `E` to collect. Falling into a gap or losing all hearts restarts the level after a short death overlay.
+
+Development builds accept `?difficulty=normal|hard|impossible|crazy` for difficulty-scale checks. The title-screen selector arrives in M5.
 
 ### Scripts
 

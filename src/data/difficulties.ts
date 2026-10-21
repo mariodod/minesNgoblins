@@ -51,6 +51,10 @@ export const DIFFICULTIES: Record<DifficultyId, DifficultyConfig> = {
 
 export const DEFAULT_DIFFICULTY: DifficultyId = 'normal';
 
+export function isDifficultyId(value: string): value is DifficultyId {
+  return Object.prototype.hasOwnProperty.call(DIFFICULTIES, value);
+}
+
 export function getDifficulty(id: DifficultyId): DifficultyConfig {
   return DIFFICULTIES[id];
 }

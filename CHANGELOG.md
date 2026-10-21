@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-21
+
 ### Added
 
 - M2.1: data-driven enemy definitions and difficulty configs.
@@ -22,6 +24,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - M2.2: HUD secondary-item icon, ammo count, ore counter, and updated control hints.
 - M2.2: placeholder weapon, projectile, salve, ore, and pickup textures plus knife, gunshot, magic, crate, pickup, heal, and empty-slot SFX.
 - M2.2: unit tests for item definitions, inventory stacking/replacement, ammo caps, and authored prop validation.
+- M2.3: difficulty-aware player HP plus enemy HP and damage scaling, with `LevelSceneData.difficultyId` and a development-only `?difficulty=` override.
+- M2.3: dynamic HUD hearts, item/ore positioning, and a visible difficulty label for every supported maximum HP.
+- M2.3: item-use events now carry the data-driven damage source for future run tracking.
+- M2.3: unit tests for difficulty configs and Playwright checks for Hard, Impossible, Crazy, and invalid-query fallback.
+- M2.3: M2 playtest notes covering enemy, item, difficulty, and feedback checks.
 
 ### Changed
 
@@ -29,11 +36,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - M2.1: charge attacks now lock direction during their telegraph, so jumping over a charge is a reliable counter.
 - M2.1: enemy and projectile overlaps are resolved before terrain collisions, preventing same-frame hits from being swallowed.
 - M2.2: secondary items use `C`/`K`, and pedestals use `E`; item tuning now lives in `src/data/items.ts`.
+- M2.3: hit-stop now applies to every applied enemy hit and to nonlethal player damage; player damage adds red impact particles alongside the existing shake and HUD flash.
+- M2.3: level restarts preserve the active difficulty, and the title screen identifies the M2 combat build.
 
 ### Fixed
 
 - M2.1: corrected player/projectile overlap argument order so bones and falling rocks damage the player instead of destroying the player object.
 - M2.2: item lookups now reject inherited object keys such as `toString`, so invalid authored item IDs fail validation cleanly.
+- M2.3: collecting a different secondary item clears the previous item's cooldown.
 
 ## [0.1.0] - 2026-10-19
 

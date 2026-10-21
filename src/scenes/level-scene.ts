@@ -1,7 +1,14 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
 import { FEEDBACK_TUNING, HAZARD_TUNING, ROCK_TUNING } from '../config/tuning';
-import { getDifficulty, scaleEnemyDamage, type DifficultyConfig } from '../data/difficulties';
+import {
+  DEFAULT_DIFFICULTY,
+  getDifficulty,
+  isDifficultyId,
+  scaleEnemyDamage,
+  type DifficultyConfig,
+  type DifficultyId,
+} from '../data/difficulties';
 import { computeEnemyHp, ENEMIES, type EnemyDefinition } from '../data/enemies';
 import {
   HEALING_SALVE,
@@ -40,6 +47,7 @@ const FONT_FAMILY = '"Courier New", Courier, monospace';
 
 interface LevelSceneData {
   levelId?: string;
+  difficultyId?: DifficultyId;
 }
 
 interface PedestalState {
@@ -103,6 +111,23 @@ export class LevelScene extends Phaser.Scene {
 
   init(data: LevelSceneData): void {
     this.levelId = data.levelId ?? 'movement-test';
+    this.difficulty = getDifficulty(this.resolveDifficultyId(data.difficultyId));
+  }
+
+  private resolveDifficultyId(requested?: DifficultyId): DifficultyId {
+    if (requested) {
+      return requested;
+    }
+
+    if (import.meta.env.DEV) {
+      const value = new URLSearchParams(window.location.search).get('difficulty');
+
+      if (value && isDifficultyId(value)) {
+        return value;
+      }
+    }
+
+    return DEFAULT_DIFFICULTY;
   }
 
   create(): void {
@@ -133,7 +158,6 @@ export class LevelScene extends Phaser.Scene {
     this.pedestals = [];
     this.interactPrompt = undefined;
     this.frameCount = 0;
-    this.difficulty = getDifficulty('normal');
 
     this.physics.world.setBounds(0, 0, this.level.worldWidth, this.level.worldHeight + 160);
     this.cameras.main.setBounds(0, 0, this.level.worldWidth, this.level.worldHeight);
@@ -146,7 +170,13 @@ export class LevelScene extends Phaser.Scene {
     this.createProps();
     this.createHazards();
 
-    this.player = new Player(this, this.level.spawn.x, this.level.spawn.y, this.inputService);
+    this.player = new Player(
+      this,
+      this.level.spawn.x,
+      this.level.spawn.y,
+      this.inputService,
+      this.difficulty.playerMaxHp,
+    );
 
     this.physics.add.collider(this.player, this.solidGroup);
     this.physics.add.collider(
@@ -177,6 +207,7 @@ export class LevelScene extends Phaser.Scene {
     this.scene.launch('HUD', {
       levelName: this.level.name,
       player: this.player,
+      difficultyName: this.difficulty.displayName,
     });
 
     this.publishTestHook();
@@ -711,7 +742,8 @@ export class LevelScene extends Phaser.Scene {
       impactVx: projectile.arcadeBody.velocity.x,
     };
     const result = enemy.takeDamage(event);
-    this.playEnemyHitFeedback(result, projectile.x, projectile.y, 0xf2f2f2);
+    const color = projectile.itemId === 'flintlock' ? 0xffcf5a : 0xd8dde3;
+    this.playEnemyHitFeedback(result, projectile.x, projectile.y, color);
     projectile.destroy();
   }
 
@@ -737,8 +769,9 @@ export class LevelScene extends Phaser.Scene {
 
     if (result.killed) {
       this.cameras.main.shake(FEEDBACK_TUNING.screenShakeMs, FEEDBACK_TUNING.screenShakeIntensity);
-      this.triggerHitStop();
     }
+
+    this.triggerHitStop();
   }
 
   private handleItemProjectileImpact(projectileObject: ColliderTarget): void {
@@ -751,7 +784,8 @@ export class LevelScene extends Phaser.Scene {
     if (projectile.itemId === 'rune-scroll') {
       this.explodeRune(projectile);
     } else {
-      this.spawnHitBurst(projectile.x, projectile.y, 0xd8dde3, 3);
+      const color = projectile.itemId === 'flintlock' ? 0xffcf5a : 0xd8dde3;
+      this.spawnHitBurst(projectile.x, projectile.y, color, 3);
     }
 
     projectile.destroy();
@@ -846,9 +880,6 @@ export class LevelScene extends Phaser.Scene {
 
     if (damagedAny) {
       this.audio.play(killedAny ? 'enemy-down' : 'hit');
-    }
-
-    if (killedAny) {
       this.triggerHitStop();
     }
   }
@@ -1149,9 +1180,14 @@ export class LevelScene extends Phaser.Scene {
     return groundY;
   }
 
-  private handlePlayerDamaged(): void {
+  private handlePlayerDamaged(hp: number): void {
     this.audio.play('hurt');
     this.cameras.main.shake(FEEDBACK_TUNING.screenShakeMs, FEEDBACK_TUNING.screenShakeIntensity);
+    this.spawnHitBurst(this.player.x, this.player.y, 0xff6b6b, FEEDBACK_TUNING.hitParticles);
+
+    if (hp > 0) {
+      this.triggerHitStop();
+    }
   }
 
   private handlePlayerDied(): void {
@@ -1170,7 +1206,7 @@ export class LevelScene extends Phaser.Scene {
   private restartLevel(): void {
     this.cameras.main.fadeOut(150, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
-      this.scene.restart({ levelId: this.level.id });
+      this.scene.restart({ levelId: this.level.id, difficultyId: this.difficulty.id });
     });
   }
 
@@ -1270,9 +1306,9 @@ export class LevelScene extends Phaser.Scene {
     const body = this.player.arcadeBody;
 
     this.debugText.setText([
-      `FPS ${Math.round(this.game.loop.actualFps)}  HP ${this.player.hp}  DEAD ${this.player.isDead}`,
+      `FPS ${Math.round(this.game.loop.actualFps)}  HP ${this.player.hp}/${this.player.maxHp}  DEAD ${this.player.isDead}  DIFF ${this.difficulty.id.toUpperCase()}`,
       `POS ${Math.round(this.player.x)},${Math.round(this.player.y)}  VEL ${Math.round(body.velocity.x)},${Math.round(body.velocity.y)}`,
-      `GROUND ${this.player.isGrounded()}  ROCKS ${this.rocksThrown}  ENEMIES ${this.countAliveEnemies()}`,
+      `GROUND ${this.player.isGrounded()}  ROCKS ${this.rocksThrown}  ITEMS ${this.itemsUsed}  ENEMIES ${this.countAliveEnemies()}`,
       `DEFLECTS ${this.deflects}  HAZARDS ${this.hazardsTriggered}  BONES ${this.bonesThrown}`,
     ]);
   }
@@ -1307,6 +1343,8 @@ export class LevelScene extends Phaser.Scene {
         playerX: Math.round(this.player.x),
         playerY: Math.round(this.player.y),
         hp: this.player.hp,
+        playerMaxHp: this.player.maxHp,
+        difficulty: this.difficulty.id,
         dead: this.player.isDead,
         playerBody: false,
         message: 'Player physics body is missing.',
@@ -1328,6 +1366,8 @@ export class LevelScene extends Phaser.Scene {
       playerVy: Math.round(body.velocity.y),
       grounded: this.player.isGrounded(),
       hp: this.player.hp,
+      playerMaxHp: this.player.maxHp,
+      difficulty: this.difficulty.id,
       rocksThrown: this.rocksThrown,
       itemId: this.player.inventory.snapshot.itemId,
       itemUses: this.player.inventory.snapshot.uses,

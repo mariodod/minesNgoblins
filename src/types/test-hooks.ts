@@ -21,6 +21,8 @@ export interface MinesTestHook {
   playerVy?: number;
   grounded?: boolean;
   hp?: number;
+  playerMaxHp?: number;
+  difficulty?: string;
   rocksThrown?: number;
   itemId?: string | null;
   itemUses?: number;

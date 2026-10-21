@@ -4,6 +4,7 @@ import { HEALING_SALVE, ORE, type PickupId, type SecondaryItemId } from '../data
 import type { InputService } from '../services/input-service';
 import type { LevelPoint } from '../data/level-definition';
 import { ItemInventory } from '../systems/inventory';
+import type { DamageSource } from '../systems/damage';
 import {
   computeProjectileLaunch,
   type AimDirection,
@@ -12,11 +13,13 @@ import {
 
 export interface PlayerItemUse {
   itemId: SecondaryItemId;
+  source: DamageSource;
   launch: ProjectileLaunch;
 }
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
-  hp: number = PLAYER_TUNING.maxHp;
+  readonly maxHp: number;
+  hp: number;
   ore = 0;
   isDead = false;
   readonly inventory = new ItemInventory();
@@ -33,13 +36,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private nextThrowAt = 0;
   private nextItemUseAt = 0;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, inputService: InputService) {
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    inputService: InputService,
+    maxHp: number = PLAYER_TUNING.maxHp,
+  ) {
     super(scene, x, y, 'miner');
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
     this.inputService = inputService;
+    this.maxHp = Math.max(1, Math.floor(maxHp));
+    this.hp = this.maxHp;
     this.setDepth(20);
     this.setMaxVelocity(300, PLAYER_TUNING.maxFallSpeed);
 
@@ -134,10 +145,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       return this.heal(HEALING_SALVE.healAmount) > 0;
     }
 
+    const previousItemId = this.inventory.snapshot.itemId;
     const result = this.inventory.collect(id);
 
     if (!result.accepted) {
       return false;
+    }
+
+    if (previousItemId !== result.snapshot.itemId) {
+      this.nextItemUseAt = 0;
     }
 
     this.emit('player-inventory-changed', result.snapshot);
@@ -149,7 +165,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       return 0;
     }
 
-    const healed = Math.min(amount, PLAYER_TUNING.maxHp - this.hp);
+    const healed = Math.min(amount, this.maxHp - this.hp);
 
     if (healed <= 0) {
       return 0;
@@ -270,6 +286,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.emit('player-inventory-changed', this.inventory.snapshot);
     const use: PlayerItemUse = {
       itemId: definition.id,
+      source: definition.damageSource,
       launch: this.readLaunch(definition.speed),
     };
     this.emit('player-item-use', use);

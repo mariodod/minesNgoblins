@@ -1,8 +1,8 @@
 # Mines & Goblins — Technical Plan
 
-**Version:** 0.1 (draft for review)  
-**Date:** 2026-10-19  
-**Status:** M1 movement vertical slice implemented; M2 next
+**Version:** 0.2 (draft for review)  
+**Date:** 2026-10-21  
+**Status:** M2 combat and items complete; M3 levels and progression next
 
 ---
 

@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
-import { PLAYER_TUNING } from '../config/tuning';
 import { SECONDARY_ITEMS } from '../data/items';
 import type { Player } from '../entities/player';
 import type { InventorySnapshot } from '../systems/inventory';
@@ -9,6 +8,7 @@ const FONT_FAMILY = '"Courier New", Courier, monospace';
 
 interface HudSceneData {
   levelName: string;
+  difficultyName: string;
   player: Player;
 }
 
@@ -17,6 +17,7 @@ interface HudSceneData {
  */
 export class HudScene extends Phaser.Scene {
   private levelName = '';
+  private difficultyName = '';
   private player!: Player;
   private hearts: Phaser.GameObjects.Image[] = [];
   private itemIcon!: Phaser.GameObjects.Image;
@@ -29,6 +30,7 @@ export class HudScene extends Phaser.Scene {
 
   init(data: HudSceneData): void {
     this.levelName = data.levelName;
+    this.difficultyName = data.difficultyName;
     this.player = data.player;
     this.hearts = [];
   }
@@ -36,12 +38,12 @@ export class HudScene extends Phaser.Scene {
   create(): void {
     this.add.rectangle(0, 0, GAME_WIDTH, 20, 0x050608, 0.82).setOrigin(0).setDepth(100);
 
-    for (let index = 0; index < PLAYER_TUNING.maxHp; index += 1) {
+    for (let index = 0; index < this.player.maxHp; index += 1) {
       const heart = this.add.image(10 + index * 10, 10, 'heart-full').setDepth(101);
       this.hearts.push(heart);
     }
 
-    const ammoX = 10 + PLAYER_TUNING.maxHp * 10 + 4;
+    const ammoX = 10 + this.player.maxHp * 10 + 4;
     this.add.image(ammoX, 10, 'rock').setDepth(101);
     this.add
       .text(ammoX + 6, 6, 'ROCK INF', {
@@ -51,7 +53,7 @@ export class HudScene extends Phaser.Scene {
       })
       .setDepth(101);
 
-    const slotX = 108;
+    const slotX = ammoX + 44;
     this.add
       .rectangle(slotX, 2, 58, 16, 0x11161b, 0.9)
       .setOrigin(0)
@@ -80,11 +82,16 @@ export class HudScene extends Phaser.Scene {
       .setDepth(101);
 
     this.add
-      .text(GAME_WIDTH - 8, 10, this.levelName.toUpperCase(), {
-        fontFamily: FONT_FAMILY,
-        fontSize: '7px',
-        color: '#9aa0a6',
-      })
+      .text(
+        GAME_WIDTH - 8,
+        10,
+        `${this.levelName.toUpperCase()}  [${this.difficultyName.toUpperCase()}]`,
+        {
+          fontFamily: FONT_FAMILY,
+          fontSize: '7px',
+          color: '#9aa0a6',
+        },
+      )
       .setOrigin(1, 0.5)
       .setDepth(101);
 

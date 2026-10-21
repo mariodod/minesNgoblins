@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 
-export async function bootToTitle(page: Page): Promise<void> {
-  await page.goto('/');
+export async function bootToTitle(page: Page, path = '/'): Promise<void> {
+  await page.goto(path);
   await page.waitForFunction(() => window.__MINES_TEST__?.ready === true);
 }
 
@@ -21,8 +21,8 @@ export function collectPageErrors(page: Page): string[] {
   return errors;
 }
 
-export async function startRun(page: Page): Promise<void> {
-  await bootToTitle(page);
+export async function startRun(page: Page, path = '/'): Promise<void> {
+  await bootToTitle(page, path);
   await page.keyboard.press('Enter');
   await page.waitForFunction(() => window.__MINES_TEST__?.scene === 'Level');
 }
