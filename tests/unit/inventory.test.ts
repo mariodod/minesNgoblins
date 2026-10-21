@@ -60,4 +60,25 @@ describe('ItemInventory', () => {
 
     expect(inventory.snapshot).toEqual({ itemId: null, uses: 0, maxUses: 0 });
   });
+
+  it('restores a carried item and clamps its ammo', () => {
+    const inventory = new ItemInventory();
+    inventory.restore('knife', 3);
+
+    expect(inventory.snapshot).toEqual({ itemId: 'knife', uses: 3, maxUses: 8 });
+
+    inventory.restore('flintlock', 99);
+    expect(inventory.snapshot).toEqual({ itemId: 'flintlock', uses: 12, maxUses: 12 });
+  });
+
+  it('clears the slot when restoring an empty or depleted item', () => {
+    const inventory = new ItemInventory();
+    inventory.collect('knife');
+
+    inventory.restore(null, 3);
+    expect(inventory.snapshot).toEqual({ itemId: null, uses: 0, maxUses: 0 });
+
+    inventory.restore('knife', 0);
+    expect(inventory.snapshot).toEqual({ itemId: null, uses: 0, maxUses: 0 });
+  });
 });

@@ -1,6 +1,6 @@
 {
-  "id": "movement-test",
-  "name": "Shaft Entrance - Combat Test",
+  "id": "shaft-entrance",
+  "name": "Shaft Entrance",
   "tileSize": 16,
   "widthTiles": 80,
   "heightTiles": 20,
@@ -31,6 +31,7 @@
     { "type": "spikes", "x": 660, "y": 280, "width": 32, "height": 8 },
     { "type": "falling-rock", "x": 1000, "y": 24, "width": 32, "height": 24 }
   ],
+  "exit": { "x": 1232, "y": 240, "width": 48, "height": 48 },
   "enemyHpBonus": 0,
   "props": [
     { "type": "lantern", "x": 96, "y": 224 },

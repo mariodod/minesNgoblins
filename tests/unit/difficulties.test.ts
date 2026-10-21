@@ -4,6 +4,7 @@ import {
   DIFFICULTIES,
   getDifficulty,
   isDifficultyId,
+  resolveDifficultyId,
 } from '../../src/data/difficulties';
 
 describe('difficulty data', () => {
@@ -42,5 +43,10 @@ describe('difficulty data', () => {
     expect(isDifficultyId('impossible')).toBe(true);
     expect(isDifficultyId('nightmare')).toBe(false);
     expect(isDifficultyId('toString')).toBe(false);
+  });
+
+  it('resolves explicit difficulty before the fallback', () => {
+    expect(resolveDifficultyId('hard')).toBe('hard');
+    expect(resolveDifficultyId()).toBe('normal');
   });
 });

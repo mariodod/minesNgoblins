@@ -1,13 +1,15 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
 import { SECONDARY_ITEMS } from '../data/items';
-import type { Player } from '../entities/player';
+import type { Player, PlayerDamageEvent } from '../entities/player';
 import type { InventorySnapshot } from '../systems/inventory';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
 
 interface HudSceneData {
   levelName: string;
+  levelNumber?: number;
+  levelCount?: number;
   difficultyName: string;
   player: Player;
 }
@@ -17,6 +19,8 @@ interface HudSceneData {
  */
 export class HudScene extends Phaser.Scene {
   private levelName = '';
+  private levelNumber = 1;
+  private levelCount = 1;
   private difficultyName = '';
   private player!: Player;
   private hearts: Phaser.GameObjects.Image[] = [];
@@ -30,6 +34,8 @@ export class HudScene extends Phaser.Scene {
 
   init(data: HudSceneData): void {
     this.levelName = data.levelName;
+    this.levelNumber = data.levelNumber ?? 1;
+    this.levelCount = data.levelCount ?? 1;
     this.difficultyName = data.difficultyName;
     this.player = data.player;
     this.hearts = [];
@@ -85,7 +91,7 @@ export class HudScene extends Phaser.Scene {
       .text(
         GAME_WIDTH - 8,
         10,
-        `${this.levelName.toUpperCase()}  [${this.difficultyName.toUpperCase()}]`,
+        `${this.levelNumber}/${this.levelCount}  ${this.levelName.toUpperCase()}  [${this.difficultyName.toUpperCase()}]`,
         {
           fontFamily: FONT_FAMILY,
           fontSize: '7px',
@@ -140,8 +146,8 @@ export class HudScene extends Phaser.Scene {
     });
   }
 
-  private handleDamaged(hp: number): void {
-    this.updateHearts(hp);
+  private handleDamaged(event: PlayerDamageEvent): void {
+    this.updateHearts(event.hp);
     this.cameras.main.flash(110, 140, 20, 20);
   }
 

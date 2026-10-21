@@ -1,19 +1,30 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { LevelValidationError, parseLevelDefinition } from '../../src/data/level-definition';
+import {
+  getLevelIndex,
+  LEVEL_ASSETS,
+  LEVEL_COUNT,
+  LEVEL_ORDER,
+} from '../../src/data/level-registry';
 
-const mapPath = new URL('../../public/maps/movement-test.json', import.meta.url);
-const movementTestMap = JSON.parse(readFileSync(mapPath, 'utf8')) as Record<string, unknown>;
+function readMap(path: string): Record<string, unknown> {
+  return JSON.parse(
+    readFileSync(new URL(`../../public/${path}`, import.meta.url), 'utf8'),
+  ) as Record<string, unknown>;
+}
+
+const shaftMap = readMap('maps/shaft-entrance.json');
 
 function cloneMap(): Record<string, unknown> {
-  return JSON.parse(JSON.stringify(movementTestMap)) as Record<string, unknown>;
+  return JSON.parse(JSON.stringify(shaftMap)) as Record<string, unknown>;
 }
 
 describe('parseLevelDefinition', () => {
-  it('parses the movement test map', () => {
-    const level = parseLevelDefinition(movementTestMap);
+  it('parses the shaft entrance map', () => {
+    const level = parseLevelDefinition(shaftMap);
 
-    expect(level.id).toBe('movement-test');
+    expect(level.id).toBe('shaft-entrance');
     expect(level.worldWidth).toBe(1280);
     expect(level.worldHeight).toBe(320);
     expect(level.solids).toHaveLength(2);
@@ -37,6 +48,7 @@ describe('parseLevelDefinition', () => {
     expect(level.props.filter((prop) => prop.type === 'crate')).toHaveLength(3);
     expect(level.enemyHpBonus).toBe(0);
     expect(level.spawn).toEqual({ x: 56, y: 260 });
+    expect(level.exit).toEqual({ x: 1232, y: 240, width: 48, height: 48 });
     expect(level.killY).toBe(380);
   });
 
@@ -56,6 +68,13 @@ describe('parseLevelDefinition', () => {
     delete map['spawn'];
 
     expect(() => parseLevelDefinition(map)).toThrow(LevelValidationError);
+  });
+
+  it('rejects a missing exit', () => {
+    const map = cloneMap();
+    delete map['exit'];
+
+    expect(() => parseLevelDefinition(map)).toThrow(/exit/);
   });
 
   it('rejects geometry that extends past the level bounds', () => {
@@ -119,5 +138,39 @@ describe('parseLevelDefinition', () => {
     map['killY'] = 128;
 
     expect(() => parseLevelDefinition(map)).toThrow(/killY must be below/);
+  });
+});
+
+describe('authored run levels', () => {
+  it('defines four levels in run order', () => {
+    expect(LEVEL_COUNT).toBe(4);
+    expect(LEVEL_ORDER).toEqual([
+      'shaft-entrance',
+      'goblin-tunnels',
+      'crystal-caverns',
+      'deep-vein',
+    ]);
+    expect(LEVEL_ASSETS.map((asset) => asset.number)).toEqual([1, 2, 3, 4]);
+  });
+
+  it.each(LEVEL_ASSETS)('validates $id', (asset) => {
+    const level = parseLevelDefinition(readMap(asset.path));
+
+    expect(level.id).toBe(asset.id);
+    expect(level.name).toBe(asset.title);
+    expect(level.spawn.x).toBeGreaterThan(0);
+    expect(level.spawn.y).toBeGreaterThan(0);
+    expect(level.exit.width).toBeGreaterThan(0);
+    expect(level.exit.height).toBeGreaterThan(0);
+    expect(level.enemies.length).toBeGreaterThan(0);
+    expect(getLevelIndex(level.id)).toBe(asset.number - 1);
+  });
+
+  it('places crystal decorations in the caverns and deep vein', () => {
+    const caverns = parseLevelDefinition(readMap('maps/crystal-caverns.json'));
+    const deepVein = parseLevelDefinition(readMap('maps/deep-vein.json'));
+
+    expect(caverns.props.filter((prop) => prop.type === 'crystal').length).toBeGreaterThan(0);
+    expect(deepVein.props.filter((prop) => prop.type === 'crystal').length).toBeGreaterThan(0);
   });
 });

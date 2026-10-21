@@ -6,6 +6,27 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Added
+
+- M3.1: four authored run levels (Shaft Entrance, Goblin Tunnels, Crystal Caverns, The Deep Vein) with level-specific enemies, hazards, items, crystals, and elevator exits.
+- M3.1: required level exit data and validation, plus an elevator interaction that advances the run with `E`.
+- M3.1: level registry metadata, run order, level indexes, and development-only `?level=` and `?spawn=exit` overrides.
+- M3.1: session-scoped `RunService` tracking difficulty, level index, total and level timers, kills, damage, deaths, item uses, pickups, ore, and levels completed.
+- M3.1: level intro cards, HUD level progress, player HP/ore/item carry between levels, and refilled HP on death retries.
+- M3.1: boss placeholder scene with a run summary and return-to-title flow.
+- M3.1: unit tests for run state, all four maps, level registry, and inventory restore, plus Playwright coverage for every map, the elevator, and the full four-level debug flow.
+- M3.1: M3 level design notes and QA checklist.
+
+### Changed
+
+- M3.1: Start Run now begins the four-level descent at Shaft Entrance instead of the retired combat test map.
+- M3.1: player damage events carry their amount and damage source so run stats and future challenge rules share the same data.
+- M3.1: the title screen identifies the M3 descent build.
+
+### Removed
+
+- M3.1: retired `public/maps/movement-test.json`; Shaft Entrance preserves its geometry for regression coverage.
+
 ## [0.2.0] - 2026-10-21
 
 ### Added

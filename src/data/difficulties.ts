@@ -60,6 +60,25 @@ export function getDifficulty(id: DifficultyId): DifficultyConfig {
 }
 
 /**
+ * Explicit scene data wins, then a development-only query override, then Normal.
+ */
+export function resolveDifficultyId(requested?: DifficultyId): DifficultyId {
+  if (requested) {
+    return requested;
+  }
+
+  if (import.meta.env.DEV && typeof window !== 'undefined') {
+    const value = new URLSearchParams(window.location.search).get('difficulty');
+
+    if (value && isDifficultyId(value)) {
+      return value;
+    }
+  }
+
+  return DEFAULT_DIFFICULTY;
+}
+
+/**
  * Enemy damage scales with difficulty; hazards and pits do not.
  */
 export function scaleEnemyDamage(baseDamage: number, config: DifficultyConfig): number {

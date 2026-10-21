@@ -19,6 +19,7 @@ export type SfxName =
   | 'pickup'
   | 'heal'
   | 'ore'
+  | 'elevator'
   | 'empty';
 
 interface SfxSpec {
@@ -127,6 +128,13 @@ const SFX_SPECS: Record<SfxName, SfxSpec> = {
     endFrequency: 980,
     duration: 0.12,
     volume: 0.04,
+  },
+  elevator: {
+    wave: 'sine',
+    startFrequency: 160,
+    endFrequency: 420,
+    duration: 0.45,
+    volume: 0.05,
   },
   empty: {
     wave: 'square',

@@ -1,5 +1,8 @@
 import Phaser from 'phaser';
 import { APP_VERSION, GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
+import { resolveDifficultyId } from '../data/difficulties';
+import { getLevelAsset, resolveLevelId } from '../data/level-registry';
+import { runService } from '../systems/run-service';
 import { setTestHook } from '../utils/test-hooks';
 
 interface MenuItem {
@@ -41,6 +44,7 @@ export class TitleScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.startingRun = false;
     this.drawBackground();
     this.drawTitle();
     this.createMenu();
@@ -48,7 +52,7 @@ export class TitleScene extends Phaser.Scene {
     this.installInput();
 
     this.select(0);
-    this.showMessage('M2 combat test is live. X throws rocks, C uses items, E interacts.');
+    this.showMessage('M3 descent is live. X throws rocks, C uses items, E interacts.');
 
     setTestHook({
       ready: true,
@@ -180,7 +184,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(8, 260, `v${APP_VERSION} / M2`, {
+      .text(8, 260, `v${APP_VERSION} / M3`, {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',
@@ -188,7 +192,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0, 0.5);
 
     this.add
-      .text(GAME_WIDTH - 8, 260, 'M2 COMBAT BUILD', {
+      .text(GAME_WIDTH - 8, 260, 'M3 DESCENT BUILD', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',
@@ -271,10 +275,16 @@ export class TitleScene extends Phaser.Scene {
     }
 
     this.startingRun = true;
-    this.showMessage('Entering the combat test...');
+    const difficultyId = resolveDifficultyId();
+    const levelId = resolveLevelId();
+    const level = getLevelAsset(levelId);
+    const spawnAtExit =
+      import.meta.env.DEV && new URLSearchParams(window.location.search).get('spawn') === 'exit';
+    runService.startRun(difficultyId);
+    this.showMessage(`Descending into ${level?.title ?? 'the mine'}...`);
     this.cameras.main.fadeOut(200, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
-      this.scene.start('Level', { levelId: 'movement-test' });
+      this.scene.start('Level', { levelId, difficultyId, spawnAtExit });
     });
   }
 

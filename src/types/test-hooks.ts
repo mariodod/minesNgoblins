@@ -15,6 +15,9 @@ export interface MinesTestHook {
   titleSelection?: string;
   message?: string;
   levelId?: string;
+  levelNumber?: number;
+  levelCount?: number;
+  exit?: { x: number; y: number; width: number; height: number };
   playerX?: number;
   playerY?: number;
   playerVx?: number;
@@ -57,6 +60,16 @@ export interface MinesTestHook {
   boneHits?: number;
   boneBreaks?: number;
   hazardsTriggered?: number;
+  runActive?: boolean;
+  runLevelIndex?: number;
+  runKills?: number;
+  runDamageTaken?: number;
+  runDeaths?: number;
+  runItemUses?: number;
+  runOre?: number;
+  runItemsPickedUp?: number;
+  runLevelsCompleted?: number;
+  runTimeMs?: number;
 }
 
 declare global {

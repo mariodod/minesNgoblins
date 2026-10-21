@@ -2,7 +2,7 @@
 
 **A retro mine-crawling action platformer. One rock. Many problems.**
 
-> **Status:** M2 complete — four enemies, hazards, three scavenged weapons, crates, pickups, difficulty-scaled HP, and combat feedback are playable in the combat test level. Next: M3.
+> **Status:** M3 in progress — four-level Normal-mode run, elevator exits, level intros, carry state, and a boss placeholder are playable. Next: M3.2 pause/quit flow and final QA.
 >
 > The repository was empty when work began, so the documents below define the direction for a new game.
 
@@ -30,6 +30,7 @@ The game is built around short, replayable runs. Players dodge or defeat enemies
 - [Roadmap](docs/roadmap.md) — milestones, estimates, acceptance criteria, and risks.
 - [M1 Playtest Notes](docs/m1-playtest.md) — movement/combat checks, tuning values, and known limitations.
 - [M2 Playtest Notes](docs/m2-playtest.md) — enemy, item, difficulty, and feedback checks.
+- [M3 Level Design Notes](docs/m3-level-design.md) — run order, level intent, exit flow, and QA checklist.
 
 ## Technology at a glance
 
@@ -89,7 +90,7 @@ The dev server runs at `http://127.0.0.1:5173/`. Choose **Start Run** to play th
 
 Rocks are unlimited and deal 1 damage. The one-slot secondary item holds a limited-use Knife, Flintlock, or Rune Scroll; picking up the same item adds ammo up to its cap, while a different item replaces it. Crates contain authored ore, salves, or items, and pedestals hold items that require `E` to collect. Falling into a gap or losing all hearts restarts the level after a short death overlay.
 
-Development builds accept `?difficulty=normal|hard|impossible|crazy` for difficulty-scale checks. The title-screen selector arrives in M5.
+Development builds accept `?difficulty=normal|hard|impossible|crazy` for difficulty-scale checks. The title-screen selector arrives in M5. Development builds also accept `?level=<id>` and `?spawn=exit` for level and elevator QA.
 
 ### Scripts
 

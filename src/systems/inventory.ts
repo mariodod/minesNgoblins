@@ -90,4 +90,15 @@ export class ItemInventory {
     this.itemId = null;
     this.uses = 0;
   }
+
+  restore(itemId: SecondaryItemId | null, uses: number): void {
+    if (!itemId || !Number.isFinite(uses) || uses <= 0) {
+      this.clear();
+      return;
+    }
+
+    const definition = SECONDARY_ITEMS[itemId];
+    this.itemId = itemId;
+    this.uses = Math.min(definition.maxUses, Math.max(0, Math.floor(uses)));
+  }
 }

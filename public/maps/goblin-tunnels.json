@@ -1,0 +1,59 @@
+{
+  "id": "goblin-tunnels",
+  "name": "Goblin Tunnels",
+  "tileSize": 16,
+  "widthTiles": 112,
+  "heightTiles": 20,
+  "spawn": { "x": 40, "y": 260 },
+  "solids": [
+    { "x": 0, "y": 288, "width": 384, "height": 32 },
+    { "x": 416, "y": 288, "width": 384, "height": 32 },
+    { "x": 832, "y": 288, "width": 384, "height": 32 },
+    { "x": 1248, "y": 288, "width": 544, "height": 32 }
+  ],
+  "oneWayPlatforms": [
+    { "x": 64, "y": 256, "width": 64, "height": 16 },
+    { "x": 160, "y": 224, "width": 80, "height": 16 },
+    { "x": 280, "y": 248, "width": 64, "height": 16 },
+    { "x": 440, "y": 240, "width": 80, "height": 16 },
+    { "x": 560, "y": 208, "width": 64, "height": 16 },
+    { "x": 672, "y": 248, "width": 64, "height": 16 },
+    { "x": 880, "y": 240, "width": 80, "height": 16 },
+    { "x": 1000, "y": 208, "width": 64, "height": 16 },
+    { "x": 1120, "y": 248, "width": 64, "height": 16 },
+    { "x": 1300, "y": 240, "width": 80, "height": 16 },
+    { "x": 1440, "y": 208, "width": 64, "height": 16 },
+    { "x": 1580, "y": 240, "width": 80, "height": 16 },
+    { "x": 1680, "y": 264, "width": 64, "height": 16 }
+  ],
+  "enemies": [
+    { "type": "goblin-scavenger", "x": 300, "y": 278 },
+    { "type": "skeleton-thrower", "x": 620, "y": 278 },
+    { "type": "goblin-scavenger", "x": 900, "y": 278 },
+    { "type": "armored-beetle", "x": 1050, "y": 280 },
+    { "type": "goblin-scavenger", "x": 1320, "y": 278 },
+    { "type": "skeleton-thrower", "x": 1500, "y": 278 },
+    { "type": "armored-beetle", "x": 1640, "y": 280 }
+  ],
+  "hazards": [
+    { "type": "spikes", "x": 520, "y": 280, "width": 32, "height": 8 },
+    { "type": "falling-rock", "x": 760, "y": 24, "width": 32, "height": 24 },
+    { "type": "spikes", "x": 980, "y": 280, "width": 48, "height": 8 },
+    { "type": "spikes", "x": 1380, "y": 280, "width": 32, "height": 8 }
+  ],
+  "exit": { "x": 1728, "y": 240, "width": 48, "height": 48 },
+  "enemyHpBonus": 1,
+  "props": [
+    { "type": "lantern", "x": 96, "y": 224 },
+    { "type": "lantern", "x": 450, "y": 208 },
+    { "type": "lantern", "x": 900, "y": 208 },
+    { "type": "lantern", "x": 1300, "y": 208 },
+    { "type": "lantern", "x": 1650, "y": 208 },
+    { "type": "pedestal", "x": 200, "y": 280, "item": "knife" },
+    { "type": "crate", "x": 470, "y": 280, "contents": "ore" },
+    { "type": "crate", "x": 490, "y": 280, "contents": "healing-salve" },
+    { "type": "pedestal", "x": 880, "y": 280, "item": "flintlock" },
+    { "type": "crate", "x": 1540, "y": 280, "contents": "rune-scroll" }
+  ],
+  "killY": 430
+}

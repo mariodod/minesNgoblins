@@ -14,7 +14,7 @@ export interface LevelPoint {
 }
 
 export type EnemyType = EnemyId;
-export type PropType = 'crate' | 'lantern' | 'pedestal';
+export type PropType = 'crate' | 'crystal' | 'lantern' | 'pedestal';
 export type HazardType = 'spikes' | 'falling-rock';
 
 export interface EnemySpawn extends LevelPoint {
@@ -35,7 +35,11 @@ export interface LanternSpawn extends LevelPoint {
   type: 'lantern';
 }
 
-export type PropSpawn = CrateSpawn | PedestalSpawn | LanternSpawn;
+export interface CrystalSpawn extends LevelPoint {
+  type: 'crystal';
+}
+
+export type PropSpawn = CrateSpawn | PedestalSpawn | LanternSpawn | CrystalSpawn;
 
 export interface HazardSpawn extends LevelRect {
   type: HazardType;
@@ -53,6 +57,7 @@ export interface LevelDefinition {
   enemies: EnemySpawn[];
   props: PropSpawn[];
   hazards: HazardSpawn[];
+  exit: LevelRect;
   enemyHpBonus: number;
   killY: number;
   worldWidth: number;
@@ -98,6 +103,7 @@ export function parseLevelDefinition(value: unknown): LevelDefinition {
   const enemies = readSpawnList(value['enemies'], 'enemies', worldWidth, worldHeight, ENEMY_IDS);
   const props = readPropList(value['props'], 'props', worldWidth, worldHeight);
   const hazards = readHazardList(value['hazards'], 'hazards', worldWidth, worldHeight);
+  const exit = readRect(value['exit'], 'exit', worldWidth, worldHeight);
   const enemyHpBonus = readOptionalNonNegativeInt(value, 'enemyHpBonus', 0);
 
   const killY = readNumber(value, 'killY');
@@ -117,6 +123,7 @@ export function parseLevelDefinition(value: unknown): LevelDefinition {
     enemies,
     props,
     hazards,
+    exit,
     enemyHpBonus,
     killY,
     worldWidth,
@@ -160,7 +167,13 @@ function readPropList(
       return { ...point, type };
     }
 
-    throw new LevelValidationError(`${propPath}.type must be one of: crate, lantern, pedestal.`);
+    if (type === 'crystal') {
+      return { ...point, type };
+    }
+
+    throw new LevelValidationError(
+      `${propPath}.type must be one of: crate, crystal, lantern, pedestal.`,
+    );
   });
 }
 
@@ -219,30 +232,35 @@ function readRectList(
     throw new LevelValidationError(`${path} must be an array.`);
   }
 
-  return value.map((entry, index) => {
-    const rectPath = `${path}[${index}]`;
+  return value.map((entry, index) => readRect(entry, `${path}[${index}]`, worldWidth, worldHeight));
+}
 
-    if (!isRecord(entry)) {
-      throw new LevelValidationError(`${rectPath} must be an object.`);
-    }
+function readRect(
+  value: unknown,
+  path: string,
+  worldWidth: number,
+  worldHeight: number,
+): LevelRect {
+  if (!isRecord(value)) {
+    throw new LevelValidationError(`${path} must be an object.`);
+  }
 
-    const rect: LevelRect = {
-      x: readNumber(entry, 'x', rectPath),
-      y: readNumber(entry, 'y', rectPath),
-      width: readPositiveNumber(entry, 'width', rectPath),
-      height: readPositiveNumber(entry, 'height', rectPath),
-    };
+  const rect: LevelRect = {
+    x: readNumber(value, 'x', path),
+    y: readNumber(value, 'y', path),
+    width: readPositiveNumber(value, 'width', path),
+    height: readPositiveNumber(value, 'height', path),
+  };
 
-    if (rect.x < 0 || rect.y < 0) {
-      throw new LevelValidationError(`${rectPath} cannot have negative coordinates.`);
-    }
+  if (rect.x < 0 || rect.y < 0) {
+    throw new LevelValidationError(`${path} cannot have negative coordinates.`);
+  }
 
-    if (rect.x + rect.width > worldWidth || rect.y + rect.height > worldHeight) {
-      throw new LevelValidationError(`${rectPath} extends past the level bounds.`);
-    }
+  if (rect.x + rect.width > worldWidth || rect.y + rect.height > worldHeight) {
+    throw new LevelValidationError(`${path} extends past the level bounds.`);
+  }
 
-    return rect;
-  });
+  return rect;
 }
 
 function readSpawnList<T extends string>(

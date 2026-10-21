@@ -2,7 +2,7 @@
 
 **Version:** 0.3 (draft for review)  
 **Date:** 2026-10-21  
-**Status:** M2 complete; M3 next
+**Status:** M3 in progress; M3.1 four-level run pipeline complete
 
 ---
 
@@ -170,7 +170,7 @@ These numbers are planning aids, not promises. The art/audio pass in M6 can run 
 
 **Goal:** Deliver a complete Normal-mode run through the four standard levels, ending at a boss placeholder.
 
-**Status:** Next (kickoff 2026-10-21).
+**Status:** In progress (M3.1 delivered 2026-10-21): four authored maps, exits, intro cards, carry state, RunService, HUD progress, and the boss placeholder are implemented. Pause/quit flow, settings, and final M3 QA remain.
 
 **Deliverables**
 

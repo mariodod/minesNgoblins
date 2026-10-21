@@ -5,6 +5,7 @@ import type { InputService } from '../services/input-service';
 import type { LevelPoint } from '../data/level-definition';
 import { ItemInventory } from '../systems/inventory';
 import type { DamageSource } from '../systems/damage';
+import type { RunCarryState } from '../systems/run-service';
 import {
   computeProjectileLaunch,
   type AimDirection,
@@ -15,6 +16,12 @@ export interface PlayerItemUse {
   itemId: SecondaryItemId;
   source: DamageSource;
   launch: ProjectileLaunch;
+}
+
+export interface PlayerDamageEvent {
+  hp: number;
+  amount: number;
+  source: DamageSource;
 }
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
@@ -166,7 +173,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     const healed = Math.min(amount, this.maxHp - this.hp);
-
     if (healed <= 0) {
       return 0;
     }
@@ -176,7 +182,27 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return healed;
   }
 
-  takeDamage(amount: number, sourceX: number): boolean {
+  applyCarryState(state: RunCarryState, refillHp = false): void {
+    this.hp = refillHp ? this.maxHp : Phaser.Math.Clamp(Math.floor(state.hp), 1, this.maxHp);
+    this.ore = Math.max(0, Math.floor(state.ore));
+    this.inventory.restore(state.itemId, state.itemUses);
+    this.nextItemUseAt = 0;
+    this.emit('player-inventory-changed', this.inventory.snapshot);
+    this.emit('player-ore-changed', this.ore);
+  }
+
+  getCarryState(): RunCarryState {
+    const inventory = this.inventory.snapshot;
+
+    return {
+      hp: this.hp,
+      ore: this.ore,
+      itemId: inventory.itemId,
+      itemUses: inventory.uses,
+    };
+  }
+
+  takeDamage(amount: number, sourceX: number, source: DamageSource): boolean {
     const time = this.scene.time.now;
 
     if (this.isDead || time < this.invulnerableUntil) {
@@ -199,7 +225,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       -PLAYER_TUNING.knockbackY,
     );
 
-    this.emit('player-damaged', this.hp);
+    this.emit('player-damaged', { hp: this.hp, amount, source } satisfies PlayerDamageEvent);
 
     if (this.hp <= 0) {
       this.die();

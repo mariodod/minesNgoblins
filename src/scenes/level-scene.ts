@@ -2,9 +2,8 @@ import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
 import { FEEDBACK_TUNING, HAZARD_TUNING, ROCK_TUNING } from '../config/tuning';
 import {
-  DEFAULT_DIFFICULTY,
   getDifficulty,
-  isDifficultyId,
+  resolveDifficultyId,
   scaleEnemyDamage,
   type DifficultyConfig,
   type DifficultyId,
@@ -23,7 +22,14 @@ import {
   type LevelDefinition,
   type LevelRect,
 } from '../data/level-definition';
-import { levelCacheKey } from '../data/level-registry';
+import {
+  getLevelAsset,
+  getLevelIndex,
+  LEVEL_COUNT,
+  LEVEL_ORDER,
+  levelCacheKey,
+  resolveLevelId,
+} from '../data/level-registry';
 import { Bat } from '../entities/enemies/bat';
 import { Beetle } from '../entities/enemies/beetle';
 import type { Enemy, EnemyHitResult } from '../entities/enemies/enemy';
@@ -33,7 +39,7 @@ import { Skeleton } from '../entities/enemies/skeleton';
 import { FallingRock } from '../entities/hazards/falling-rock';
 import { Crate } from '../entities/pickups/crate';
 import { ItemPickup } from '../entities/pickups/item-pickup';
-import { Player, type PlayerItemUse } from '../entities/player';
+import { Player, type PlayerDamageEvent, type PlayerItemUse } from '../entities/player';
 import type { ProjectileLaunch } from '../entities/projectiles/aim';
 import { Bone, type BoneLaunch } from '../entities/projectiles/bone';
 import { ItemProjectile } from '../entities/projectiles/item-projectile';
@@ -41,6 +47,7 @@ import { Rock } from '../entities/projectiles/rock';
 import type { AudioService } from '../services/audio-service';
 import { InputService } from '../services/input-service';
 import type { DamageEvent } from '../systems/damage';
+import { runService, type RunCarryState } from '../systems/run-service';
 import { setTestHook } from '../utils/test-hooks';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
@@ -48,6 +55,9 @@ const FONT_FAMILY = '"Courier New", Courier, monospace';
 interface LevelSceneData {
   levelId?: string;
   difficultyId?: DifficultyId;
+  carry?: RunCarryState;
+  refillHp?: boolean;
+  spawnAtExit?: boolean;
 }
 
 interface PedestalState {
@@ -68,9 +78,13 @@ type ColliderTarget =
   | Phaser.Tilemaps.Tile;
 
 export class LevelScene extends Phaser.Scene {
-  private levelId = 'movement-test';
+  private levelId = 'shaft-entrance';
   private level!: LevelDefinition;
+  private levelIndex = 0;
   private difficulty: DifficultyConfig = getDifficulty('normal');
+  private entryCarry: RunCarryState | null = null;
+  private refillHp = false;
+  private debugSpawnAtExit = false;
   private player!: Player;
   private inputService!: InputService;
   private audio!: AudioService;
@@ -89,6 +103,8 @@ export class LevelScene extends Phaser.Scene {
   private pedestals: PedestalState[] = [];
   private firstDummy: Enemy | undefined;
   private interactPrompt: Phaser.GameObjects.Text | undefined;
+  private exitPrompt: Phaser.GameObjects.Text | undefined;
+  private leavingLevel = false;
   private rocksThrown = 0;
   private itemsUsed = 0;
   private itemsCollected = 0;
@@ -110,24 +126,11 @@ export class LevelScene extends Phaser.Scene {
   }
 
   init(data: LevelSceneData): void {
-    this.levelId = data.levelId ?? 'movement-test';
-    this.difficulty = getDifficulty(this.resolveDifficultyId(data.difficultyId));
-  }
-
-  private resolveDifficultyId(requested?: DifficultyId): DifficultyId {
-    if (requested) {
-      return requested;
-    }
-
-    if (import.meta.env.DEV) {
-      const value = new URLSearchParams(window.location.search).get('difficulty');
-
-      if (value && isDifficultyId(value)) {
-        return value;
-      }
-    }
-
-    return DEFAULT_DIFFICULTY;
+    this.levelId = resolveLevelId(data.levelId);
+    this.difficulty = getDifficulty(resolveDifficultyId(data.difficultyId));
+    this.entryCarry = data.carry ?? runService.takeCarry();
+    this.refillHp = data.refillHp ?? false;
+    this.debugSpawnAtExit = data.spawnAtExit ?? false;
   }
 
   create(): void {
@@ -152,12 +155,21 @@ export class LevelScene extends Phaser.Scene {
     this.deflects = 0;
     this.hazardsTriggered = 0;
     this.restarting = false;
+    this.leavingLevel = false;
     this.hitStopActive = false;
     this.firstDummy = undefined;
     this.enemies = [];
     this.pedestals = [];
     this.interactPrompt = undefined;
+    this.exitPrompt = undefined;
     this.frameCount = 0;
+    this.levelIndex = Math.max(0, getLevelIndex(this.level.id));
+
+    if (!runService.isActive) {
+      runService.startRun(this.difficulty.id);
+    }
+
+    runService.enterLevel(this.levelIndex, this.level.id);
 
     this.physics.world.setBounds(0, 0, this.level.worldWidth, this.level.worldHeight + 160);
     this.cameras.main.setBounds(0, 0, this.level.worldWidth, this.level.worldHeight);
@@ -169,6 +181,7 @@ export class LevelScene extends Phaser.Scene {
     this.createPlatforms();
     this.createProps();
     this.createHazards();
+    this.createExit();
 
     this.player = new Player(
       this,
@@ -177,6 +190,17 @@ export class LevelScene extends Phaser.Scene {
       this.inputService,
       this.difficulty.playerMaxHp,
     );
+
+    if (this.entryCarry) {
+      this.player.applyCarryState(this.entryCarry, this.refillHp);
+    }
+
+    if (this.debugSpawnAtExit) {
+      this.player.respawn({
+        x: this.level.exit.x + this.level.exit.width / 2,
+        y: this.level.exit.y + this.level.exit.height - 12,
+      });
+    }
 
     this.physics.add.collider(this.player, this.solidGroup);
     this.physics.add.collider(
@@ -206,10 +230,13 @@ export class LevelScene extends Phaser.Scene {
 
     this.scene.launch('HUD', {
       levelName: this.level.name,
+      levelNumber: this.levelIndex + 1,
+      levelCount: LEVEL_COUNT,
       player: this.player,
       difficultyName: this.difficulty.displayName,
     });
 
+    this.showLevelIntro();
     this.publishTestHook();
 
     this.events.once('shutdown', () => {
@@ -244,6 +271,7 @@ export class LevelScene extends Phaser.Scene {
     }
 
     this.updatePedestalInteraction();
+    this.updateExitInteraction();
 
     this.testHookAccumulator += delta;
     if (this.testHookAccumulator >= 100) {
@@ -340,6 +368,11 @@ export class LevelScene extends Phaser.Scene {
         return;
       }
 
+      if (prop.type === 'crystal') {
+        this.createCrystal(prop.x, prop.y);
+        return;
+      }
+
       const glow = this.add
         .image(prop.x, prop.y, 'lantern-glow')
         .setDepth(4)
@@ -356,6 +389,27 @@ export class LevelScene extends Phaser.Scene {
 
       this.add.rectangle(prop.x, prop.y + 1, 3, 5, 0xffe6a0, 0.9).setDepth(5);
     });
+  }
+
+  private createCrystal(x: number, y: number): void {
+    const glow = this.add
+      .image(x, y, 'lantern-glow')
+      .setTint(0x5ce0d0)
+      .setScale(1.1)
+      .setAlpha(0.18)
+      .setDepth(2);
+
+    this.tweens.add({
+      targets: glow,
+      alpha: 0.32,
+      duration: 1100,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    this.add.triangle(x, y, 0, 14, 6, -12, 12, 14, 0x2a8c82, 0.9).setDepth(3);
+    this.add.triangle(x + 7, y + 3, 0, 9, 4, -8, 8, 9, 0x6fe3c4, 0.75).setDepth(3);
+    this.add.rectangle(x + 6, y - 2, 1, 10, 0xbff7ee, 0.55).setDepth(4);
   }
 
   private createPedestal(x: number, y: number, itemId: PickupId): void {
@@ -405,6 +459,192 @@ export class LevelScene extends Phaser.Scene {
         this.createFallingRockTrigger(hazard);
       }
     }
+  }
+
+  private createExit(): void {
+    const exit = this.level.exit;
+    const centerX = exit.x + exit.width / 2;
+    const centerY = exit.y + exit.height / 2;
+
+    this.add
+      .rectangle(exit.x, exit.y, exit.width, exit.height, 0x080d11, 0.92)
+      .setOrigin(0)
+      .setDepth(2)
+      .setStrokeStyle(1, 0x8a6b32);
+
+    const glow = this.add
+      .image(centerX, centerY, 'lantern-glow')
+      .setTint(0xffcf5a)
+      .setScale(1.6)
+      .setAlpha(0.22)
+      .setDepth(2);
+
+    this.tweens.add({
+      targets: glow,
+      alpha: 0.38,
+      duration: 900,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    for (let bar = 8; bar < exit.height - 4; bar += 8) {
+      this.add
+        .rectangle(exit.x + 4, exit.y + bar, exit.width - 8, 1, 0x6f5427, 0.8)
+        .setOrigin(0)
+        .setDepth(4);
+    }
+
+    this.add
+      .rectangle(centerX, exit.y + exit.height - 6, exit.width - 12, 4, 0x2f3640, 1)
+      .setDepth(5);
+    this.add.rectangle(centerX, exit.y + exit.height - 11, 5, 6, 0xffcf5a, 0.9).setDepth(6);
+
+    this.add
+      .text(centerX, exit.y - 8, 'ELEVATOR', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '7px',
+        color: '#e8c170',
+        backgroundColor: '#11161b',
+        padding: { x: 2, y: 1 },
+      })
+      .setOrigin(0.5)
+      .setDepth(6);
+
+    this.exitPrompt = this.add
+      .text(centerX, centerY, 'E RIDE', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '8px',
+        color: '#ffcf5a',
+        backgroundColor: '#11161b',
+        padding: { x: 2, y: 1 },
+      })
+      .setOrigin(0.5)
+      .setDepth(22)
+      .setVisible(false);
+  }
+
+  private showLevelIntro(): void {
+    const asset = getLevelAsset(this.level.id);
+    const levelNumber = asset?.number ?? this.levelIndex + 1;
+    const intro = asset?.intro ?? 'Find the elevator and keep descending.';
+
+    const container = this.add.container(0, 0).setScrollFactor(0).setDepth(180);
+    const shade = this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x050608, 0.68).setOrigin(0);
+    const rule = this.add.rectangle(GAME_WIDTH / 2, 104, 220, 1, 0x8a6b32, 0.8);
+    const progress = this.add
+      .text(GAME_WIDTH / 2, 86, `LEVEL ${levelNumber} / ${LEVEL_COUNT}`, {
+        fontFamily: FONT_FAMILY,
+        fontSize: '8px',
+        color: '#c85c5c',
+      })
+      .setOrigin(0.5);
+    const title = this.add
+      .text(GAME_WIDTH / 2, 122, this.level.name.toUpperCase(), {
+        fontFamily: FONT_FAMILY,
+        fontSize: '17px',
+        color: '#e8c170',
+      })
+      .setOrigin(0.5)
+      .setShadow(2, 2, '#000000', 0, true, true);
+    const subtitle = this.add
+      .text(GAME_WIDTH / 2, 148, intro, {
+        fontFamily: FONT_FAMILY,
+        fontSize: '7px',
+        color: '#9aa0a6',
+        align: 'center',
+        wordWrap: { width: 320 },
+      })
+      .setOrigin(0.5);
+
+    container.add([shade, rule, progress, title, subtitle]);
+
+    this.tweens.add({
+      targets: container,
+      alpha: 0,
+      delay: 1050,
+      duration: 420,
+      onComplete: () => {
+        container.destroy(true);
+      },
+    });
+  }
+
+  private updateExitInteraction(): void {
+    if (!this.exitPrompt || this.leavingLevel || this.restarting || !this.level || !this.player) {
+      return;
+    }
+
+    if (this.player.isDead) {
+      this.exitPrompt.setVisible(false);
+      return;
+    }
+
+    const exit = this.level.exit;
+    const body = this.player.arcadeBody;
+    const inside =
+      body.right > exit.x &&
+      body.left < exit.x + exit.width &&
+      body.bottom > exit.y &&
+      body.top < exit.y + exit.height;
+
+    if (!inside) {
+      this.exitPrompt.setVisible(false);
+      return;
+    }
+
+    const alive = this.countAliveEnemies();
+    const locked = this.difficulty.requiresAllEnemiesDead && alive > 0;
+    this.exitPrompt.setText(locked ? `LOCKED: ${alive} LEFT` : 'E RIDE').setVisible(true);
+
+    if (!this.inputService.isInteractJustPressed()) {
+      return;
+    }
+
+    if (locked) {
+      this.showFloatingText(exit.x + exit.width / 2, exit.y - 18, 'CLEAR THE LEVEL', '#e74c3c');
+      this.audio.play('empty');
+      return;
+    }
+
+    this.completeLevel();
+  }
+
+  private completeLevel(): void {
+    if (this.leavingLevel) {
+      return;
+    }
+
+    this.leavingLevel = true;
+    this.restarting = true;
+    this.exitPrompt?.setVisible(false);
+    this.player.setVelocity(0, 0);
+    this.runServiceCompleteLevel();
+    this.audio.play('elevator');
+    this.cameras.main.fadeOut(280, 0, 0, 0);
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      const nextIndex = this.levelIndex + 1;
+
+      if (nextIndex >= LEVEL_COUNT) {
+        this.scene.start('BossPlaceholder');
+        return;
+      }
+
+      const nextLevelId = LEVEL_ORDER[nextIndex];
+
+      if (!nextLevelId) {
+        this.scene.start('BossPlaceholder');
+        return;
+      }
+
+      this.scene.start('Level', {
+        levelId: nextLevelId,
+        difficultyId: this.difficulty.id,
+      });
+    });
+  }
+
+  private runServiceCompleteLevel(): void {
+    runService.completeLevel(this.player.getCarryState());
   }
 
   private createSpikes(hazard: HazardSpawn): void {
@@ -657,6 +897,7 @@ export class LevelScene extends Phaser.Scene {
     const projectile = new ItemProjectile(this, use.itemId, use.launch);
     this.itemProjectileGroup.add(projectile);
     this.itemsUsed += 1;
+    runService.recordItemUse();
 
     if (use.itemId === 'knife') {
       this.audio.play('knife');
@@ -714,6 +955,11 @@ export class LevelScene extends Phaser.Scene {
     };
     const result = enemy.takeDamage(event);
     this.playEnemyHitFeedback(result, rock.x, rock.y, 0xb8c0c8);
+
+    if (result.killed) {
+      runService.recordKill();
+    }
+
     rock.destroy();
   }
 
@@ -744,6 +990,11 @@ export class LevelScene extends Phaser.Scene {
     const result = enemy.takeDamage(event);
     const color = projectile.itemId === 'flintlock' ? 0xffcf5a : 0xd8dde3;
     this.playEnemyHitFeedback(result, projectile.x, projectile.y, color);
+
+    if (result.killed) {
+      runService.recordKill();
+    }
+
     projectile.destroy();
   }
 
@@ -871,6 +1122,11 @@ export class LevelScene extends Phaser.Scene {
 
       damagedAny = true;
       killedAny = killedAny || result.killed;
+
+      if (result.killed) {
+        runService.recordKill();
+      }
+
       this.spawnHitBurst(enemy.x, enemy.y, 0x6fe3c4, 5);
 
       if (!result.killed) {
@@ -893,6 +1149,7 @@ export class LevelScene extends Phaser.Scene {
 
     if (this.player.collectPickup(pickup.itemId)) {
       this.itemsCollected += 1;
+      this.recordPickup(pickup.itemId);
       this.audio.play(this.pickupSfx(pickup.itemId));
       this.showFloatingText(pickup.x, pickup.y - 8, pickupDisplayName(pickup.itemId), '#f4d35e');
       pickup.destroy();
@@ -917,14 +1174,17 @@ export class LevelScene extends Phaser.Scene {
       }
     }
 
-    const pressed = this.inputService.isInteractJustPressed();
+    if (!nearby || this.player.isDead || this.restarting) {
+      return;
+    }
 
-    if (!pressed || !nearby || this.player.isDead || this.restarting) {
+    if (!this.inputService.isInteractJustPressed()) {
       return;
     }
 
     if (this.player.collectPickup(nearby.itemId)) {
       this.itemsCollected += 1;
+      this.recordPickup(nearby.itemId);
       nearby.claimed = true;
       nearby.icon.destroy();
       nearby.glow.destroy();
@@ -955,6 +1215,14 @@ export class LevelScene extends Phaser.Scene {
     }
 
     return itemId === ORE.id ? 'ore' : 'pickup';
+  }
+
+  private recordPickup(itemId: PickupId): void {
+    runService.recordPickup();
+
+    if (itemId === ORE.id) {
+      runService.recordOre(ORE.value);
+    }
   }
 
   private showFloatingText(x: number, y: number, message: string, color: string): void {
@@ -1038,7 +1306,7 @@ export class LevelScene extends Phaser.Scene {
     }
 
     const damage = scaleEnemyDamage(enemy.contactDamage, this.difficulty);
-    this.player.takeDamage(damage, enemy.x);
+    this.player.takeDamage(damage, enemy.x, 'enemy');
   }
 
   private handleEnemyProjectile(launch: BoneLaunch): void {
@@ -1072,7 +1340,7 @@ export class LevelScene extends Phaser.Scene {
     }
 
     this.boneHits += 1;
-    this.player.takeDamage(scaleEnemyDamage(bone.damage, this.difficulty), bone.x);
+    this.player.takeDamage(scaleEnemyDamage(bone.damage, this.difficulty), bone.x, 'enemy');
     this.spawnHitBurst(bone.x, bone.y, 0xe8e2d0, 3);
     bone.destroy();
   }
@@ -1083,7 +1351,7 @@ export class LevelScene extends Phaser.Scene {
     }
 
     const spike = spikeObject as Phaser.GameObjects.Zone;
-    this.player.takeDamage(HAZARD_TUNING.spikeDamage, spike.x);
+    this.player.takeDamage(HAZARD_TUNING.spikeDamage, spike.x, 'hazard');
   }
 
   private handleFallingRockTrigger(
@@ -1160,7 +1428,7 @@ export class LevelScene extends Phaser.Scene {
       return;
     }
 
-    if (this.player.takeDamage(HAZARD_TUNING.fallingRockDamage, rock.x)) {
+    if (this.player.takeDamage(HAZARD_TUNING.fallingRockDamage, rock.x, 'hazard')) {
       this.spawnHitBurst(rock.x, rock.y, 0x8b7d6b, 5);
       rock.destroy();
     }
@@ -1180,12 +1448,13 @@ export class LevelScene extends Phaser.Scene {
     return groundY;
   }
 
-  private handlePlayerDamaged(hp: number): void {
+  private handlePlayerDamaged(event: PlayerDamageEvent): void {
+    runService.recordDamage(event.amount);
     this.audio.play('hurt');
     this.cameras.main.shake(FEEDBACK_TUNING.screenShakeMs, FEEDBACK_TUNING.screenShakeIntensity);
     this.spawnHitBurst(this.player.x, this.player.y, 0xff6b6b, FEEDBACK_TUNING.hitParticles);
 
-    if (hp > 0) {
+    if (event.hp > 0) {
       this.triggerHitStop();
     }
   }
@@ -1195,6 +1464,7 @@ export class LevelScene extends Phaser.Scene {
       return;
     }
 
+    runService.recordDeath();
     this.restarting = true;
     this.audio.play('death');
     this.cameras.main.shake(220, 0.01);
@@ -1206,7 +1476,12 @@ export class LevelScene extends Phaser.Scene {
   private restartLevel(): void {
     this.cameras.main.fadeOut(150, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
-      this.scene.restart({ levelId: this.level.id, difficultyId: this.difficulty.id });
+      this.scene.restart({
+        levelId: this.level.id,
+        difficultyId: this.difficulty.id,
+        carry: this.entryCarry ?? undefined,
+        refillHp: true,
+      });
     });
   }
 
@@ -1274,12 +1549,20 @@ export class LevelScene extends Phaser.Scene {
       return;
     }
 
-    keyboard.addCapture([Phaser.Input.Keyboard.KeyCodes.F3]);
+    keyboard.addCapture([Phaser.Input.Keyboard.KeyCodes.F3, Phaser.Input.Keyboard.KeyCodes.F4]);
     keyboard.on('keydown-F3', this.toggleDebug, this);
+    keyboard.on('keydown-F4', this.debugCompleteLevel, this);
 
     this.events.once('shutdown', () => {
       keyboard.off('keydown-F3', this.toggleDebug, this);
+      keyboard.off('keydown-F4', this.debugCompleteLevel, this);
     });
+  }
+
+  private debugCompleteLevel(): void {
+    if (import.meta.env.DEV && !this.leavingLevel) {
+      this.completeLevel();
+    }
   }
 
   private toggleDebug(): void {
@@ -1354,11 +1637,20 @@ export class LevelScene extends Phaser.Scene {
 
     const body = this.player.arcadeBody;
     const livingEnemies = this.enemies.filter((enemy) => enemy.active && !enemy.isDead);
+    const run = runService.snapshot;
 
     setTestHook({
       ready: true,
       scene: 'Level',
       levelId: this.level.id,
+      levelNumber: this.levelIndex + 1,
+      levelCount: LEVEL_COUNT,
+      exit: {
+        x: this.level.exit.x,
+        y: this.level.exit.y,
+        width: this.level.exit.width,
+        height: this.level.exit.height,
+      },
       playerBody: true,
       playerX: Math.round(this.player.x),
       playerY: Math.round(this.player.y),
@@ -1448,6 +1740,16 @@ export class LevelScene extends Phaser.Scene {
       boneHits: this.boneHits,
       boneBreaks: this.boneBreaks,
       hazardsTriggered: this.hazardsTriggered,
+      runActive: run.active,
+      runLevelIndex: run.levelIndex,
+      runKills: run.kills,
+      runDamageTaken: run.damageTaken,
+      runDeaths: run.deaths,
+      runItemUses: run.itemUses,
+      runOre: run.oreCollected,
+      runItemsPickedUp: run.itemsPickedUp,
+      runLevelsCompleted: run.levelsCompleted,
+      runTimeMs: runService.elapsedMs(),
     });
   }
 
