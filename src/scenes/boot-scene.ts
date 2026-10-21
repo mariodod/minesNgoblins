@@ -239,6 +239,66 @@ export class BootScene extends Phaser.Scene {
 
     graphics.clear();
 
+    // Knife item and projectile: 9x3. Pale blade, leather grip.
+    graphics.fillStyle(0xd8dde3, 1).fillRect(0, 1, 6, 1);
+    graphics.fillStyle(0xf2f5f8, 1).fillRect(1, 0, 5, 1);
+    graphics.fillStyle(0x7a4f2a, 1).fillRect(6, 0, 3, 3);
+    graphics.fillStyle(0x4a2f19, 1).fillRect(8, 1, 1, 1);
+    graphics.generateTexture('knife', 9, 3);
+
+    graphics.clear();
+
+    // Flintlock pistol: 12x8. Barrel right, grip down-left.
+    graphics.fillStyle(0x4a515a, 1).fillRect(4, 2, 8, 2);
+    graphics.fillStyle(0x8b949e, 1).fillRect(5, 2, 7, 1);
+    graphics.fillStyle(0x6b4a2f, 1).fillRect(2, 4, 5, 2);
+    graphics.fillStyle(0x4a2f19, 1).fillRect(1, 5, 4, 3);
+    graphics.fillStyle(0xc9a227, 1).fillRect(4, 4, 2, 1);
+    graphics.fillStyle(0xffcf5a, 1).fillRect(11, 1, 1, 1);
+    graphics.generateTexture('flintlock', 12, 8);
+
+    graphics.clear();
+
+    // Rune scroll: 10x9. Rolled parchment with a glowing rune.
+    graphics.fillStyle(0xd8c7a1, 1).fillRect(1, 2, 8, 5);
+    graphics.fillStyle(0xb79f78, 1).fillRect(0, 1, 2, 7);
+    graphics.fillRect(8, 1, 2, 7);
+    graphics.fillStyle(0x6fe3c4, 1).fillRect(4, 3, 2, 1);
+    graphics.fillRect(3, 4, 1, 1);
+    graphics.fillRect(6, 4, 1, 1);
+    graphics.fillRect(4, 5, 2, 1);
+    graphics.generateTexture('rune-scroll', 10, 9);
+
+    graphics.clear();
+
+    // Flintlock bullet tracer: 6x2.
+    graphics.fillStyle(0xfff3b0, 1).fillRect(0, 0, 6, 2);
+    graphics.fillStyle(0xffcf5a, 1).fillRect(0, 1, 4, 1);
+    graphics.generateTexture('bullet', 6, 2);
+
+    graphics.clear();
+
+    // Healing salve: 8x9. Green bottle with a cork and white cross.
+    graphics.fillStyle(0x8fbf6a, 1).fillRect(2, 3, 4, 6);
+    graphics.fillStyle(0x6d9a4c, 1).fillRect(2, 7, 4, 2);
+    graphics.fillStyle(0xc9a27a, 1).fillRect(3, 1, 2, 2);
+    graphics.fillStyle(0x7a4f2a, 1).fillRect(3, 0, 2, 1);
+    graphics.fillStyle(0xf2f5f8, 1).fillRect(3, 5, 2, 1);
+    graphics.fillRect(3, 4, 2, 1);
+    graphics.generateTexture('salve', 8, 9);
+
+    graphics.clear();
+
+    // Ore chunk: 9x8. Gold flecks in dark rock.
+    graphics.fillStyle(0x596169, 1).fillRect(1, 2, 7, 5);
+    graphics.fillStyle(0x8b949e, 1).fillRect(2, 1, 4, 2);
+    graphics.fillStyle(0xf2c14e, 1).fillRect(3, 3, 2, 1);
+    graphics.fillRect(6, 4, 1, 2);
+    graphics.fillStyle(0xffe6a0, 1).fillRect(4, 2, 1, 1);
+    graphics.generateTexture('ore', 9, 8);
+
+    graphics.clear();
+
     // Lantern glow: soft alpha rings, used on the title screen.
     graphics.fillStyle(0xffc857, 0.05).fillCircle(24, 24, 24);
     graphics.fillStyle(0xffc857, 0.08).fillCircle(24, 24, 16);

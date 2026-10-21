@@ -1,16 +1,25 @@
 import Phaser from 'phaser';
 import { PLAYER_TUNING, ROCK_TUNING } from '../config/tuning';
+import { HEALING_SALVE, ORE, type PickupId, type SecondaryItemId } from '../data/items';
 import type { InputService } from '../services/input-service';
 import type { LevelPoint } from '../data/level-definition';
+import { ItemInventory } from '../systems/inventory';
 import {
   computeProjectileLaunch,
   type AimDirection,
   type ProjectileLaunch,
 } from './projectiles/aim';
 
+export interface PlayerItemUse {
+  itemId: SecondaryItemId;
+  launch: ProjectileLaunch;
+}
+
 export class Player extends Phaser.Physics.Arcade.Sprite {
   hp: number = PLAYER_TUNING.maxHp;
+  ore = 0;
   isDead = false;
+  readonly inventory = new ItemInventory();
 
   private readonly inputService: InputService;
   private facing = 1;
@@ -22,6 +31,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private lastFallSpeed = 0;
   private invulnerableUntil = 0;
   private nextThrowAt = 0;
+  private nextItemUseAt = 0;
 
   constructor(scene: Phaser.Scene, x: number, y: number, inputService: InputService) {
     super(scene, x, y, 'miner');
@@ -98,6 +108,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     this.handleThrow(time);
+    this.handleUseItem(time);
     this.updateInvulnerabilityVisual(time);
 
     this.wasOnGround = onGround;
@@ -110,6 +121,43 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   get isInvulnerable(): boolean {
     return this.scene.time.now < this.invulnerableUntil;
+  }
+
+  collectPickup(id: PickupId): boolean {
+    if (id === ORE.id) {
+      this.ore += ORE.value;
+      this.emit('player-ore-changed', this.ore);
+      return true;
+    }
+
+    if (id === HEALING_SALVE.id) {
+      return this.heal(HEALING_SALVE.healAmount) > 0;
+    }
+
+    const result = this.inventory.collect(id);
+
+    if (!result.accepted) {
+      return false;
+    }
+
+    this.emit('player-inventory-changed', result.snapshot);
+    return true;
+  }
+
+  heal(amount: number): number {
+    if (this.isDead || amount <= 0) {
+      return 0;
+    }
+
+    const healed = Math.min(amount, PLAYER_TUNING.maxHp - this.hp);
+
+    if (healed <= 0) {
+      return 0;
+    }
+
+    this.hp += healed;
+    this.emit('player-healed', this.hp);
+    return healed;
   }
 
   takeDamage(amount: number, sourceX: number): boolean {
@@ -194,10 +242,40 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     this.nextThrowAt = time + ROCK_TUNING.cooldownMs;
-    this.emit('player-throw', this.readRockLaunch());
+    this.emit('player-throw', this.readLaunch(ROCK_TUNING.speed));
   }
 
-  private readRockLaunch(): ProjectileLaunch {
+  private handleUseItem(time: number): void {
+    if (!this.inputService.isUseItemJustPressed()) {
+      return;
+    }
+
+    const definition = this.inventory.definition;
+
+    if (!definition) {
+      this.emit('player-item-empty');
+      return;
+    }
+
+    if (time < this.nextItemUseAt) {
+      return;
+    }
+
+    if (!this.inventory.consume()) {
+      this.emit('player-item-empty');
+      return;
+    }
+
+    this.nextItemUseAt = time + definition.cooldownMs;
+    this.emit('player-inventory-changed', this.inventory.snapshot);
+    const use: PlayerItemUse = {
+      itemId: definition.id,
+      launch: this.readLaunch(definition.speed),
+    };
+    this.emit('player-item-use', use);
+  }
+
+  private readLaunch(speed: number): ProjectileLaunch {
     const aim: AimDirection = this.inputService.isAimUpDown()
       ? 'up'
       : this.inputService.isAimDownDown()
@@ -209,7 +287,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       originY: this.y,
       facing: this.facing,
       aim,
-      speed: ROCK_TUNING.speed,
+      speed,
     });
   }
 

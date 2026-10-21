@@ -34,12 +34,14 @@
   "enemyHpBonus": 0,
   "props": [
     { "type": "lantern", "x": 96, "y": 224 },
-    { "type": "lantern", "x": 416, "y": 224 },
+    { "type": "lantern", "x": 480, "y": 224 },
     { "type": "lantern", "x": 736, "y": 176 },
-    { "type": "lantern", "x": 1000, "y": 176 },
-    { "type": "crate", "x": 520, "y": 280 },
-    { "type": "crate", "x": 540, "y": 280 },
-    { "type": "crate", "x": 1200, "y": 280 }
+    { "type": "lantern", "x": 1040, "y": 176 },
+    { "type": "pedestal", "x": 400, "y": 280, "item": "knife" },
+    { "type": "crate", "x": 520, "y": 280, "contents": "ore" },
+    { "type": "crate", "x": 540, "y": 280, "contents": "healing-salve" },
+    { "type": "pedestal", "x": 880, "y": 280, "item": "flintlock" },
+    { "type": "crate", "x": 1200, "y": 280, "contents": "rune-scroll" }
   ],
   "killY": 380
 }

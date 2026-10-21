@@ -13,7 +13,7 @@ const FONT_FAMILY = '"Courier New", Courier, monospace';
 const MENU_ITEMS: readonly MenuItem[] = [
   {
     label: 'Start Run',
-    message: 'Entering the movement test...',
+    message: 'Entering the combat test...',
     action: 'start-run',
   },
   {
@@ -48,7 +48,7 @@ export class TitleScene extends Phaser.Scene {
     this.installInput();
 
     this.select(0);
-    this.showMessage('M1 movement test is live. A/D or arrows to move, SPACE to jump.');
+    this.showMessage('M2 combat test is live. X throws rocks, C uses items, E interacts.');
 
     setTestHook({
       ready: true,
@@ -188,7 +188,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0, 0.5);
 
     this.add
-      .text(GAME_WIDTH - 8, 260, 'M1 MOVEMENT BUILD', {
+      .text(GAME_WIDTH - 8, 260, 'M2 COMBAT BUILD', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',
@@ -271,7 +271,7 @@ export class TitleScene extends Phaser.Scene {
     }
 
     this.startingRun = true;
-    this.showMessage('Entering the movement test...');
+    this.showMessage('Entering the combat test...');
     this.cameras.main.fadeOut(200, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.start('Level', { levelId: 'movement-test' });

@@ -22,6 +22,17 @@ export interface MinesTestHook {
   grounded?: boolean;
   hp?: number;
   rocksThrown?: number;
+  itemId?: string | null;
+  itemUses?: number;
+  itemMaxUses?: number;
+  ore?: number;
+  itemsUsed?: number;
+  itemsCollected?: number;
+  cratesBroken?: number;
+  crates?: number;
+  pickups?: number;
+  pedestals?: number;
+  itemProjectiles?: number;
   enemyCount?: number;
   dummyHp?: number;
   dead?: boolean;

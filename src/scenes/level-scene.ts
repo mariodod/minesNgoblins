@@ -4,6 +4,13 @@ import { FEEDBACK_TUNING, HAZARD_TUNING, ROCK_TUNING } from '../config/tuning';
 import { getDifficulty, scaleEnemyDamage, type DifficultyConfig } from '../data/difficulties';
 import { computeEnemyHp, ENEMIES, type EnemyDefinition } from '../data/enemies';
 import {
+  HEALING_SALVE,
+  ORE,
+  pickupDisplayName,
+  pickupTextureKey,
+  type PickupId,
+} from '../data/items';
+import {
   parseLevelDefinition,
   type HazardSpawn,
   type LevelDefinition,
@@ -12,14 +19,17 @@ import {
 import { levelCacheKey } from '../data/level-registry';
 import { Bat } from '../entities/enemies/bat';
 import { Beetle } from '../entities/enemies/beetle';
-import type { Enemy } from '../entities/enemies/enemy';
+import type { Enemy, EnemyHitResult } from '../entities/enemies/enemy';
 import { Goblin } from '../entities/enemies/goblin';
 import { PracticeDummy } from '../entities/enemies/practice-dummy';
 import { Skeleton } from '../entities/enemies/skeleton';
 import { FallingRock } from '../entities/hazards/falling-rock';
-import { Player } from '../entities/player';
+import { Crate } from '../entities/pickups/crate';
+import { ItemPickup } from '../entities/pickups/item-pickup';
+import { Player, type PlayerItemUse } from '../entities/player';
 import type { ProjectileLaunch } from '../entities/projectiles/aim';
 import { Bone, type BoneLaunch } from '../entities/projectiles/bone';
+import { ItemProjectile } from '../entities/projectiles/item-projectile';
 import { Rock } from '../entities/projectiles/rock';
 import type { AudioService } from '../services/audio-service';
 import { InputService } from '../services/input-service';
@@ -30,6 +40,17 @@ const FONT_FAMILY = '"Courier New", Courier, monospace';
 
 interface LevelSceneData {
   levelId?: string;
+}
+
+interface PedestalState {
+  x: number;
+  y: number;
+  itemId: PickupId;
+  icon: Phaser.GameObjects.Image;
+  glow: Phaser.GameObjects.Ellipse;
+  base: Phaser.GameObjects.Rectangle;
+  top: Phaser.GameObjects.Rectangle;
+  claimed: boolean;
 }
 
 type ColliderTarget =
@@ -50,12 +71,20 @@ export class LevelScene extends Phaser.Scene {
   private enemyGroup!: Phaser.GameObjects.Group;
   private rockGroup!: Phaser.GameObjects.Group;
   private enemyProjectileGroup!: Phaser.GameObjects.Group;
+  private itemProjectileGroup!: Phaser.GameObjects.Group;
   private spikeGroup!: Phaser.GameObjects.Group;
   private fallingRockGroup!: Phaser.GameObjects.Group;
   private hazardTriggerGroup!: Phaser.GameObjects.Group;
+  private crateGroup!: Phaser.GameObjects.Group;
+  private pickupGroup!: Phaser.GameObjects.Group;
   private enemies: Enemy[] = [];
+  private pedestals: PedestalState[] = [];
   private firstDummy: Enemy | undefined;
+  private interactPrompt: Phaser.GameObjects.Text | undefined;
   private rocksThrown = 0;
+  private itemsUsed = 0;
+  private itemsCollected = 0;
+  private cratesBroken = 0;
   private bonesThrown = 0;
   private boneHits = 0;
   private boneBreaks = 0;
@@ -89,6 +118,9 @@ export class LevelScene extends Phaser.Scene {
     }
 
     this.rocksThrown = 0;
+    this.itemsUsed = 0;
+    this.itemsCollected = 0;
+    this.cratesBroken = 0;
     this.bonesThrown = 0;
     this.boneHits = 0;
     this.boneBreaks = 0;
@@ -98,6 +130,8 @@ export class LevelScene extends Phaser.Scene {
     this.hitStopActive = false;
     this.firstDummy = undefined;
     this.enemies = [];
+    this.pedestals = [];
+    this.interactPrompt = undefined;
     this.frameCount = 0;
     this.difficulty = getDifficulty('normal');
 
@@ -127,6 +161,8 @@ export class LevelScene extends Phaser.Scene {
     this.createCombatColliders();
 
     this.player.on('player-throw', this.handlePlayerThrow, this);
+    this.player.on('player-item-use', this.handlePlayerItemUse, this);
+    this.player.on('player-item-empty', this.handlePlayerItemEmpty, this);
     this.player.on('player-jumped', this.handlePlayerJumped, this);
     this.player.on('player-landed', this.handlePlayerLanded, this);
     this.player.on('player-damaged', this.handlePlayerDamaged, this);
@@ -147,6 +183,8 @@ export class LevelScene extends Phaser.Scene {
 
     this.events.once('shutdown', () => {
       this.player.off('player-throw', this.handlePlayerThrow, this);
+      this.player.off('player-item-use', this.handlePlayerItemUse, this);
+      this.player.off('player-item-empty', this.handlePlayerItemEmpty, this);
       this.player.off('player-jumped', this.handlePlayerJumped, this);
       this.player.off('player-landed', this.handlePlayerLanded, this);
       this.player.off('player-damaged', this.handlePlayerDamaged, this);
@@ -173,6 +211,8 @@ export class LevelScene extends Phaser.Scene {
       this.updateEnemies(time, delta);
       this.cleanupFallenEnemies();
     }
+
+    this.updatePedestalInteraction();
 
     this.testHookAccumulator += delta;
     if (this.testHookAccumulator >= 100) {
@@ -243,9 +283,29 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private createProps(): void {
+    this.crateGroup = this.add.group();
+    this.pickupGroup = this.add.group();
+    this.interactPrompt = this.add
+      .text(0, 0, 'E', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '8px',
+        color: '#ffcf5a',
+        backgroundColor: '#11161b',
+        padding: { x: 2, y: 1 },
+      })
+      .setOrigin(0.5)
+      .setDepth(22)
+      .setVisible(false);
+
     this.level.props.forEach((prop, index) => {
       if (prop.type === 'crate') {
-        this.add.image(prop.x, prop.y, 'crate').setDepth(5);
+        const crate = new Crate(this, prop.x, prop.y, prop.contents);
+        this.crateGroup.add(crate);
+        return;
+      }
+
+      if (prop.type === 'pedestal') {
+        this.createPedestal(prop.x, prop.y, prop.item);
         return;
       }
 
@@ -264,6 +324,41 @@ export class LevelScene extends Phaser.Scene {
       });
 
       this.add.rectangle(prop.x, prop.y + 1, 3, 5, 0xffe6a0, 0.9).setDepth(5);
+    });
+  }
+
+  private createPedestal(x: number, y: number, itemId: PickupId): void {
+    const base = this.add.rectangle(x, y + 3, 14, 6, 0x4a3320, 1).setDepth(4);
+    const top = this.add.rectangle(x, y, 14, 2, 0x8a5f3a, 1).setDepth(5);
+
+    const glow = this.add.ellipse(x, y - 8, 20, 10, 0xffcf5a, 0.12).setDepth(5);
+    this.tweens.add({
+      targets: glow,
+      alpha: 0.28,
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    const icon = this.add.image(x, y - 8, pickupTextureKey(itemId)).setDepth(9);
+    this.tweens.add({
+      targets: icon,
+      y: y - 12,
+      duration: 750,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    this.pedestals.push({
+      x,
+      y,
+      itemId,
+      icon,
+      glow,
+      base,
+      top,
+      claimed: false,
     });
   }
 
@@ -314,6 +409,7 @@ export class LevelScene extends Phaser.Scene {
     this.enemyGroup = this.add.group();
     this.rockGroup = this.add.group();
     this.enemyProjectileGroup = this.add.group();
+    this.itemProjectileGroup = this.add.group();
 
     for (const spawn of this.level.enemies) {
       const definition = ENEMIES[spawn.type];
@@ -397,7 +493,31 @@ export class LevelScene extends Phaser.Scene {
       undefined,
       this,
     );
+    this.physics.add.overlap(
+      this.itemProjectileGroup,
+      this.enemyGroup,
+      this.handleItemProjectileHitEnemy,
+      undefined,
+      this,
+    );
+    this.physics.add.overlap(
+      this.itemProjectileGroup,
+      this.crateGroup,
+      this.handleItemProjectileHitCrate,
+      undefined,
+      this,
+    );
+    this.physics.add.overlap(
+      this.rockGroup,
+      this.crateGroup,
+      this.handleRockHitCrate,
+      undefined,
+      this,
+    );
+    this.physics.add.overlap(this.player, this.pickupGroup, this.handleItemPickup, undefined, this);
 
+    this.physics.add.collider(this.player, this.crateGroup);
+    this.physics.add.collider(this.enemyGroup, this.crateGroup);
     this.physics.add.collider(this.enemyGroup, this.solidGroup);
     this.physics.add.collider(
       this.enemyGroup,
@@ -431,6 +551,20 @@ export class LevelScene extends Phaser.Scene {
       this.enemyProjectileGroup,
       this.oneWayGroup,
       this.handleBoneBreak,
+      this.shouldCollideOneWay,
+      this,
+    );
+    this.physics.add.collider(
+      this.itemProjectileGroup,
+      this.solidGroup,
+      this.handleItemProjectileImpact,
+      undefined,
+      this,
+    );
+    this.physics.add.collider(
+      this.itemProjectileGroup,
+      this.oneWayGroup,
+      this.handleItemProjectileImpact,
       this.shouldCollideOneWay,
       this,
     );
@@ -484,6 +618,32 @@ export class LevelScene extends Phaser.Scene {
     this.spawnHitBurst(launch.x, launch.y, 0xc9a227, 3);
   }
 
+  private handlePlayerItemUse(use: PlayerItemUse): void {
+    if (this.restarting) {
+      return;
+    }
+
+    const projectile = new ItemProjectile(this, use.itemId, use.launch);
+    this.itemProjectileGroup.add(projectile);
+    this.itemsUsed += 1;
+
+    if (use.itemId === 'knife') {
+      this.audio.play('knife');
+    } else if (use.itemId === 'flintlock') {
+      this.audio.play('gunshot');
+    } else {
+      this.audio.play('magic');
+    }
+
+    this.spawnMuzzleFlash(use.itemId, use.launch);
+  }
+
+  private handlePlayerItemEmpty(): void {
+    if (!this.restarting) {
+      this.audio.play('empty');
+    }
+  }
+
   private handlePlayerJumped(): void {
     this.audio.play('jump');
   }
@@ -522,30 +682,318 @@ export class LevelScene extends Phaser.Scene {
       impactVx: rock.arcadeBody.velocity.x,
     };
     const result = enemy.takeDamage(event);
+    this.playEnemyHitFeedback(result, rock.x, rock.y, 0xb8c0c8);
+    rock.destroy();
+  }
 
+  private handleItemProjectileHitEnemy(
+    projectileObject: ColliderTarget,
+    enemyObject: ColliderTarget,
+  ): void {
+    const projectile = projectileObject as ItemProjectile;
+    const enemy = enemyObject as Enemy;
+
+    if (!projectile.active || !enemy.active || enemy.isDead) {
+      return;
+    }
+
+    if (projectile.itemId === 'rune-scroll') {
+      this.explodeRune(projectile);
+      projectile.destroy();
+      return;
+    }
+
+    const event: DamageEvent = {
+      amount: projectile.definition.damage,
+      source: projectile.definition.damageSource,
+      sourceX: projectile.x,
+      sourceY: projectile.y,
+      impactVx: projectile.arcadeBody.velocity.x,
+    };
+    const result = enemy.takeDamage(event);
+    this.playEnemyHitFeedback(result, projectile.x, projectile.y, 0xf2f2f2);
+    projectile.destroy();
+  }
+
+  private playEnemyHitFeedback(result: EnemyHitResult, x: number, y: number, color: number): void {
     if (result.deflected) {
       this.deflects += 1;
       this.audio.play('deflect');
-      this.spawnHitBurst(rock.x, rock.y, 0xb8c0c8, FEEDBACK_TUNING.hitParticles);
-    } else if (result.applied) {
-      this.audio.play(result.killed ? 'enemy-down' : 'hit');
-      this.spawnHitBurst(
-        rock.x,
-        rock.y,
-        0xf2f2f2,
-        result.killed ? FEEDBACK_TUNING.killParticles : FEEDBACK_TUNING.hitParticles,
-      );
+      this.spawnHitBurst(x, y, 0xb8c0c8, FEEDBACK_TUNING.hitParticles);
+      return;
+    }
 
-      if (result.killed) {
-        this.cameras.main.shake(
-          FEEDBACK_TUNING.screenShakeMs,
-          FEEDBACK_TUNING.screenShakeIntensity,
-        );
-        this.triggerHitStop();
+    if (!result.applied) {
+      return;
+    }
+
+    this.audio.play(result.killed ? 'enemy-down' : 'hit');
+    this.spawnHitBurst(
+      x,
+      y,
+      color,
+      result.killed ? FEEDBACK_TUNING.killParticles : FEEDBACK_TUNING.hitParticles,
+    );
+
+    if (result.killed) {
+      this.cameras.main.shake(FEEDBACK_TUNING.screenShakeMs, FEEDBACK_TUNING.screenShakeIntensity);
+      this.triggerHitStop();
+    }
+  }
+
+  private handleItemProjectileImpact(projectileObject: ColliderTarget): void {
+    const projectile = projectileObject as ItemProjectile;
+
+    if (!projectile.active) {
+      return;
+    }
+
+    if (projectile.itemId === 'rune-scroll') {
+      this.explodeRune(projectile);
+    } else {
+      this.spawnHitBurst(projectile.x, projectile.y, 0xd8dde3, 3);
+    }
+
+    projectile.destroy();
+  }
+
+  private handleItemProjectileHitCrate(
+    projectileObject: ColliderTarget,
+    crateObject: ColliderTarget,
+  ): void {
+    const projectile = projectileObject as ItemProjectile;
+    const crate = crateObject as Crate;
+
+    if (!projectile.active || !crate.active) {
+      return;
+    }
+
+    if (projectile.itemId === 'rune-scroll') {
+      this.explodeRune(projectile);
+    }
+
+    this.breakCrate(crate);
+    projectile.destroy();
+  }
+
+  private handleRockHitCrate(rockObject: ColliderTarget, crateObject: ColliderTarget): void {
+    const rock = rockObject as Rock;
+    const crate = crateObject as Crate;
+
+    if (!rock.active || !crate.active) {
+      return;
+    }
+
+    this.breakCrate(crate);
+    rock.destroy();
+  }
+
+  private breakCrate(crate: Crate): void {
+    if (!crate.active) {
+      return;
+    }
+
+    const { x, y, contents } = crate;
+    crate.destroy();
+    this.cratesBroken += 1;
+    this.audio.play('crate-break');
+    this.spawnHitBurst(x, y, 0x8a5f3a, 7);
+
+    const pickup = new ItemPickup(this, x, y - 8, contents);
+    this.pickupGroup.add(pickup);
+  }
+
+  private explodeRune(projectile: ItemProjectile): void {
+    const definition = projectile.definition;
+    const { x, y } = projectile;
+
+    this.audio.play('rune-blast');
+    this.cameras.main.shake(150, 0.008);
+    this.spawnExplosion(x, y, definition.explosionRadius);
+
+    let damagedAny = false;
+    let killedAny = false;
+
+    for (const enemy of this.enemies) {
+      if (!enemy.active || enemy.isDead) {
+        continue;
+      }
+
+      if (Phaser.Math.Distance.Between(x, y, enemy.x, enemy.y) > definition.explosionRadius) {
+        continue;
+      }
+
+      const result = enemy.takeDamage({
+        amount: definition.damage,
+        source: definition.damageSource,
+        sourceX: x,
+        sourceY: y,
+        impactVx: 0,
+      });
+
+      if (!result.applied) {
+        continue;
+      }
+
+      damagedAny = true;
+      killedAny = killedAny || result.killed;
+      this.spawnHitBurst(enemy.x, enemy.y, 0x6fe3c4, 5);
+
+      if (!result.killed) {
+        enemy.stun(definition.stunMs);
       }
     }
 
-    rock.destroy();
+    if (damagedAny) {
+      this.audio.play(killedAny ? 'enemy-down' : 'hit');
+    }
+
+    if (killedAny) {
+      this.triggerHitStop();
+    }
+  }
+
+  private handleItemPickup(_playerObject: ColliderTarget, pickupObject: ColliderTarget): void {
+    const pickup = pickupObject as ItemPickup;
+
+    if (!pickup.active || this.player.isDead) {
+      return;
+    }
+
+    if (this.player.collectPickup(pickup.itemId)) {
+      this.itemsCollected += 1;
+      this.audio.play(this.pickupSfx(pickup.itemId));
+      this.showFloatingText(pickup.x, pickup.y - 8, pickupDisplayName(pickup.itemId), '#f4d35e');
+      pickup.destroy();
+      return;
+    }
+
+    if (this.time.now >= pickup.nextPromptAt) {
+      pickup.nextPromptAt = this.time.now + 1000;
+      this.showFloatingText(pickup.x, pickup.y - 8, 'FULL', '#e74c3c');
+      this.audio.play('empty');
+    }
+  }
+
+  private updatePedestalInteraction(): void {
+    const nearby = this.findNearbyPedestal();
+
+    if (this.interactPrompt) {
+      if (nearby && !this.player.isDead && !this.restarting) {
+        this.interactPrompt.setPosition(nearby.x, nearby.y - 22).setVisible(true);
+      } else {
+        this.interactPrompt.setVisible(false);
+      }
+    }
+
+    const pressed = this.inputService.isInteractJustPressed();
+
+    if (!pressed || !nearby || this.player.isDead || this.restarting) {
+      return;
+    }
+
+    if (this.player.collectPickup(nearby.itemId)) {
+      this.itemsCollected += 1;
+      nearby.claimed = true;
+      nearby.icon.destroy();
+      nearby.glow.destroy();
+      nearby.base.destroy();
+      nearby.top.destroy();
+      this.interactPrompt?.setVisible(false);
+      this.audio.play(this.pickupSfx(nearby.itemId));
+      this.showFloatingText(nearby.x, nearby.y - 18, pickupDisplayName(nearby.itemId), '#f4d35e');
+      return;
+    }
+
+    this.audio.play('empty');
+    this.showFloatingText(nearby.x, nearby.y - 18, 'FULL', '#e74c3c');
+  }
+
+  private findNearbyPedestal(): PedestalState | undefined {
+    return this.pedestals.find(
+      (pedestal) =>
+        !pedestal.claimed &&
+        Math.abs(this.player.x - pedestal.x) <= 24 &&
+        Math.abs(this.player.y - pedestal.y) <= 28,
+    );
+  }
+
+  private pickupSfx(itemId: PickupId): 'pickup' | 'heal' | 'ore' {
+    if (itemId === HEALING_SALVE.id) {
+      return 'heal';
+    }
+
+    return itemId === ORE.id ? 'ore' : 'pickup';
+  }
+
+  private showFloatingText(x: number, y: number, message: string, color: string): void {
+    const label = this.add
+      .text(x, y, message.toUpperCase(), {
+        fontFamily: FONT_FAMILY,
+        fontSize: '7px',
+        color,
+      })
+      .setOrigin(0.5)
+      .setDepth(22);
+
+    this.tweens.add({
+      targets: label,
+      y: y - 10,
+      alpha: 0,
+      duration: 800,
+      onComplete: () => {
+        label.destroy();
+      },
+    });
+  }
+
+  private spawnExplosion(x: number, y: number, radius: number): void {
+    const ring = this.add.circle(x, y, 6, 0xffcf5a, 0.4).setDepth(16).setScale(0.4);
+    this.tweens.add({
+      targets: ring,
+      scale: radius / 6,
+      alpha: 0,
+      duration: 180,
+      onComplete: () => {
+        ring.destroy();
+      },
+    });
+
+    for (let index = 0; index < 10; index += 1) {
+      const angle = (index / 10) * Math.PI * 2;
+      const distance = 8 + (index % 3) * 5;
+      const particle = this.add
+        .rectangle(x, y, 2, 2, index % 2 === 0 ? 0x6fe3c4 : 0xffcf5a)
+        .setDepth(17);
+      this.tweens.add({
+        targets: particle,
+        x: x + Math.cos(angle) * distance,
+        y: y + Math.sin(angle) * distance,
+        alpha: 0,
+        duration: 220,
+        onComplete: () => {
+          particle.destroy();
+        },
+      });
+    }
+  }
+
+  private spawnMuzzleFlash(itemId: PlayerItemUse['itemId'], launch: ProjectileLaunch): void {
+    const color = itemId === 'flintlock' ? 0xffcf5a : itemId === 'knife' ? 0xd8dde3 : 0x6fe3c4;
+    const flash = this.add
+      .rectangle(launch.x, launch.y, itemId === 'flintlock' ? 9 : 4, 3, color, 0.9)
+      .setDepth(16);
+    const direction = launch.velocityX >= 0 ? 1 : -1;
+
+    this.tweens.add({
+      targets: flash,
+      x: launch.x + direction * 7,
+      alpha: 0,
+      duration: 90,
+      onComplete: () => {
+        flash.destroy();
+      },
+    });
   }
 
   private handlePlayerEnemyContact(
@@ -881,6 +1329,29 @@ export class LevelScene extends Phaser.Scene {
       grounded: this.player.isGrounded(),
       hp: this.player.hp,
       rocksThrown: this.rocksThrown,
+      itemId: this.player.inventory.snapshot.itemId,
+      itemUses: this.player.inventory.snapshot.uses,
+      itemMaxUses: this.player.inventory.snapshot.maxUses,
+      ore: this.player.ore,
+      itemsUsed: this.itemsUsed,
+      itemsCollected: this.itemsCollected,
+      cratesBroken: this.cratesBroken,
+      crates: this.crateGroup
+        ? this.crateGroup
+            .getChildren()
+            .filter((child) => (child as Phaser.GameObjects.GameObject).active).length
+        : 0,
+      pickups: this.pickupGroup
+        ? this.pickupGroup
+            .getChildren()
+            .filter((child) => (child as Phaser.GameObjects.GameObject).active).length
+        : 0,
+      pedestals: this.pedestals.filter((pedestal) => !pedestal.claimed).length,
+      itemProjectiles: this.itemProjectileGroup
+        ? this.itemProjectileGroup
+            .getChildren()
+            .filter((child) => (child as Phaser.GameObjects.GameObject).active).length
+        : 0,
       enemyCount: livingEnemies.length,
       dummyHp:
         this.firstDummy && this.firstDummy.active && !this.firstDummy.isDead

@@ -16,16 +16,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - M2.1: unit tests for damage math, enemy data, HP scaling, armor checks, level hazards, and projectile aim.
 - M2.1: placeholder enemy, bone, boulder, and spike textures plus new placeholder SFX.
 - M2.1: development test hooks for enemy snapshots, projectiles, deflects, and falling rocks.
+- M2.2: Knife, Flintlock, and Rune Scroll secondary weapons with limited uses, cooldowns, projectile physics, and magic blast/stun behavior.
+- M2.2: one-slot inventory with same-item ammo stacking up to caps and different-item replacement.
+- M2.2: authored crates and interaction pedestals, including one-time ore, healing salve, and secondary-item pickups.
+- M2.2: HUD secondary-item icon, ammo count, ore counter, and updated control hints.
+- M2.2: placeholder weapon, projectile, salve, ore, and pickup textures plus knife, gunshot, magic, crate, pickup, heal, and empty-slot SFX.
+- M2.2: unit tests for item definitions, inventory stacking/replacement, ammo caps, and authored prop validation.
 
 ### Changed
 
 - M2.1: rock speed increased to 300 px/s and gravity reduced to 350 px/s² for more reliable mid-range combat.
 - M2.1: charge attacks now lock direction during their telegraph, so jumping over a charge is a reliable counter.
 - M2.1: enemy and projectile overlaps are resolved before terrain collisions, preventing same-frame hits from being swallowed.
+- M2.2: secondary items use `C`/`K`, and pedestals use `E`; item tuning now lives in `src/data/items.ts`.
 
 ### Fixed
 
 - M2.1: corrected player/projectile overlap argument order so bones and falling rocks damage the player instead of destroying the player object.
+- M2.2: item lookups now reject inherited object keys such as `toString`, so invalid authored item IDs fail validation cleanly.
 
 ## [0.1.0] - 2026-10-19
 

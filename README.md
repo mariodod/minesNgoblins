@@ -71,7 +71,7 @@ npm install
 npm run dev
 ```
 
-The dev server runs at `http://127.0.0.1:5173/`. Choose **Start Run** to play the M1 movement test level.
+The dev server runs at `http://127.0.0.1:5173/`. Choose **Start Run** to play the M2 combat test level.
 
 ### Controls
 
@@ -80,11 +80,13 @@ The dev server runs at `http://127.0.0.1:5173/`. Choose **Start Run** to play th
 | Move          | `A` / `D` or Left / Right |
 | Jump          | `Space` or `Z`            |
 | Throw rock    | `X` or `J`                |
+| Use item      | `C` or `K`                |
+| Interact      | `E`                       |
 | Aim up/down   | `W` / `S` or Up / Down    |
 | Drop through  | `Down` + `Jump`           |
 | Debug overlay | `F3` (development builds) |
 
-Rocks are unlimited and deal 1 damage. The practice dummies take 3 hits. Falling into a gap or losing all five hearts restarts the level after a short death overlay.
+Rocks are unlimited and deal 1 damage. The one-slot secondary item holds a limited-use Knife, Flintlock, or Rune Scroll; picking up the same item adds ammo up to its cap, while a different item replaces it. Crates contain authored ore, salves, or items, and pedestals hold items that require `E` to collect. Falling into a gap or losing all hearts restarts the level after a short death overlay.
 
 ### Scripts
 
@@ -116,6 +118,7 @@ The production base path defaults to `/minesNgoblins/`. If the site moves to a c
 - All documentation, source code, comments, commit messages, and project discussion are in **English**.
 - Game UI text is English for v1, with the text layer kept ready for localization.
 - Assets must be original, commissioned, or clearly licensed. A license inventory will live under `docs/` when asset production begins.
+- Manual QA notes live in `docs/m1-playtest.md` and `docs/m2-playtest.md`.
 
 ## License
 

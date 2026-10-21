@@ -28,29 +28,6 @@ export const ROCK_TUNING = {
 } as const;
 
 export const PROJECTILE_TUNING = {
-  knife: {
-    speed: 340,
-    gravity: 0,
-    cooldownMs: 260,
-    lifetimeMs: 900,
-    damage: 3,
-  },
-  flintlock: {
-    speed: 460,
-    gravity: 0,
-    cooldownMs: 320,
-    lifetimeMs: 700,
-    damage: 2,
-  },
-  runeScroll: {
-    speed: 240,
-    gravity: 620,
-    cooldownMs: 700,
-    lifetimeMs: 2000,
-    damage: 4,
-    explosionRadius: 28,
-    stunMs: 1000,
-  },
   bone: {
     lifetimeMs: 3000,
     damage: 1,

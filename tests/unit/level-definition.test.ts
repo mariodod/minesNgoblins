@@ -29,6 +29,12 @@ describe('parseLevelDefinition', () => {
     expect(level.hazards).toHaveLength(2);
     expect(level.hazards[0]).toMatchObject({ type: 'spikes', width: 32, height: 8 });
     expect(level.hazards[1]).toMatchObject({ type: 'falling-rock', width: 32, height: 24 });
+    expect(level.props).toHaveLength(9);
+    expect(level.props.find((prop) => prop.type === 'pedestal')).toMatchObject({
+      type: 'pedestal',
+      item: 'knife',
+    });
+    expect(level.props.filter((prop) => prop.type === 'crate')).toHaveLength(3);
     expect(level.enemyHpBonus).toBe(0);
     expect(level.spawn).toEqual({ x: 56, y: 260 });
     expect(level.killY).toBe(380);
@@ -71,6 +77,34 @@ describe('parseLevelDefinition', () => {
     map['hazards'] = [{ type: 'lava', x: 64, y: 64, width: 16, height: 16 }];
 
     expect(() => parseLevelDefinition(map)).toThrow(/hazards\[0\]\.type/);
+  });
+
+  it('rejects a crate without authored contents', () => {
+    const map = cloneMap();
+    map['props'] = [{ type: 'crate', x: 64, y: 64 }];
+
+    expect(() => parseLevelDefinition(map)).toThrow(/contents/);
+  });
+
+  it('rejects a crate with an unknown contents item', () => {
+    const map = cloneMap();
+    map['props'] = [{ type: 'crate', x: 64, y: 64, contents: 'dynamite' }];
+
+    expect(() => parseLevelDefinition(map)).toThrow(/contents/);
+  });
+
+  it('rejects a pedestal without an item', () => {
+    const map = cloneMap();
+    map['props'] = [{ type: 'pedestal', x: 64, y: 64 }];
+
+    expect(() => parseLevelDefinition(map)).toThrow(/item/);
+  });
+
+  it('rejects an unknown prop type', () => {
+    const map = cloneMap();
+    map['props'] = [{ type: 'anvil', x: 64, y: 64 }];
+
+    expect(() => parseLevelDefinition(map)).toThrow(/props\[0\]\.type/);
   });
 
   it('rejects a negative enemy HP bonus', () => {

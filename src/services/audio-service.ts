@@ -10,7 +10,16 @@ export type SfxName =
   | 'bone-throw'
   | 'deflect'
   | 'rumble'
-  | 'boulder';
+  | 'boulder'
+  | 'knife'
+  | 'gunshot'
+  | 'magic'
+  | 'rune-blast'
+  | 'crate-break'
+  | 'pickup'
+  | 'heal'
+  | 'ore'
+  | 'empty';
 
 interface SfxSpec {
   wave: OscillatorType;
@@ -62,6 +71,69 @@ const SFX_SPECS: Record<SfxName, SfxSpec> = {
     endFrequency: 28,
     duration: 0.18,
     volume: 0.055,
+  },
+  knife: {
+    wave: 'triangle',
+    startFrequency: 520,
+    endFrequency: 180,
+    duration: 0.07,
+    volume: 0.035,
+  },
+  gunshot: {
+    wave: 'square',
+    startFrequency: 220,
+    endFrequency: 45,
+    duration: 0.12,
+    volume: 0.06,
+  },
+  magic: {
+    wave: 'sine',
+    startFrequency: 320,
+    endFrequency: 760,
+    duration: 0.16,
+    volume: 0.04,
+  },
+  'rune-blast': {
+    wave: 'sawtooth',
+    startFrequency: 240,
+    endFrequency: 40,
+    duration: 0.26,
+    volume: 0.06,
+  },
+  'crate-break': {
+    wave: 'square',
+    startFrequency: 140,
+    endFrequency: 50,
+    duration: 0.11,
+    volume: 0.05,
+  },
+  pickup: {
+    wave: 'square',
+    startFrequency: 440,
+    endFrequency: 880,
+    duration: 0.1,
+    volume: 0.04,
+  },
+  heal: {
+    wave: 'sine',
+    startFrequency: 380,
+    endFrequency: 720,
+    duration: 0.2,
+    volume: 0.045,
+  },
+  ore: {
+    wave: 'triangle',
+    startFrequency: 620,
+    endFrequency: 980,
+    duration: 0.12,
+    volume: 0.04,
+  },
+  empty: {
+    wave: 'square',
+    startFrequency: 100,
+    endFrequency: 80,
+    duration: 0.05,
+    volume: 0.025,
   },
 };
 

@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
 import { PLAYER_TUNING } from '../config/tuning';
+import { SECONDARY_ITEMS } from '../data/items';
 import type { Player } from '../entities/player';
+import type { InventorySnapshot } from '../systems/inventory';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
 
@@ -17,6 +19,9 @@ export class HudScene extends Phaser.Scene {
   private levelName = '';
   private player!: Player;
   private hearts: Phaser.GameObjects.Image[] = [];
+  private itemIcon!: Phaser.GameObjects.Image;
+  private itemText!: Phaser.GameObjects.Text;
+  private oreText!: Phaser.GameObjects.Text;
 
   constructor() {
     super('HUD');
@@ -46,6 +51,34 @@ export class HudScene extends Phaser.Scene {
       })
       .setDepth(101);
 
+    const slotX = 108;
+    this.add
+      .rectangle(slotX, 2, 58, 16, 0x11161b, 0.9)
+      .setOrigin(0)
+      .setStrokeStyle(1, 0x3d454f)
+      .setDepth(101);
+    this.itemIcon = this.add
+      .image(slotX + 9, 10, 'knife')
+      .setDepth(102)
+      .setVisible(false);
+    this.itemText = this.add
+      .text(slotX + 18, 6, 'EMPTY', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '7px',
+        color: '#9aa0a6',
+      })
+      .setDepth(102);
+
+    const oreX = slotX + 64;
+    this.add.image(oreX, 10, 'ore').setDepth(101).setScale(0.8);
+    this.oreText = this.add
+      .text(oreX + 7, 6, 'ORE 0', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '7px',
+        color: '#f2c14e',
+      })
+      .setDepth(101);
+
     this.add
       .text(GAME_WIDTH - 8, 10, this.levelName.toUpperCase(), {
         fontFamily: FONT_FAMILY,
@@ -56,11 +89,16 @@ export class HudScene extends Phaser.Scene {
       .setDepth(101);
 
     const hint = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT - 10, 'A/D MOVE   SPACE JUMP   X THROW   DOWN+SPACE DROP', {
-        fontFamily: FONT_FAMILY,
-        fontSize: '7px',
-        color: '#7f8c8d',
-      })
+      .text(
+        GAME_WIDTH / 2,
+        GAME_HEIGHT - 10,
+        'A/D MOVE   SPACE JUMP   X THROW   C ITEM   E INTERACT   DOWN+SPACE DROP',
+        {
+          fontFamily: FONT_FAMILY,
+          fontSize: '7px',
+          color: '#7f8c8d',
+        },
+      )
       .setOrigin(0.5)
       .setDepth(101)
       .setAlpha(0.85);
@@ -77,19 +115,49 @@ export class HudScene extends Phaser.Scene {
     });
 
     this.player.on('player-damaged', this.handleDamaged, this);
+    this.player.on('player-healed', this.handleHealed, this);
     this.player.on('player-died', this.handleDied, this);
+    this.player.on('player-inventory-changed', this.handleInventoryChanged, this);
+    this.player.on('player-ore-changed', this.handleOreChanged, this);
 
     this.updateHearts(this.player.hp);
+    this.handleInventoryChanged(this.player.inventory.snapshot);
+    this.handleOreChanged(this.player.ore);
 
     this.events.once('shutdown', () => {
       this.player.off('player-damaged', this.handleDamaged, this);
+      this.player.off('player-healed', this.handleHealed, this);
       this.player.off('player-died', this.handleDied, this);
+      this.player.off('player-inventory-changed', this.handleInventoryChanged, this);
+      this.player.off('player-ore-changed', this.handleOreChanged, this);
     });
   }
 
   private handleDamaged(hp: number): void {
     this.updateHearts(hp);
     this.cameras.main.flash(110, 140, 20, 20);
+  }
+
+  private handleHealed(hp: number): void {
+    this.updateHearts(hp);
+    this.cameras.main.flash(110, 30, 120, 60);
+  }
+
+  private handleInventoryChanged(snapshot: InventorySnapshot): void {
+    if (!snapshot.itemId) {
+      this.itemIcon.setVisible(false);
+      this.itemText.setText('EMPTY').setColor('#9aa0a6');
+      return;
+    }
+
+    this.itemIcon.setTexture(SECONDARY_ITEMS[snapshot.itemId].textureKey).setVisible(true);
+    this.itemText
+      .setText(`${snapshot.uses}/${snapshot.maxUses}`)
+      .setColor(snapshot.uses > 0 ? '#f4d35e' : '#e74c3c');
+  }
+
+  private handleOreChanged(ore: number): void {
+    this.oreText.setText(`ORE ${ore}`);
   }
 
   private handleDied(): void {

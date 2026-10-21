@@ -1,4 +1,5 @@
 import { ENEMY_IDS, type EnemyId } from './enemies';
+import { isPickupId, PICKUP_IDS, type PickupId } from './items';
 
 export interface LevelRect {
   x: number;
@@ -13,16 +14,28 @@ export interface LevelPoint {
 }
 
 export type EnemyType = EnemyId;
-export type PropType = 'crate' | 'lantern';
+export type PropType = 'crate' | 'lantern' | 'pedestal';
 export type HazardType = 'spikes' | 'falling-rock';
 
 export interface EnemySpawn extends LevelPoint {
   type: EnemyType;
 }
 
-export interface PropSpawn extends LevelPoint {
-  type: PropType;
+export interface CrateSpawn extends LevelPoint {
+  type: 'crate';
+  contents: PickupId;
 }
+
+export interface PedestalSpawn extends LevelPoint {
+  type: 'pedestal';
+  item: PickupId;
+}
+
+export interface LanternSpawn extends LevelPoint {
+  type: 'lantern';
+}
+
+export type PropSpawn = CrateSpawn | PedestalSpawn | LanternSpawn;
 
 export interface HazardSpawn extends LevelRect {
   type: HazardType;
@@ -83,10 +96,7 @@ export function parseLevelDefinition(value: unknown): LevelDefinition {
     worldHeight,
   );
   const enemies = readSpawnList(value['enemies'], 'enemies', worldWidth, worldHeight, ENEMY_IDS);
-  const props = readSpawnList(value['props'], 'props', worldWidth, worldHeight, [
-    'crate',
-    'lantern',
-  ] as const);
+  const props = readPropList(value['props'], 'props', worldWidth, worldHeight);
   const hazards = readHazardList(value['hazards'], 'hazards', worldWidth, worldHeight);
   const enemyHpBonus = readOptionalNonNegativeInt(value, 'enemyHpBonus', 0);
 
@@ -112,6 +122,56 @@ export function parseLevelDefinition(value: unknown): LevelDefinition {
     worldWidth,
     worldHeight,
   };
+}
+
+function readPropList(
+  value: unknown,
+  path: string,
+  worldWidth: number,
+  worldHeight: number,
+): PropSpawn[] {
+  if (!Array.isArray(value)) {
+    throw new LevelValidationError(`${path} must be an array.`);
+  }
+
+  return value.map((entry, index) => {
+    const propPath = `${path}[${index}]`;
+
+    if (!isRecord(entry)) {
+      throw new LevelValidationError(`${propPath} must be an object.`);
+    }
+
+    const type = readString(entry, 'type', propPath);
+    const point = readPoint(entry, propPath);
+
+    if (!isInside(point, worldWidth, worldHeight)) {
+      throw new LevelValidationError(`${propPath} must be inside the level bounds.`);
+    }
+
+    if (type === 'crate') {
+      return { ...point, type, contents: readPickupId(entry, 'contents', propPath) };
+    }
+
+    if (type === 'pedestal') {
+      return { ...point, type, item: readPickupId(entry, 'item', propPath) };
+    }
+
+    if (type === 'lantern') {
+      return { ...point, type };
+    }
+
+    throw new LevelValidationError(`${propPath}.type must be one of: crate, lantern, pedestal.`);
+  });
+}
+
+function readPickupId(record: Record<string, unknown>, key: string, path: string): PickupId {
+  const value = readString(record, key, path);
+
+  if (!isPickupId(value)) {
+    throw new LevelValidationError(`${path}.${key} must be one of: ${PICKUP_IDS.join(', ')}.`);
+  }
+
+  return value;
 }
 
 function readHazardList(
