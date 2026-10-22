@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
+import { LEVEL_COUNT } from '../data/level-registry';
 import { runService } from '../systems/run-service';
 import { setTestHook } from '../utils/test-hooks';
 
@@ -62,7 +63,7 @@ export class BossPlaceholderScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     const summary = [
-      `LEVELS CLEARED   ${run.levelsCompleted}/${4}`,
+      `LEVELS CLEARED   ${run.levelsCompleted}/${LEVEL_COUNT}`,
       `TIME             ${formatTime(elapsed)}`,
       `KILLS            ${run.kills}`,
       `DAMAGE TAKEN     ${run.damageTaken}`,

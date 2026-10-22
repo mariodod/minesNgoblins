@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { isPhysicalKeyDown } from './keyboard-state';
 
 /**
  * Scene-scoped keyboard input with buffered action queries.
@@ -7,9 +8,13 @@ import Phaser from 'phaser';
 export class InputService {
   private readonly scene: Phaser.Scene;
   private readonly left: Phaser.Input.Keyboard.Key;
+  private readonly leftA: Phaser.Input.Keyboard.Key;
   private readonly right: Phaser.Input.Keyboard.Key;
+  private readonly rightD: Phaser.Input.Keyboard.Key;
   private readonly up: Phaser.Input.Keyboard.Key;
+  private readonly upW: Phaser.Input.Keyboard.Key;
   private readonly down: Phaser.Input.Keyboard.Key;
+  private readonly downS: Phaser.Input.Keyboard.Key;
   private readonly jumpSpace: Phaser.Input.Keyboard.Key;
   private readonly jumpZ: Phaser.Input.Keyboard.Key;
   private readonly throwX: Phaser.Input.Keyboard.Key;
@@ -33,9 +38,13 @@ export class InputService {
     const keyCodes = Phaser.Input.Keyboard.KeyCodes;
 
     this.left = keyboard.addKey(keyCodes.LEFT);
+    this.leftA = keyboard.addKey(keyCodes.A);
     this.right = keyboard.addKey(keyCodes.RIGHT);
+    this.rightD = keyboard.addKey(keyCodes.D);
     this.up = keyboard.addKey(keyCodes.UP);
+    this.upW = keyboard.addKey(keyCodes.W);
     this.down = keyboard.addKey(keyCodes.DOWN);
+    this.downS = keyboard.addKey(keyCodes.S);
     this.jumpSpace = keyboard.addKey(keyCodes.SPACE);
     this.jumpZ = keyboard.addKey(keyCodes.Z);
     this.throwX = keyboard.addKey(keyCodes.X);
@@ -46,9 +55,13 @@ export class InputService {
 
     this.createdKeys = [
       this.left,
+      this.leftA,
       this.right,
+      this.rightD,
       this.up,
+      this.upW,
       this.down,
+      this.downS,
       this.jumpSpace,
       this.jumpZ,
       this.throwX,
@@ -70,23 +83,23 @@ export class InputService {
   }
 
   isLeftDown(): boolean {
-    return this.left.isDown;
+    return this.left.isDown || this.leftA.isDown || isPhysicalKeyDown('ArrowLeft', 'KeyA');
   }
 
   isRightDown(): boolean {
-    return this.right.isDown;
+    return this.right.isDown || this.rightD.isDown || isPhysicalKeyDown('ArrowRight', 'KeyD');
   }
 
   isAimUpDown(): boolean {
-    return this.up.isDown;
+    return this.up.isDown || this.upW.isDown || isPhysicalKeyDown('ArrowUp', 'KeyW');
   }
 
   isAimDownDown(): boolean {
-    return this.down.isDown;
+    return this.down.isDown || this.downS.isDown || isPhysicalKeyDown('ArrowDown', 'KeyS');
   }
 
   isJumpDown(): boolean {
-    return this.jumpSpace.isDown || this.jumpZ.isDown;
+    return this.jumpSpace.isDown || this.jumpZ.isDown || isPhysicalKeyDown('Space', 'KeyZ');
   }
 
   isJumpJustPressed(): boolean {

@@ -1,8 +1,8 @@
 # Mines & Goblins — Technical Plan
 
-**Version:** 0.2 (draft for review)  
-**Date:** 2026-10-21  
-**Status:** M3 in progress; four-level run pipeline and boss placeholder implemented
+**Version:** 0.3  
+**Date:** 2026-10-22  
+**Status:** M3 complete at `v0.3.0`; four-level run, pause/options, settings persistence, and boss placeholder shipped
 
 ---
 
@@ -150,13 +150,13 @@ main.ts
       ├─ TitleScene
       ├─ RunSetupScene      (difficulty + challenge preview)
       ├─ LevelScene         (tilemap, entities, hazards, exit)
-      ├─ BossScene          (arena + Great Worm)
+      ├─ BossPlaceholderScene (M3 endpoint; replaced by BossScene in M4)
       ├─ HUDScene           (overlay, always active during play)
-      ├─ PauseScene         (overlay)
+      ├─ PauseScene         (run pause overlay)
+      ├─ SettingsScene      (volume and screen-shake overlay)
       ├─ ResultsScene
       ├─ AchievementsScene
-      ├─ SkinsScene
-      └─ OptionsScene
+      └─ SkinsScene
 ```
 
 `LevelScene` is reused for all four standard levels, parameterized by a level ID. `BossScene` is separate because its camera, music, and entity logic differ.
@@ -185,6 +185,7 @@ Services are created once at boot and accessed through a small typed service reg
 - `LevelScene` emits gameplay events; `RunService` and `RuleService` consume them.
 - `HUDScene` subscribes to player/run events and renders state.
 - `PauseScene` pauses `LevelScene`/`BossScene` and resumes them cleanly.
+- `SettingsScene` pauses its caller, applies volume and screen-shake changes immediately, and persists them through `SaveService`.
 - Scene transitions use a short fade; gameplay state is not persisted across a browser refresh in v1.
 
 ### 5.4 Entity model
@@ -587,17 +588,21 @@ Then:
 
 ## 14. Decision log
 
-| Date       | Decision                                                                       | Status         |
-| ---------- | ------------------------------------------------------------------------------ | -------------- |
-| 2026-10-19 | M0 scaffold implemented (Vite, TypeScript, Phaser, ESLint, Vitest, Playwright) | Done           |
-| 2026-10-19 | M1 movement slice implemented (player, level scene, rocks, dummy, HUD, debug)  | Done           |
-| 2026-10-19 | Use Phaser 4.2.x + TypeScript + Vite                                           | Accepted       |
-| 2026-10-19 | Browser-first, static hosting on GitHub Pages                                  | Accepted       |
-| 2026-10-19 | Handcrafted Tiled levels, no procedural generation in v1                       | Accepted       |
-| 2026-10-19 | One secondary item slot; deterministic authored pickups                        | Accepted       |
-| 2026-10-19 | Local-only save data; no backend                                               | Accepted       |
-| 2026-10-19 | Internal resolution 480×270, 16×16 tiles                                       | Accepted in M1 |
-| TBD        | "5 lives" = 5 HP vs. retry stock                                               | Open           |
-| TBD        | Boss-specific HP curve vs. full difficulty multiplier                          | Open           |
-| TBD        | Game UI localization scope                                                     | Open           |
-| TBD        | Repository and asset licenses                                                  | Open           |
+| Date       | Decision                                                                        | Status         |
+| ---------- | ------------------------------------------------------------------------------- | -------------- |
+| 2026-10-19 | M0 scaffold implemented (Vite, TypeScript, Phaser, ESLint, Vitest, Playwright)  | Done           |
+| 2026-10-19 | M1 movement slice implemented (player, level scene, rocks, dummy, HUD, debug)   | Done           |
+| 2026-10-21 | M2 combat, enemies, items, hazards, and HUD implemented at `v0.2.0`             | Done           |
+| 2026-10-22 | M3 four-level run, pause/options, settings, and boss placeholder at `v0.3.0`    | Done           |
+| 2026-10-22 | Browser-level held-key state restores movement across scene recreation          | Done           |
+| 2026-10-22 | Pause and Settings use dedicated overlay scenes above Level and HUD             | Done           |
+| 2026-10-19 | Use Phaser 4.2.x + TypeScript + Vite                                            | Accepted       |
+| 2026-10-19 | Browser-first, static hosting on GitHub Pages                                   | Accepted       |
+| 2026-10-19 | Handcrafted Tiled levels, no procedural generation in v1                        | Accepted       |
+| 2026-10-19 | One secondary item slot; deterministic authored pickups                         | Accepted       |
+| 2026-10-19 | Local-only save data; no backend                                                | Accepted       |
+| 2026-10-19 | Internal resolution 480×270, 16×16 tiles                                        | Accepted in M1 |
+| 2026-10-22 | "5 lives" means 5 HP; death restarts the current level with carried entry state | Resolved in M3 |
+| TBD        | Boss-specific HP curve vs. full difficulty multiplier                           | Open           |
+| TBD        | Game UI localization scope                                                      | Open           |
+| TBD        | Repository and asset licenses                                                   | Open           |

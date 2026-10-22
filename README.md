@@ -2,9 +2,13 @@
 
 **A retro mine-crawling action platformer. One rock. Many problems.**
 
-> **Status:** M3 in progress — four-level Normal-mode run, elevator exits, level intros, carry state, and a boss placeholder are playable. Next: M3.2 pause/quit flow and final QA.
+> **Status:** M3 complete — the four-level Normal-mode descent is playable end to end with elevator transitions, pause/options, retry flow, and a boss placeholder. M4 is next.
 >
 > The repository was empty when work began, so the documents below define the direction for a new game.
+
+![Animated preview of Shaft Entrance in Mines & Goblins](docs/media/m3-run.gif)
+
+_Shaft Entrance, the opening level of the M3 four-level descent._
 
 ## Concept
 
@@ -31,6 +35,7 @@ The game is built around short, replayable runs. Players dodge or defeat enemies
 - [M1 Playtest Notes](docs/m1-playtest.md) — movement/combat checks, tuning values, and known limitations.
 - [M2 Playtest Notes](docs/m2-playtest.md) — enemy, item, difficulty, and feedback checks.
 - [M3 Level Design Notes](docs/m3-level-design.md) — run order, level intent, exit flow, and QA checklist.
+- [M3 Playtest Notes](docs/m3-playtest.md) — route, pause, settings, and full-run checks.
 
 ## Technology at a glance
 
@@ -55,7 +60,7 @@ See [docs/technical-plan.md](docs/technical-plan.md) for the rationale and alter
 | M0 ✅     | Repository scaffold, tooling, CI, deployable title screen            |
 | M1 ✅     | Responsive movement, jumping, rock throwing, damage, retry loop      |
 | M2 ✅     | Enemy roster, item arsenal, crates, HUD, combat feedback             |
-| M3        | Four levels, transitions, hazards, Normal mode playable end to end   |
+| M3 ✅     | Four levels, transitions, pause/options, boss placeholder            |
 | M4        | Giant worm boss with phases and victory flow                         |
 | M5        | Difficulties, challenge-run tracking, achievements, skins, save data |
 | M6        | Final art, audio, UI, accessibility, and content polish              |
@@ -73,7 +78,7 @@ npm install
 npm run dev
 ```
 
-The dev server runs at `http://127.0.0.1:5173/`. Choose **Start Run** to play the M2 combat test level.
+The dev server runs at `http://127.0.0.1:5173/`. Choose **Start Run** to begin the four-level descent at Shaft Entrance.
 
 ### Controls
 
@@ -86,7 +91,9 @@ The dev server runs at `http://127.0.0.1:5173/`. Choose **Start Run** to play th
 | Interact      | `E`                       |
 | Aim up/down   | `W` / `S` or Up / Down    |
 | Drop through  | `Down` + `Jump`           |
+| Pause         | `Esc` or `P`              |
 | Debug overlay | `F3` (development builds) |
+| Skip level    | `F4` (development builds) |
 
 Rocks are unlimited and deal 1 damage. The one-slot secondary item holds a limited-use Knife, Flintlock, or Rune Scroll; picking up the same item adds ammo up to its cap, while a different item replaces it. Crates contain authored ore, salves, or items, and pedestals hold items that require `E` to collect. Falling into a gap or losing all hearts restarts the level after a short death overlay.
 
@@ -122,7 +129,7 @@ The production base path defaults to `/minesNgoblins/`. If the site moves to a c
 - All documentation, source code, comments, commit messages, and project discussion are in **English**.
 - Game UI text is English for v1, with the text layer kept ready for localization.
 - Assets must be original, commissioned, or clearly licensed. A license inventory will live under `docs/` when asset production begins.
-- Manual QA notes live in `docs/m1-playtest.md` and `docs/m2-playtest.md`.
+- Manual QA notes live in `docs/m1-playtest.md`, `docs/m2-playtest.md`, and `docs/m3-playtest.md`.
 
 ## License
 

@@ -1,8 +1,8 @@
 # Mines & Goblins — Roadmap
 
-**Version:** 0.3 (draft for review)  
-**Date:** 2026-10-21  
-**Status:** M3 in progress; M3.1 four-level run pipeline complete
+**Version:** 0.4  
+**Date:** 2026-10-22  
+**Status:** M3 complete at `v0.3.0`; M4 boss work is next
 
 ---
 
@@ -170,7 +170,7 @@ These numbers are planning aids, not promises. The art/audio pass in M6 can run 
 
 **Goal:** Deliver a complete Normal-mode run through the four standard levels, ending at a boss placeholder.
 
-**Status:** In progress (M3.1 delivered 2026-10-21): four authored maps, exits, intro cards, carry state, RunService, HUD progress, and the boss placeholder are implemented. Pause/quit flow, settings, and final M3 QA remain.
+**Status:** Complete (2026-10-22, v0.3.0). M3.1 delivered the four authored maps, exits, intro cards, carry state, RunService, HUD progress, and boss placeholder. M3.2 delivered pause, settings, retry/restart, quit-run confirmation, and held-input continuity. Final QA covered pause/settings, all maps, and full rock-only and no-kill runs.
 
 **Deliverables**
 
@@ -192,13 +192,21 @@ These numbers are planning aids, not promises. The art/audio pass in M6 can run 
 
 - A player can start a new Normal run and reach the boss placeholder.
 - All four levels are completable with rocks only.
-- All four levels have a viable Pacifist route (verified manually).
+- All four levels have a viable Pacifist route (verified end to end).
 - No soft-locks: exits reachable, no required items, no unreachable enemies in normal progression.
 - Level transitions and results placeholder work.
 - Death/restart does not corrupt run statistics.
 - Level maps validate in CI.
 - Frame rate remains 60 FPS with the full enemy/projectile budget.
 - A full run takes roughly 15–25 minutes on a first playthrough.
+
+**Completion:** M3 shipped as `v0.3.0` on 2026-10-22. A rock-only run reached the
+boss placeholder with 0 secondary-item uses, and a no-kill run completed with 0
+kills and 0 rocks thrown. Automated direct route times were 1:52–2:20; first-time
+pacing and full-budget performance profiling are recorded as M7 follow-ups in
+[M3 Playtest Notes](m3-playtest.md). The route QA also reduced the Crystal Caverns
+floor gaps from 64px to 48px to leave a fair jump margin, and a short preview GIF
+now lives at `docs/media/m3-run.gif`.
 
 **Dependencies:** M2.  
 **Risks:** Level design time; Tiled pipeline friction; pacing and readability.
@@ -517,6 +525,7 @@ Do **not** cut:
 
 | Version | Date       | Notes                                                                        |
 | ------- | ---------- | ---------------------------------------------------------------------------- |
+| 0.4     | 2026-10-22 | M3 levels and progression complete at v0.3.0; M4 boss next                   |
 | 0.3     | 2026-10-21 | M2 combat and items complete at v0.2.0; M3 levels and progression next       |
 | 0.2     | 2026-10-19 | M0 scaffold, title screen, tooling, tests, CI, and deployment workflows done |
 | 0.1     | 2026-10-19 | Initial roadmap based on the project brief and design draft                  |

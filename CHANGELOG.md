@@ -4,10 +4,15 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses semantic versioning once public releases begin.
 
-## [Unreleased]
+## [0.3.0] - 2026-10-22
 
 ### Added
 
+- M3.2: run pause overlay on `Esc` or `P` with Resume, Restart Level, Options, and Quit Run actions.
+- M3.2: quit-run confirmation, run shutdown, and return to the title screen.
+- M3.2: shared Options overlay with persisted master volume and screen-shake settings, available from the title screen and pause menu.
+- M3.2: live master-volume application to synthesized SFX and screen-shake scaling for full, reduced, and off settings.
+- M3.2: Playwright coverage for pause/resume, pause restart, quit confirmation, settings persistence, and Crazy exit locking.
 - M3.1: four authored run levels (Shaft Entrance, Goblin Tunnels, Crystal Caverns, The Deep Vein) with level-specific enemies, hazards, items, crystals, and elevator exits.
 - M3.1: required level exit data and validation, plus an elevator interaction that advances the run with `E`.
 - M3.1: level registry metadata, run order, level indexes, and development-only `?level=` and `?spawn=exit` overrides.
@@ -16,16 +21,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - M3.1: boss placeholder scene with a run summary and return-to-title flow.
 - M3.1: unit tests for run state, all four maps, level registry, and inventory restore, plus Playwright coverage for every map, the elevator, and the full four-level debug flow.
 - M3.1: M3 level design notes and QA checklist.
+- M3: M3 playtest notes with automated rock-only and no-kill full-run evidence.
 
 ### Changed
 
+- M3.2: the HUD hint now advertises `Esc` pause, and death continues to retry the current level with full HP.
 - M3.1: Start Run now begins the four-level descent at Shaft Entrance instead of the retired combat test map.
 - M3.1: player damage events carry their amount and damage source so run stats and future challenge rules share the same data.
 - M3.1: the title screen identifies the M3 descent build.
+- M3: Crystal Caverns floor gaps were reduced from 64px to 48px so full jumps keep a fair timing margin.
 
 ### Removed
 
 - M3.1: retired `public/maps/movement-test.json`; Shaft Entrance preserves its geometry for regression coverage.
+
+### Fixed
+
+- M3: held movement keys now survive level transitions, death retries, and scene recreation through browser-level key state.
+- M3: `A`/`D` movement and `W`/`S` aim aliases now work alongside the arrow keys.
+- M3.1: interacting with `E` no longer consumes the key when no pedestal is in range, so elevator activation is not blocked.
 
 ## [0.2.0] - 2026-10-21
 

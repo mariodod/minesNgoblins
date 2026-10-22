@@ -1,7 +1,7 @@
 # M3 level design notes
 
-Date: 2026-10-21  
-Build: M3.1 working notes
+Date: 2026-10-22  
+Build: `0.3.0` (M3 complete)
 
 ## Run order
 
@@ -52,6 +52,9 @@ the prompt shows `LOCKED: N LEFT` and the elevator refuses to leave.
 - Bats patrol the upper lanes while beetles hold the floor.
 - Crystal props are non-colliding decoration and visual landmarks.
 - Two falling-rock traps and three spike strips break up the platform route.
+- The three floor gaps are 48px wide. They were reduced from 64px after route QA
+  showed that the original width left almost no margin beside the 73px full-jump
+  distance.
 - Exit on the lowest right-hand floor.
 
 ### The Deep Vein
@@ -67,28 +70,30 @@ the prompt shows `LOCKED: N LEFT` and the elevator refuses to leave.
 ## Route validation
 
 - Every level can be completed with rocks alone; no door, crate, or pedestal is
-  mandatory.
+  mandatory. A full rock-only run reached the boss placeholder with 0 item uses.
 - Every level has an upper or alternate platform route that bypasses at least one
-  ground encounter, so a no-kill traversal is possible.
+  ground encounter. A full no-kill run reached the boss placeholder with 0 kills
+  and 0 rocks thrown.
 - Exits sit on solid floor and are reachable from both the ground and platform
   routes.
 - All maps are parsed by the unit test suite; object IDs, spawn, exit, enemy
   references, prop contents, and geometry bounds are validated before play.
+- Complete route evidence is recorded in [M3 Playtest Notes](m3-playtest.md).
 
 ## M3 QA checklist
 
-- [ ] Start Run enters Shaft Entrance and shows the level intro card.
-- [ ] HUD shows level number, level name, difficulty, hearts, item ammo, and ore.
-- [ ] The elevator prompt appears only inside the exit rectangle.
-- [ ] `E` at the exit advances to the next level and preserves HP, ore, and item
+- [x] Start Run enters Shaft Entrance and shows the level intro card.
+- [x] HUD shows level number, level name, difficulty, hearts, item ammo, and ore.
+- [x] The elevator prompt appears only inside the exit rectangle.
+- [x] `E` at the exit advances to the next level and preserves HP, ore, and item
       ammo.
-- [ ] The Deep Vein exit reaches the boss placeholder and the summary is readable.
-- [ ] Death restarts the current level with full HP and preserves the run.
-- [ ] Falling into a pit records a death and restarts the current level.
-- [ ] Crazy exits stay locked while enemies remain.
-- [ ] All four maps load with no console or page errors.
-- [ ] Normal-mode enemies and hazards are readable at 480x270.
-- [ ] Pause, restart, and quit flow is checked after M3.2 lands.
+- [x] The Deep Vein exit reaches the boss placeholder and the summary is readable.
+- [x] Death restarts the current level with full HP and preserves the run.
+- [x] Falling into a pit records a death and restarts the current level.
+- [x] Crazy exits stay locked while enemies remain.
+- [x] All four maps load with no console or page errors.
+- [x] Normal-mode enemies and hazards are readable at 480x270.
+- [x] Pause, options, restart, and quit flow pass browser coverage.
 
 ## Deferred
 

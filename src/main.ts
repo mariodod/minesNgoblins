@@ -1,6 +1,8 @@
 import './style.css';
 import { createGame } from './game';
+import { installKeyboardState } from './services/keyboard-state';
 
+installKeyboardState();
 const game = createGame();
 const canvas = game.canvas;
 

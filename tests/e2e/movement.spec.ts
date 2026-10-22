@@ -39,3 +39,24 @@ test('starts a run, drops through a platform, moves, and jumps', async ({ page }
 
   expect(errors).toEqual([]);
 });
+
+test('held WASD movement survives a level transition', async ({ page }) => {
+  const errors = collectPageErrors(page);
+
+  await startRun(page);
+  await expect.poll(() => readHook<boolean>(page, 'grounded')).toBe(true);
+
+  const startX = (await readHook<number>(page, 'playerX')) ?? 0;
+  await page.keyboard.down('KeyD');
+  await expect.poll(() => readHook<number>(page, 'playerX')).toBeGreaterThan(startX + 20);
+
+  await page.keyboard.press('F4');
+  await expect.poll(() => readHook<number>(page, 'levelNumber')).toBe(2);
+  await expect.poll(() => readHook<string>(page, 'levelId')).toBe('goblin-tunnels');
+
+  await expect.poll(() => readHook<number>(page, 'playerX'), { timeout: 8000 }).toBeGreaterThan(70);
+
+  await page.keyboard.up('KeyD');
+
+  expect(errors).toEqual([]);
+});
