@@ -105,7 +105,7 @@ export class HudScene extends Phaser.Scene {
       .text(
         GAME_WIDTH / 2,
         GAME_HEIGHT - 10,
-        'A/D MOVE   SPACE JUMP   X THROW   C ITEM   E INTERACT   DOWN+SPACE DROP',
+        'A/D MOVE   SPACE JUMP   X THROW   C ITEM   E INTERACT   ESC PAUSE   DOWN+SPACE DROP',
         {
           fontFamily: FONT_FAMILY,
           fontSize: '7px',

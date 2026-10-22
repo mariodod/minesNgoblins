@@ -5,7 +5,9 @@ import { BootScene } from './scenes/boot-scene';
 import { BossPlaceholderScene } from './scenes/boss-placeholder-scene';
 import { HudScene } from './scenes/hud-scene';
 import { LevelScene } from './scenes/level-scene';
+import { PauseScene } from './scenes/pause-scene';
 import { PreloadScene } from './scenes/preload-scene';
+import { SettingsScene } from './scenes/settings-scene';
 import { TitleScene } from './scenes/title-scene';
 
 export function createGame(): Phaser.Game {
@@ -30,7 +32,16 @@ export function createGame(): Phaser.Game {
         debug: false,
       },
     },
-    scene: [BootScene, PreloadScene, TitleScene, LevelScene, BossPlaceholderScene, HudScene],
+    scene: [
+      BootScene,
+      PreloadScene,
+      TitleScene,
+      LevelScene,
+      BossPlaceholderScene,
+      HudScene,
+      PauseScene,
+      SettingsScene,
+    ],
   };
 
   return new Phaser.Game(config);

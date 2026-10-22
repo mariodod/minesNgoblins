@@ -8,15 +8,21 @@ import { setTestHook } from '../utils/test-hooks';
 interface MenuItem {
   label: string;
   message: string;
-  action?: 'start-run';
+  action?: 'start-run' | 'settings';
 }
+
+interface TitleSceneData {
+  message?: string;
+}
+
+const DEFAULT_TITLE_MESSAGE = 'M3 descent is live. X throws rocks, C uses items, E interacts.';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
 
 const MENU_ITEMS: readonly MenuItem[] = [
   {
     label: 'Start Run',
-    message: 'Entering the combat test...',
+    message: 'Descending into the mine...',
     action: 'start-run',
   },
   {
@@ -29,7 +35,8 @@ const MENU_ITEMS: readonly MenuItem[] = [
   },
   {
     label: 'Options',
-    message: 'Options and audio settings arrive in M6.',
+    message: 'Tune master volume and screen shake. Changes save automatically.',
+    action: 'settings',
   },
 ];
 
@@ -38,9 +45,14 @@ export class TitleScene extends Phaser.Scene {
   private messageText!: Phaser.GameObjects.Text;
   private selectedIndex = 0;
   private startingRun = false;
+  private initialMessage = DEFAULT_TITLE_MESSAGE;
 
   constructor() {
     super('Title');
+  }
+
+  init(data: TitleSceneData = {}): void {
+    this.initialMessage = data.message ?? DEFAULT_TITLE_MESSAGE;
   }
 
   create(): void {
@@ -52,13 +64,9 @@ export class TitleScene extends Phaser.Scene {
     this.installInput();
 
     this.select(0);
-    this.showMessage('M3 descent is live. X throws rocks, C uses items, E interacts.');
+    this.showMessage(this.initialMessage);
 
-    setTestHook({
-      ready: true,
-      scene: 'Title',
-      titleSelection: MENU_ITEMS[this.selectedIndex]?.label ?? '',
-    });
+    this.publishHook();
   }
 
   private drawBackground(): void {
@@ -202,9 +210,20 @@ export class TitleScene extends Phaser.Scene {
 
   private installInput(): void {
     this.input.keyboard?.on('keydown', this.handleKeyDown);
+    this.events.on(Phaser.Scenes.Events.RESUME, this.publishHook, this);
 
     this.events.once('shutdown', () => {
       this.input.keyboard?.off('keydown', this.handleKeyDown);
+      this.events.off(Phaser.Scenes.Events.RESUME, this.publishHook, this);
+    });
+  }
+
+  private publishHook(): void {
+    setTestHook({
+      ready: true,
+      scene: 'Title',
+      titleSelection: MENU_ITEMS[this.selectedIndex]?.label ?? '',
+      runActive: runService.isActive,
     });
   }
 
@@ -266,7 +285,17 @@ export class TitleScene extends Phaser.Scene {
       return;
     }
 
+    if (item.action === 'settings') {
+      this.openSettings();
+      return;
+    }
+
     this.showMessage(item.message);
+  }
+
+  private openSettings(): void {
+    this.scene.launch('Settings', { returnScene: 'Title' });
+    this.scene.pause();
   }
 
   private startRun(): void {

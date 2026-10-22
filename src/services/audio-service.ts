@@ -152,8 +152,25 @@ const SFX_SPECS: Record<SfxName, SfxSpec> = {
  */
 export class AudioService {
   private context: AudioContext | undefined;
+  private masterVolume = 1;
+
+  setVolume(value: number): void {
+    if (!Number.isFinite(value)) {
+      return;
+    }
+
+    this.masterVolume = Math.min(1, Math.max(0, value));
+  }
+
+  get volume(): number {
+    return this.masterVolume;
+  }
 
   play(name: SfxName): void {
+    if (this.masterVolume <= 0) {
+      return;
+    }
+
     const context = this.getContext();
 
     if (!context) {
@@ -176,7 +193,7 @@ export class AudioService {
       now + spec.duration,
     );
 
-    gain.gain.setValueAtTime(spec.volume, now);
+    gain.gain.setValueAtTime(Math.max(0.0001, spec.volume * this.masterVolume), now);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + spec.duration);
 
     oscillator.connect(gain);

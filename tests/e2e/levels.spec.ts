@@ -44,6 +44,24 @@ test('riding the level exit advances the run to the next level', async ({ page }
   expect(errors).toEqual([]);
 });
 
+test('the elevator stays locked on Crazy while enemies remain', async ({ page }) => {
+  const errors = collectPageErrors(page);
+
+  await startRun(page, '/?difficulty=crazy&level=shaft-entrance&spawn=exit');
+  await expect.poll(() => readHook<string>(page, 'difficulty')).toBe('crazy');
+  await expect.poll(() => readHook<number>(page, 'enemyCount')).toBeGreaterThan(0);
+  await expect.poll(() => readHook<number>(page, 'playerX')).toBeGreaterThan(1200);
+
+  await page.keyboard.press('E');
+  await page.waitForTimeout(500);
+
+  expect(await readHook<string>(page, 'levelId')).toBe('shaft-entrance');
+  expect(await readHook<number>(page, 'runLevelsCompleted')).toBe(0);
+  expect(await readHook<boolean>(page, 'runActive')).toBe(true);
+
+  expect(errors).toEqual([]);
+});
+
 test('debug skip advances the run through all four levels into the boss placeholder', async ({
   page,
 }) => {

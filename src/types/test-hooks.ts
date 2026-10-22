@@ -70,6 +70,10 @@ export interface MinesTestHook {
   runItemsPickedUp?: number;
   runLevelsCompleted?: number;
   runTimeMs?: number;
+  pauseSelection?: string;
+  settingsSelection?: string;
+  masterVolume?: number;
+  screenShake?: string;
 }
 
 declare global {

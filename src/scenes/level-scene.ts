@@ -46,6 +46,7 @@ import { ItemProjectile } from '../entities/projectiles/item-projectile';
 import { Rock } from '../entities/projectiles/rock';
 import type { AudioService } from '../services/audio-service';
 import { InputService } from '../services/input-service';
+import type { SaveService } from '../services/save-service';
 import type { DamageEvent } from '../systems/damage';
 import { runService, type RunCarryState } from '../systems/run-service';
 import { setTestHook } from '../utils/test-hooks';
@@ -105,6 +106,7 @@ export class LevelScene extends Phaser.Scene {
   private interactPrompt: Phaser.GameObjects.Text | undefined;
   private exitPrompt: Phaser.GameObjects.Text | undefined;
   private leavingLevel = false;
+  private pauseOpen = false;
   private rocksThrown = 0;
   private itemsUsed = 0;
   private itemsCollected = 0;
@@ -227,6 +229,7 @@ export class LevelScene extends Phaser.Scene {
     this.cameras.main.fadeIn(200, 0, 0, 0);
 
     this.setupDebugOverlay();
+    this.setupPauseInput();
 
     this.scene.launch('HUD', {
       levelName: this.level.name,
@@ -1019,7 +1022,7 @@ export class LevelScene extends Phaser.Scene {
     );
 
     if (result.killed) {
-      this.cameras.main.shake(FEEDBACK_TUNING.screenShakeMs, FEEDBACK_TUNING.screenShakeIntensity);
+      this.shakeScreen(FEEDBACK_TUNING.screenShakeMs, FEEDBACK_TUNING.screenShakeIntensity);
     }
 
     this.triggerHitStop();
@@ -1093,7 +1096,7 @@ export class LevelScene extends Phaser.Scene {
     const { x, y } = projectile;
 
     this.audio.play('rune-blast');
-    this.cameras.main.shake(150, 0.008);
+    this.shakeScreen(150, 0.008);
     this.spawnExplosion(x, y, definition.explosionRadius);
 
     let damagedAny = false;
@@ -1390,7 +1393,7 @@ export class LevelScene extends Phaser.Scene {
     });
 
     this.audio.play('rumble');
-    this.cameras.main.shake(90, 0.002);
+    this.shakeScreen(90, 0.002);
     this.spawnHitBurst(centerX, hazard.y + hazard.height, 0x8b7d6b, 4);
 
     this.time.delayedCall(HAZARD_TUNING.fallingRockTelegraphMs, () => {
@@ -1413,7 +1416,7 @@ export class LevelScene extends Phaser.Scene {
     }
 
     this.spawnHitBurst(rock.x, rock.y, 0x8b7d6b, 7);
-    this.cameras.main.shake(110, 0.005);
+    this.shakeScreen(110, 0.005);
     this.audio.play('boulder');
     rock.destroy();
   }
@@ -1451,7 +1454,7 @@ export class LevelScene extends Phaser.Scene {
   private handlePlayerDamaged(event: PlayerDamageEvent): void {
     runService.recordDamage(event.amount);
     this.audio.play('hurt');
-    this.cameras.main.shake(FEEDBACK_TUNING.screenShakeMs, FEEDBACK_TUNING.screenShakeIntensity);
+    this.shakeScreen(FEEDBACK_TUNING.screenShakeMs, FEEDBACK_TUNING.screenShakeIntensity);
     this.spawnHitBurst(this.player.x, this.player.y, 0xff6b6b, FEEDBACK_TUNING.hitParticles);
 
     if (event.hp > 0) {
@@ -1467,13 +1470,24 @@ export class LevelScene extends Phaser.Scene {
     runService.recordDeath();
     this.restarting = true;
     this.audio.play('death');
-    this.cameras.main.shake(220, 0.01);
+    this.shakeScreen(220, 0.01);
     this.time.delayedCall(1300, () => {
       this.restartLevel();
     });
   }
 
+  public closePause(): void {
+    this.pauseOpen = false;
+  }
+
+  public restartFromPause(): void {
+    this.closePause();
+    this.restartLevel();
+  }
+
   private restartLevel(): void {
+    this.pauseOpen = false;
+    this.restarting = true;
     this.cameras.main.fadeOut(150, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.restart({
@@ -1483,6 +1497,17 @@ export class LevelScene extends Phaser.Scene {
         refillHp: true,
       });
     });
+  }
+
+  private shakeScreen(duration: number, intensity: number): void {
+    const saveService = this.registry.get('saveService') as SaveService | undefined;
+    const setting = saveService?.settings.screenShake ?? 'full';
+
+    if (setting === 'off') {
+      return;
+    }
+
+    this.cameras.main.shake(duration, setting === 'reduced' ? intensity * 0.45 : intensity);
   }
 
   private triggerHitStop(): void {
@@ -1517,6 +1542,38 @@ export class LevelScene extends Phaser.Scene {
         },
       });
     }
+  }
+
+  private setupPauseInput(): void {
+    const keyboard = this.input.keyboard;
+
+    if (!keyboard) {
+      return;
+    }
+
+    keyboard.on('keydown-ESC', this.openPause, this);
+    keyboard.on('keydown-P', this.openPause, this);
+
+    this.events.once('shutdown', () => {
+      keyboard.off('keydown-ESC', this.openPause, this);
+      keyboard.off('keydown-P', this.openPause, this);
+    });
+  }
+
+  private openPause(): void {
+    if (this.pauseOpen || this.leavingLevel || this.restarting || this.player.isDead) {
+      return;
+    }
+
+    this.pauseOpen = true;
+    this.scene.launch('Pause', {
+      levelName: this.level.name,
+      levelNumber: this.levelIndex + 1,
+      levelCount: LEVEL_COUNT,
+      difficultyName: this.difficulty.displayName,
+      runTimeMs: runService.elapsedMs(),
+    });
+    this.scene.pause();
   }
 
   private setupDebugOverlay(): void {

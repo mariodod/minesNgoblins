@@ -13,9 +13,12 @@ export class BootScene extends Phaser.Scene {
     this.createPlaceholderTextures();
 
     const saveService = new SaveService();
+    const audioService = new AudioService();
+    audioService.setVolume(saveService.settings.masterVolume);
+
     this.registry.set('saveService', saveService);
     this.registry.set('saveData', saveService.data);
-    this.registry.set('audioService', new AudioService());
+    this.registry.set('audioService', audioService);
 
     this.scene.start('Preload');
   }
