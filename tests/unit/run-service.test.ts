@@ -101,6 +101,63 @@ describe('RunService', () => {
     expect(run.elapsedMs(5000)).toBe(0);
   });
 
+  it('requires an active run before entering the boss arena', () => {
+    expect(() => run.enterBoss()).toThrow(/active run/);
+  });
+
+  it('registers boss attempts without resetting run stats', () => {
+    run.startRun('normal', 0);
+    run.enterLevel(0, 'shaft-entrance', 0);
+    run.recordKill();
+    run.completeLevel({ hp: 3, ore: 5, itemId: 'knife', itemUses: 1 });
+    run.enterBoss(4000);
+
+    expect(run.snapshot).toMatchObject({
+      active: true,
+      levelId: 'great-worm',
+      bossAttempts: 1,
+      bossDefeated: false,
+      levelsCompleted: 1,
+      kills: 1,
+      outcome: null,
+    });
+
+    run.enterBoss(8000);
+
+    expect(run.snapshot.bossAttempts).toBe(2);
+    expect(run.snapshot.levelStartedAt).toBe(8000);
+  });
+
+  it('completes the run with victory stats and clears the level carry', () => {
+    run.startRun('hard', 1000);
+    run.enterLevel(3, 'deep-vein', 2000);
+    run.completeLevel({ hp: 4, ore: 12, itemId: 'flintlock', itemUses: 1 });
+    run.enterBoss(3000);
+    run.completeBoss(61000);
+
+    expect(run.isActive).toBe(false);
+    expect(run.snapshot).toMatchObject({
+      active: false,
+      bossDefeated: true,
+      outcome: 'victory',
+      finishedAt: 61000,
+      runDurationMs: 60000,
+    });
+    expect(run.takeCarry()).toBeNull();
+  });
+
+  it('ignores repeated boss completion and preserves victory after endRun', () => {
+    run.startRun('normal', 1000);
+    run.enterBoss(2000);
+    run.completeBoss(5000);
+    run.completeBoss(9000);
+    run.endRun(12000);
+
+    expect(run.snapshot.outcome).toBe('victory');
+    expect(run.snapshot.runDurationMs).toBe(4000);
+    expect(run.snapshot.finishedAt).toBe(5000);
+  });
+
   it('resets all state when a new run starts', () => {
     run.startRun('hard', 1000);
     run.enterLevel(2, 'crystal-caverns', 1000);

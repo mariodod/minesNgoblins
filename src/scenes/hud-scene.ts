@@ -12,6 +12,7 @@ interface HudSceneData {
   levelCount?: number;
   difficultyName: string;
   player: Player;
+  isBoss?: boolean;
 }
 
 /**
@@ -22,6 +23,7 @@ export class HudScene extends Phaser.Scene {
   private levelNumber = 1;
   private levelCount = 1;
   private difficultyName = '';
+  private isBoss = false;
   private player!: Player;
   private hearts: Phaser.GameObjects.Image[] = [];
   private itemIcon!: Phaser.GameObjects.Image;
@@ -37,6 +39,7 @@ export class HudScene extends Phaser.Scene {
     this.levelNumber = data.levelNumber ?? 1;
     this.levelCount = data.levelCount ?? 1;
     this.difficultyName = data.difficultyName;
+    this.isBoss = data.isBoss ?? false;
     this.player = data.player;
     this.hearts = [];
   }
@@ -91,7 +94,7 @@ export class HudScene extends Phaser.Scene {
       .text(
         GAME_WIDTH - 8,
         10,
-        `${this.levelNumber}/${this.levelCount}  ${this.levelName.toUpperCase()}  [${this.difficultyName.toUpperCase()}]`,
+        `${this.isBoss ? 'BOSS' : `${this.levelNumber}/${this.levelCount}`}  ${this.levelName.toUpperCase()}  [${this.difficultyName.toUpperCase()}]`,
         {
           fontFamily: FONT_FAMILY,
           fontSize: '7px',
@@ -188,11 +191,16 @@ export class HudScene extends Phaser.Scene {
       .setDepth(201);
 
     this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 8, 'Retrying level...', {
-        fontFamily: FONT_FAMILY,
-        fontSize: '8px',
-        color: '#9aa0a6',
-      })
+      .text(
+        GAME_WIDTH / 2,
+        GAME_HEIGHT / 2 + 8,
+        this.isBoss ? 'Retrying boss...' : 'Retrying level...',
+        {
+          fontFamily: FONT_FAMILY,
+          fontSize: '8px',
+          color: '#9aa0a6',
+        },
+      )
       .setOrigin(0.5)
       .setDepth(201);
   }

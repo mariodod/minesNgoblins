@@ -1,8 +1,8 @@
 # Mines & Goblins — Technical Plan
 
-**Version:** 0.3  
+**Version:** 0.4  
 **Date:** 2026-10-22  
-**Status:** M3 complete at `v0.3.0`; four-level run, pause/options, settings persistence, and boss placeholder shipped
+**Status:** M4 complete at `v0.4.0`; four-level run, Great Worm boss, victory flow, pause/options, and settings persistence shipped
 
 ---
 
@@ -150,7 +150,7 @@ main.ts
       ├─ TitleScene
       ├─ RunSetupScene      (difficulty + challenge preview)
       ├─ LevelScene         (tilemap, entities, hazards, exit)
-      ├─ BossPlaceholderScene (M3 endpoint; replaced by BossScene in M4)
+      ├─ BossScene          (Great Worm arena, phases, supplies, victory)
       ├─ HUDScene           (overlay, always active during play)
       ├─ PauseScene         (run pause overlay)
       ├─ SettingsScene      (volume and screen-shake overlay)
@@ -288,12 +288,13 @@ interface DifficultyConfig {
   playerMaxHp: number;
   enemyHpMultiplier: number;
   enemyDamageMultiplier: number;
+  bossHpMultiplier: number;
   requiresAllEnemiesDead: boolean;
   pacifistAllowed: boolean;
 }
 ```
 
-Enemy spawns compute effective HP at spawn time from base HP, level bonus, and the active difficulty. Boss HP uses its own data field but the same multiplier in v1.
+Enemy spawns compute effective HP at spawn time from base HP, level bonus, and the active difficulty. The boss uses a separate `bossHpMultiplier` so its authored 48 HP becomes 48/72/96/120 across Normal/Hard/Impossible/Crazy without forcing the standard 1/2/3/5 enemy curve onto the fight. Boss max HP is computed once when `BossScene` starts, not on each hit.
 
 ### 5.8 Level pipeline
 
@@ -594,6 +595,7 @@ Then:
 | 2026-10-19 | M1 movement slice implemented (player, level scene, rocks, dummy, HUD, debug)   | Done           |
 | 2026-10-21 | M2 combat, enemies, items, hazards, and HUD implemented at `v0.2.0`             | Done           |
 | 2026-10-22 | M3 four-level run, pause/options, settings, and boss placeholder at `v0.3.0`    | Done           |
+| 2026-10-22 | M4 Great Worm, supply drops, boss retry, victory, and results at `v0.4.0`       | Done           |
 | 2026-10-22 | Browser-level held-key state restores movement across scene recreation          | Done           |
 | 2026-10-22 | Pause and Settings use dedicated overlay scenes above Level and HUD             | Done           |
 | 2026-10-19 | Use Phaser 4.2.x + TypeScript + Vite                                            | Accepted       |
@@ -603,6 +605,6 @@ Then:
 | 2026-10-19 | Local-only save data; no backend                                                | Accepted       |
 | 2026-10-19 | Internal resolution 480×270, 16×16 tiles                                        | Accepted in M1 |
 | 2026-10-22 | "5 lives" means 5 HP; death restarts the current level with carried entry state | Resolved in M3 |
-| TBD        | Boss-specific HP curve vs. full difficulty multiplier                           | Open           |
+| 2026-10-22 | Boss uses a separate HP curve: base 48 × 1/1.5/2/2.5 by difficulty              | Resolved in M4 |
 | TBD        | Game UI localization scope                                                      | Open           |
 | TBD        | Repository and asset licenses                                                   | Open           |

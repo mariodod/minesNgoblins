@@ -1,7 +1,12 @@
 export type EnemyId =
-  'practice-dummy' | 'cave-bat' | 'goblin-scavenger' | 'skeleton-thrower' | 'armored-beetle';
+  | 'practice-dummy'
+  | 'cave-bat'
+  | 'goblin-scavenger'
+  | 'skeleton-thrower'
+  | 'armored-beetle'
+  | 'wormling';
 
-export type EnemyBehavior = 'dummy' | 'bat' | 'goblin' | 'skeleton' | 'beetle';
+export type EnemyBehavior = 'dummy' | 'bat' | 'goblin' | 'skeleton' | 'beetle' | 'wormling';
 
 export interface EnemyDefinition {
   id: EnemyId;
@@ -152,6 +157,29 @@ export const ENEMIES: Record<EnemyId, EnemyDefinition> = {
     hoverAmplitude: 0,
     hoverFrequency: 0,
     hitbox: { width: 18, height: 12 },
+    bodyOffset: { x: 1, y: 1 },
+  },
+  wormling: {
+    id: 'wormling',
+    displayName: 'Wormling',
+    behavior: 'wormling',
+    spriteKey: 'wormling',
+    baseHp: 3,
+    contactDamage: 2,
+    speed: 42,
+    flying: false,
+    patrolRadius: 0,
+    detectRange: 220,
+    windupMs: 0,
+    attackMs: 0,
+    recoverMs: 0,
+    chargeSpeed: 0,
+    projectileCooldownMs: 0,
+    projectileSpeed: 0,
+    projectileGravity: 0,
+    hoverAmplitude: 0,
+    hoverFrequency: 0,
+    hitbox: { width: 14, height: 10 },
     bodyOffset: { x: 1, y: 1 },
   },
 };

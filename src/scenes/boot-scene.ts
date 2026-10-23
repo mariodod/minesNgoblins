@@ -302,6 +302,77 @@ export class BootScene extends Phaser.Scene {
 
     graphics.clear();
 
+    // Great Worm head: 40x32, facing right. The amber eye and pale skull plate
+    // read as the weak point during the fight.
+    graphics.fillStyle(0x4a2432, 1).fillEllipse(18, 16, 34, 26);
+    graphics.fillStyle(0x6b3444, 1).fillEllipse(17, 15, 29, 20);
+    graphics.fillStyle(0x8a4656, 1).fillEllipse(15, 12, 18, 10);
+    graphics.fillStyle(0x2b131c, 1).fillEllipse(6, 20, 14, 13);
+    graphics.fillStyle(0x3a1b27, 1).fillRect(4, 8, 14, 5);
+    graphics.fillStyle(0x8a4656, 1).fillRect(5, 4, 3, 6);
+    graphics.fillRect(11, 3, 3, 7);
+    graphics.fillRect(17, 4, 3, 6);
+    graphics.fillStyle(0x1a0b0f, 1).fillRect(28, 18, 11, 7);
+    graphics.fillStyle(0x7a1f2b, 1).fillRect(30, 20, 8, 3);
+    graphics.fillStyle(0xe8e2d0, 1);
+    for (let x = 28; x <= 37; x += 3) {
+      graphics.fillTriangle(x, 18, x + 1, 21, x + 2, 18);
+      graphics.fillTriangle(x, 25, x + 1, 22, x + 2, 25);
+    }
+    graphics.fillStyle(0xffcf5a, 1).fillRect(26, 10, 5, 4);
+    graphics.fillStyle(0xfff3b0, 1).fillRect(27, 11, 2, 2);
+    graphics.fillStyle(0x1a0b0f, 1).fillRect(28, 12, 2, 2);
+    graphics.fillStyle(0xc9a27a, 1).fillRect(10, 17, 12, 2);
+    graphics.generateTexture('worm-head', 40, 32);
+
+    graphics.clear();
+
+    // Great Worm body segment: 24x20. Rounded armor rings with a dorsal spike.
+    graphics.fillStyle(0x3a1b27, 1).fillEllipse(12, 10, 23, 18);
+    graphics.fillStyle(0x5c2f3d, 1).fillEllipse(12, 10, 20, 15);
+    graphics.fillStyle(0x8a4656, 1).fillEllipse(12, 8, 13, 8);
+    graphics.fillStyle(0x2b131c, 1).fillRect(2, 11, 20, 3);
+    graphics.fillStyle(0x6b3444, 1).fillRect(4, 5, 4, 2);
+    graphics.fillRect(16, 5, 4, 2);
+    graphics.fillStyle(0xc9a27a, 1).fillTriangle(10, 3, 14, 3, 12, -2);
+    graphics.fillStyle(0xffcf5a, 0.7).fillRect(11, 1, 2, 2);
+    graphics.generateTexture('worm-segment', 24, 20);
+
+    graphics.clear();
+
+    // Wormling add: 16x12. Smaller, faster-looking version of the boss.
+    graphics.fillStyle(0x4a2432, 1).fillEllipse(8, 6, 15, 11);
+    graphics.fillStyle(0x7a3b4a, 1).fillEllipse(8, 6, 12, 8);
+    graphics.fillStyle(0x2b131c, 1).fillRect(10, 7, 6, 3);
+    graphics.fillStyle(0xffcf5a, 1).fillRect(9, 3, 2, 2);
+    graphics.fillStyle(0xe8e2d0, 1).fillRect(12, 7, 1, 1);
+    graphics.fillRect(14, 7, 1, 1);
+    graphics.fillStyle(0x8a4656, 1).fillRect(2, 2, 2, 2);
+    graphics.fillRect(0, 6, 2, 2);
+    graphics.generateTexture('wormling', 16, 12);
+
+    graphics.clear();
+
+    // Burrow hole: 32x10, drawn over the floor rim.
+    graphics.fillStyle(0x050608, 0.95).fillEllipse(16, 5, 30, 8);
+    graphics.fillStyle(0x231318, 1).fillEllipse(16, 4, 26, 5);
+    graphics.fillStyle(0x6b3444, 0.65).fillRect(3, 2, 26, 1);
+    graphics.fillStyle(0x0b0c10, 1).fillEllipse(16, 6, 20, 4);
+    graphics.generateTexture('burrow-hole', 32, 10);
+
+    graphics.clear();
+
+    // Ground shockwave: 18x12. A bright leading edge with a dust tail.
+    graphics.fillStyle(0xffcf5a, 0.9).fillTriangle(17, 6, 5, 0, 5, 12);
+    graphics.fillStyle(0xfff3b0, 0.95).fillTriangle(15, 6, 8, 3, 8, 9);
+    graphics.fillStyle(0x8b7d6b, 0.8);
+    graphics.fillRect(0, 7, 6, 2);
+    graphics.fillRect(2, 9, 4, 2);
+    graphics.fillRect(0, 4, 4, 2);
+    graphics.generateTexture('shockwave', 18, 12);
+
+    graphics.clear();
+
     // Lantern glow: soft alpha rings, used on the title screen.
     graphics.fillStyle(0xffc857, 0.05).fillCircle(24, 24, 24);
     graphics.fillStyle(0xffc857, 0.08).fillCircle(24, 24, 16);

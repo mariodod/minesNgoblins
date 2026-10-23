@@ -1,6 +1,8 @@
 import type { DifficultyId } from '../data/difficulties';
 import type { SecondaryItemId } from '../data/items';
 
+export type RunOutcome = 'abandoned' | 'victory' | null;
+
 export interface RunSnapshot {
   active: boolean;
   difficultyId: DifficultyId;
@@ -15,6 +17,11 @@ export interface RunSnapshot {
   itemsPickedUp: number;
   oreCollected: number;
   levelsCompleted: number;
+  bossAttempts: number;
+  bossDefeated: boolean;
+  outcome: RunOutcome;
+  finishedAt: number;
+  runDurationMs: number;
 }
 
 export interface RunCarryState {
@@ -38,6 +45,11 @@ const INACTIVE_STATE: RunSnapshot = {
   itemsPickedUp: 0,
   oreCollected: 0,
   levelsCompleted: 0,
+  bossAttempts: 0,
+  bossDefeated: false,
+  outcome: null,
+  finishedAt: 0,
+  runDurationMs: 0,
 };
 
 /**
@@ -91,6 +103,36 @@ export class RunService {
     };
   }
 
+  /**
+   * Registers a boss attempt. Retrying the encounter increments this value
+   * while preserving every other run statistic.
+   */
+  enterBoss(now = Date.now()): void {
+    if (!this.state.active) {
+      throw new Error('Cannot enter the boss arena without an active run.');
+    }
+
+    this.state.levelId = 'great-worm';
+    this.state.levelStartedAt = now;
+    this.state.bossAttempts += 1;
+  }
+
+  /**
+   * Boss victory is the only successful end state for a run.
+   */
+  completeBoss(now = Date.now()): void {
+    if (!this.state.active || this.state.bossDefeated) {
+      return;
+    }
+
+    this.state.bossDefeated = true;
+    this.state.outcome = 'victory';
+    this.state.finishedAt = now;
+    this.state.runDurationMs = Math.max(0, now - this.state.startedAt);
+    this.state.active = false;
+    this.levelCarry = null;
+  }
+
   takeCarry(): RunCarryState | null {
     const carry = this.levelCarry;
     this.levelCarry = null;
@@ -141,7 +183,13 @@ export class RunService {
     return this.state.active ? Math.max(0, now - this.state.levelStartedAt) : 0;
   }
 
-  endRun(): void {
+  endRun(now = Date.now()): void {
+    if (this.state.active) {
+      this.state.outcome = 'abandoned';
+      this.state.finishedAt = now;
+      this.state.runDurationMs = Math.max(0, now - this.state.startedAt);
+    }
+
     this.state.active = false;
     this.levelCarry = null;
   }

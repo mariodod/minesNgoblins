@@ -62,7 +62,7 @@ test('the elevator stays locked on Crazy while enemies remain', async ({ page })
   expect(errors).toEqual([]);
 });
 
-test('debug skip advances the run through all four levels into the boss placeholder', async ({
+test('debug skip advances the run through all four levels into the boss arena', async ({
   page,
 }) => {
   const errors = collectPageErrors(page);
@@ -78,8 +78,12 @@ test('debug skip advances the run through all four levels into the boss placehol
   }
 
   await page.keyboard.press('F4');
-  await expect.poll(() => readHook<string>(page, 'scene')).toBe('BossPlaceholder');
-  await expect.poll(() => readHook<string>(page, 'message')).toContain('Great Worm');
+  await expect.poll(() => readHook<string>(page, 'scene')).toBe('Boss');
+  await expect.poll(() => readHook<string>(page, 'levelId')).toBe('great-worm');
+  await expect.poll(() => readHook<number>(page, 'runLevelsCompleted')).toBe(4);
+  await expect.poll(() => readHook<number>(page, 'runBossAttempts')).toBe(1);
+  await expect.poll(() => readHook<number>(page, 'bossMaxHp')).toBe(48);
+  await expect.poll(() => readHook<boolean>(page, 'runActive')).toBe(true);
 
   expect(errors).toEqual([]);
 });

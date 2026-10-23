@@ -36,6 +36,7 @@ import type { Enemy, EnemyHitResult } from '../entities/enemies/enemy';
 import { Goblin } from '../entities/enemies/goblin';
 import { PracticeDummy } from '../entities/enemies/practice-dummy';
 import { Skeleton } from '../entities/enemies/skeleton';
+import { Wormling } from '../entities/enemies/wormling';
 import { FallingRock } from '../entities/hazards/falling-rock';
 import { Crate } from '../entities/pickups/crate';
 import { ItemPickup } from '../entities/pickups/item-pickup';
@@ -628,14 +629,14 @@ export class LevelScene extends Phaser.Scene {
       const nextIndex = this.levelIndex + 1;
 
       if (nextIndex >= LEVEL_COUNT) {
-        this.scene.start('BossPlaceholder');
+        this.scene.start('Boss');
         return;
       }
 
       const nextLevelId = LEVEL_ORDER[nextIndex];
 
       if (!nextLevelId) {
-        this.scene.start('BossPlaceholder');
+        this.scene.start('Boss');
         return;
       }
 
@@ -719,6 +720,8 @@ export class LevelScene extends Phaser.Scene {
         return new Beetle(this, x, y, hp);
       case 'dummy':
         return new PracticeDummy(this, x, y, hp);
+      case 'wormling':
+        return new Wormling(this, x, y, hp);
     }
   }
 
@@ -1567,6 +1570,7 @@ export class LevelScene extends Phaser.Scene {
 
     this.pauseOpen = true;
     this.scene.launch('Pause', {
+      sceneKey: 'Level',
       levelName: this.level.name,
       levelNumber: this.levelIndex + 1,
       levelCount: LEVEL_COUNT,

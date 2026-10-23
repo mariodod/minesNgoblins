@@ -28,7 +28,15 @@ test('title options change and persist volume and screen shake', async ({ page }
   await expect.poll(() => readHook<string>(page, 'scene')).toBe('Title');
 
   await page.reload();
-  await page.waitForFunction(() => window.__MINES_TEST__?.ready === true);
+  await page.waitForFunction(
+    () => window.__MINES_TEST__?.ready === true && window.__MINES_TEST__?.scene === 'Title',
+  );
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      }),
+  );
   await openOptions(page);
 
   await expect.poll(() => readHook<number>(page, 'masterVolume')).toBe(1);

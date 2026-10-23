@@ -6,6 +6,11 @@ export interface DifficultyConfig {
   playerMaxHp: number;
   enemyHpMultiplier: number;
   enemyDamageMultiplier: number;
+  /**
+   * Bosses use a separate curve so Crazy keeps the designed 120 HP while
+   * Normal can support a two-to-four minute fight.
+   */
+  bossHpMultiplier: number;
   requiresAllEnemiesDead: boolean;
   pacifistAllowed: boolean;
 }
@@ -17,6 +22,7 @@ export const DIFFICULTIES: Record<DifficultyId, DifficultyConfig> = {
     playerMaxHp: 5,
     enemyHpMultiplier: 1,
     enemyDamageMultiplier: 1,
+    bossHpMultiplier: 1,
     requiresAllEnemiesDead: false,
     pacifistAllowed: true,
   },
@@ -26,6 +32,7 @@ export const DIFFICULTIES: Record<DifficultyId, DifficultyConfig> = {
     playerMaxHp: 5,
     enemyHpMultiplier: 2,
     enemyDamageMultiplier: 2,
+    bossHpMultiplier: 1.5,
     requiresAllEnemiesDead: false,
     pacifistAllowed: true,
   },
@@ -35,6 +42,7 @@ export const DIFFICULTIES: Record<DifficultyId, DifficultyConfig> = {
     playerMaxHp: 4,
     enemyHpMultiplier: 3,
     enemyDamageMultiplier: 2,
+    bossHpMultiplier: 2,
     requiresAllEnemiesDead: false,
     pacifistAllowed: true,
   },
@@ -44,6 +52,7 @@ export const DIFFICULTIES: Record<DifficultyId, DifficultyConfig> = {
     playerMaxHp: 1,
     enemyHpMultiplier: 5,
     enemyDamageMultiplier: 5,
+    bossHpMultiplier: 2.5,
     requiresAllEnemiesDead: true,
     pacifistAllowed: false,
   },

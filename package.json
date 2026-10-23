@@ -1,6 +1,6 @@
 {
   "name": "mines-and-goblins",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "A retro mine-crawling action platformer built with Phaser and TypeScript.",

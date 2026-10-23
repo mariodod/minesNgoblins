@@ -13,21 +13,25 @@ describe('difficulty data', () => {
       playerMaxHp: 5,
       enemyHpMultiplier: 1,
       enemyDamageMultiplier: 1,
+      bossHpMultiplier: 1,
     });
     expect(DIFFICULTIES.hard).toMatchObject({
       playerMaxHp: 5,
       enemyHpMultiplier: 2,
       enemyDamageMultiplier: 2,
+      bossHpMultiplier: 1.5,
     });
     expect(DIFFICULTIES.impossible).toMatchObject({
       playerMaxHp: 4,
       enemyHpMultiplier: 3,
       enemyDamageMultiplier: 2,
+      bossHpMultiplier: 2,
     });
     expect(DIFFICULTIES.crazy).toMatchObject({
       playerMaxHp: 1,
       enemyHpMultiplier: 5,
       enemyDamageMultiplier: 5,
+      bossHpMultiplier: 2.5,
       requiresAllEnemiesDead: true,
       pacifistAllowed: false,
     });

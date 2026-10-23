@@ -1,8 +1,8 @@
 # Mines & Goblins — Roadmap
 
-**Version:** 0.4  
+**Version:** 0.5  
 **Date:** 2026-10-22  
-**Status:** M3 complete at `v0.3.0`; M4 boss work is next
+**Status:** M4 complete at `v0.4.0`; M5 difficulties, challenge runs, and meta work is next
 
 ---
 
@@ -30,17 +30,17 @@ These numbers are planning aids, not promises. The art/audio pass in M6 can run 
 
 ## 2. Milestone overview
 
-| ID     | Milestone                    | Primary outcome                                                 |    Estimate |
-| ------ | ---------------------------- | --------------------------------------------------------------- | ----------: |
-| **M0** | Foundations                  | Reproducible project, CI, deployable title screen               | 2–3 days ✅ |
-| **M1** | Movement vertical slice      | Player traversal, rock throwing, damage, retry loop             | 5–7 days ✅ |
-| **M2** | Combat and items             | Enemy roster, item arsenal, crates, HUD, feedback               |   8–10 days |
-| **M3** | Levels and progression       | Four levels, transitions, hazards, Normal playable end to end   |   8–10 days |
-| **M4** | Boss                         | Great Worm with phases, arena, victory flow                     |    6–8 days |
-| **M5** | Difficulties, runs, and meta | All difficulties, challenge tracking, achievements, skins, save |   8–10 days |
-| **M6** | Content and polish           | Final art/audio/UI, accessibility, content complete             |  12–18 days |
-| **M7** | Balance and QA               | Playtests, tuning, performance, release candidate               |   8–12 days |
-| **M8** | Release                      | v1.0 tag, live deploy, docs, release notes                      |    2–3 days |
+| ID     | Milestone                    | Primary outcome                                                 |     Estimate |
+| ------ | ---------------------------- | --------------------------------------------------------------- | -----------: |
+| **M0** | Foundations                  | Reproducible project, CI, deployable title screen               |  2–3 days ✅ |
+| **M1** | Movement vertical slice      | Player traversal, rock throwing, damage, retry loop             |  5–7 days ✅ |
+| **M2** | Combat and items             | Enemy roster, item arsenal, crates, HUD, feedback               | 8–10 days ✅ |
+| **M3** | Levels and progression       | Four levels, transitions, hazards, Normal playable end to end   | 8–10 days ✅ |
+| **M4** | Boss                         | Great Worm with phases, arena, victory flow                     |  6–8 days ✅ |
+| **M5** | Difficulties, runs, and meta | All difficulties, challenge tracking, achievements, skins, save |    8–10 days |
+| **M6** | Content and polish           | Final art/audio/UI, accessibility, content complete             |   12–18 days |
+| **M7** | Balance and QA               | Playtests, tuning, performance, release candidate               |    8–12 days |
+| **M8** | Release                      | v1.0 tag, live deploy, docs, release notes                      |     2–3 days |
 
 **Total:** 59–81 focused development days.
 
@@ -217,6 +217,8 @@ now lives at `docs/media/m3-run.gif`.
 
 ### M4 — Boss: The Great Worm
 
+**Status:** Complete (2026-10-22, `v0.4.0`).
+
 **Goal:** Build the final boss and the run-completion flow.
 
 **Deliverables**
@@ -246,6 +248,8 @@ now lives at `docs/media/m3-run.gif`.
 
 **Dependencies:** M1–M3. Boss prototyping can start after M1 to de-risk, but production work lands here.  
 **Risks:** Collision/weak-point readability; attack pacing; difficulty scaling.
+
+**Completion notes:** The two-screen arena, three-phase Great Worm, five attacks, phase supplies, retry flow, victory sequence, and Results placeholder are implemented and covered by unit and Playwright tests. A scripted rock-only Normal run defeated the 48 HP boss in 2:01 while using the development heal helper to survive; the final fight therefore sits at the lower bound of the 2–4 minute target for automated play and still needs human pacing validation in M7. Crazy has not been timed separately; its 120 HP and faster phase tuning target the 5–8 minute band. See [M4 Playtest Notes](m4-playtest.md).
 
 ---
 
@@ -508,16 +512,13 @@ Do **not** cut:
 
 ## 10. Immediate next actions
 
-1. Confirm the open design decisions:
-   - "Five lives" = 5 HP vs. limited retries.
-   - Four levels + boss scope.
-   - Boss HP curve under difficulty multipliers.
+1. Continue resolving the remaining release decisions:
    - English-only UI for v1.
    - Art/audio sourcing and repository license.
-2. M0 is complete: the scaffold, title screen, tests, CI, and deployment workflows are in place.
-3. Build the M1 movement prototype before adding content.
-4. Record a playable GIF at the end of M1 and M3 for feedback.
-5. Schedule the first external playtest for the end of M3.
+2. M4 is complete: the four-level run now ends in the Great Worm fight and results flow.
+3. Start M5 with difficulty selection, challenge-run tracking, achievements, skins, and save data.
+4. Record a boss-fight media capture for the README or release notes.
+5. Schedule the first external playtest for the end of M5 or early M7.
 
 ---
 
@@ -525,6 +526,7 @@ Do **not** cut:
 
 | Version | Date       | Notes                                                                        |
 | ------- | ---------- | ---------------------------------------------------------------------------- |
+| 0.5     | 2026-10-22 | M4 Great Worm, supplies, victory, and results placeholder complete at v0.4.0 |
 | 0.4     | 2026-10-22 | M3 levels and progression complete at v0.3.0; M4 boss next                   |
 | 0.3     | 2026-10-21 | M2 combat and items complete at v0.2.0; M3 levels and progression next       |
 | 0.2     | 2026-10-19 | M0 scaffold, title screen, tooling, tests, CI, and deployment workflows done |

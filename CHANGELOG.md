@@ -4,6 +4,37 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses semantic versioning once public releases begin.
 
+## [0.4.0] - 2026-10-22
+
+### Added
+
+- M4: dedicated two-screen boss arena with burrow holes, one-way side platforms, ceiling hazards, a sealed exit, and midpoint camera tracking.
+- M4: three-phase Great Worm with a head weak point, segmented deflect-only body, phase thresholds at 66% and 33%, and phase-specific attack sequences.
+- M4: five telegraphed attacks — emerge bite, rock spit, burrow charge, quake, and Wormling summons — plus charged shockwaves and falling rocks.
+- M4: boss intro, health bar, phase pips, attack labels, phase-transition banners, collapse sequence, slow motion, and an opening victory elevator.
+- M4: optional supply pedestals between phases with healing salves, a knife, and a rune scroll.
+- M4: boss death retry with the original level carry and clean hazard/supply state.
+- M4: run completion through `RunService.completeBoss()`, a victory Results placeholder with frozen run stats, and return to title.
+- M4: difficulty-specific boss HP multipliers: 48 Normal, 72 Hard, 96 Impossible, and 120 Crazy.
+- M4: Wormling enemy behavior for the boss arena.
+- M4: development `?boss=1` shortcut, F4 phase skip, F6 boss defeat, and a debug API for head hits, phases, defeat, damage, and healing.
+- M4: boss Playwright coverage for direct entry, difficulty scaling, head/body damage, phase supplies, supply collection, victory/results, retry cleanup, and pause restart.
+- M4: unit coverage for boss HP scaling, phase thresholds, attack sequences, hole selection, part damage, Wormling HP, and boss run lifecycle.
+- M4: playtest notes with pacing, visual QA, and known caveats.
+
+### Changed
+
+- M4: The Deep Vein now advances into the boss arena instead of the placeholder scene.
+- M4: the HUD supports boss labels and boss retry copy.
+- M4: pause now targets either `Level` or `Boss` and offers the appropriate restart action.
+- M4: the title screen identifies the M4 boss build and version `0.4.0`.
+- M4: the results screen now presents a readable run-stat grid and the run-complete placeholder copy.
+- M4: boss health uses a separate `bossHpMultiplier`, so Crazy keeps the designed 120 HP without forcing the standard enemy curve onto the fight.
+
+### Removed
+
+- M4: `BossPlaceholderScene`; the real `BossScene` and `ResultsScene` replace the M3 endpoint.
+
 ## [0.3.0] - 2026-10-22
 
 ### Added

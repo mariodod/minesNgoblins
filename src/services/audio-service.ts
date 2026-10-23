@@ -20,7 +20,17 @@ export type SfxName =
   | 'heal'
   | 'ore'
   | 'elevator'
-  | 'empty';
+  | 'empty'
+  | 'boss-roar'
+  | 'boss-hurt'
+  | 'boss-spit'
+  | 'boss-burrow'
+  | 'boss-quake'
+  | 'boss-charge'
+  | 'boss-summon'
+  | 'boss-phase'
+  | 'boss-defeat'
+  | 'boss-victory';
 
 interface SfxSpec {
   wave: OscillatorType;
@@ -142,6 +152,76 @@ const SFX_SPECS: Record<SfxName, SfxSpec> = {
     endFrequency: 80,
     duration: 0.05,
     volume: 0.025,
+  },
+  'boss-roar': {
+    wave: 'sawtooth',
+    startFrequency: 85,
+    endFrequency: 28,
+    duration: 0.65,
+    volume: 0.085,
+  },
+  'boss-hurt': {
+    wave: 'square',
+    startFrequency: 180,
+    endFrequency: 55,
+    duration: 0.12,
+    volume: 0.065,
+  },
+  'boss-spit': {
+    wave: 'triangle',
+    startFrequency: 260,
+    endFrequency: 90,
+    duration: 0.14,
+    volume: 0.05,
+  },
+  'boss-burrow': {
+    wave: 'sawtooth',
+    startFrequency: 70,
+    endFrequency: 22,
+    duration: 0.38,
+    volume: 0.05,
+  },
+  'boss-quake': {
+    wave: 'sawtooth',
+    startFrequency: 45,
+    endFrequency: 18,
+    duration: 0.62,
+    volume: 0.09,
+  },
+  'boss-charge': {
+    wave: 'sawtooth',
+    startFrequency: 120,
+    endFrequency: 48,
+    duration: 0.55,
+    volume: 0.07,
+  },
+  'boss-summon': {
+    wave: 'sine',
+    startFrequency: 140,
+    endFrequency: 360,
+    duration: 0.4,
+    volume: 0.05,
+  },
+  'boss-phase': {
+    wave: 'sawtooth',
+    startFrequency: 60,
+    endFrequency: 180,
+    duration: 0.8,
+    volume: 0.08,
+  },
+  'boss-defeat': {
+    wave: 'sawtooth',
+    startFrequency: 95,
+    endFrequency: 18,
+    duration: 1.2,
+    volume: 0.09,
+  },
+  'boss-victory': {
+    wave: 'sine',
+    startFrequency: 220,
+    endFrequency: 660,
+    duration: 0.9,
+    volume: 0.06,
   },
 };
 

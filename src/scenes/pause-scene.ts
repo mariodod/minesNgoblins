@@ -2,12 +2,17 @@ import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
 import { runService } from '../systems/run-service';
 import { setTestHook } from '../utils/test-hooks';
+import type { BossScene } from './boss-scene';
 import type { LevelScene } from './level-scene';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
-const PAUSE_ITEMS = ['Resume', 'Restart Level', 'Options', 'Quit Run'] as const;
+const LEVEL_PAUSE_ITEMS = ['Resume', 'Restart Level', 'Options', 'Quit Run'] as const;
+const BOSS_PAUSE_ITEMS = ['Resume', 'Restart Fight', 'Options', 'Quit Run'] as const;
+
+type PauseSceneKey = 'Level' | 'Boss';
 
 interface PauseSceneData {
+  sceneKey?: PauseSceneKey;
   levelName?: string;
   levelNumber?: number;
   levelCount?: number;
@@ -23,10 +28,12 @@ function formatTime(ms: number): string {
 }
 
 /**
- * Run-scoped pause overlay. The Level scene is paused underneath, while this
- * scene owns resume, level restart, settings, and run quit actions.
+ * Run-scoped pause overlay. The Level or Boss scene is paused underneath,
+ * while this scene owns resume, encounter restart, settings, and run quit.
  */
 export class PauseScene extends Phaser.Scene {
+  private sceneKey: PauseSceneKey = 'Level';
+  private pauseItems: readonly string[] = LEVEL_PAUSE_ITEMS;
   private levelName = '';
   private levelNumber = 1;
   private levelCount = 4;
@@ -43,6 +50,8 @@ export class PauseScene extends Phaser.Scene {
   }
 
   init(data: PauseSceneData): void {
+    this.sceneKey = data.sceneKey ?? 'Level';
+    this.pauseItems = this.sceneKey === 'Boss' ? BOSS_PAUSE_ITEMS : LEVEL_PAUSE_ITEMS;
     this.levelName = data.levelName ?? '';
     this.levelNumber = data.levelNumber ?? 1;
     this.levelCount = data.levelCount ?? 4;
@@ -93,7 +102,7 @@ export class PauseScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(2);
 
-    this.menuTexts = PAUSE_ITEMS.map((label, index) =>
+    this.menuTexts = this.pauseItems.map((label, index) =>
       this.add
         .text(GAME_WIDTH / 2, 116 + index * 22, label, {
           fontFamily: FONT_FAMILY,
@@ -184,7 +193,7 @@ export class PauseScene extends Phaser.Scene {
   };
 
   private select(index: number): void {
-    const count = PAUSE_ITEMS.length;
+    const count = this.pauseItems.length;
     this.selectedIndex = ((index % count) + count) % count;
     this.refresh();
   }
@@ -215,7 +224,7 @@ export class PauseScene extends Phaser.Scene {
     this.menuTexts.forEach((text, index) => {
       const selected = index === this.selectedIndex;
       text.setVisible(!inConfirm);
-      text.setText(`${selected ? '> ' : '  '}${PAUSE_ITEMS[index]}`);
+      text.setText(`${selected ? '> ' : '  '}${this.pauseItems[index] ?? ''}`);
       text.setColor(selected ? '#f4d35e' : '#cfd2d6');
     });
 
@@ -227,7 +236,9 @@ export class PauseScene extends Phaser.Scene {
     setTestHook({
       ready: true,
       scene: 'Pause',
-      pauseSelection: inConfirm ? 'Confirm Quit' : (PAUSE_ITEMS[this.selectedIndex] ?? 'Resume'),
+      pauseSelection: inConfirm
+        ? 'Confirm Quit'
+        : (this.pauseItems[this.selectedIndex] ?? 'Resume'),
       message: inConfirm
         ? 'Press Enter to quit the run or Escape to return to the pause menu.'
         : 'Paused. Up and down select, Enter confirms, Escape resumes.',
@@ -238,21 +249,21 @@ export class PauseScene extends Phaser.Scene {
     this.refresh();
   }
 
-  private getLevelScene(): LevelScene {
-    return this.scene.get('Level') as LevelScene;
+  private getTargetScene(): LevelScene | BossScene {
+    return this.scene.get(this.sceneKey) as LevelScene | BossScene;
   }
 
   private resumeLevel(): void {
-    this.getLevelScene().closePause();
-    this.scene.resume('Level');
+    this.getTargetScene().closePause();
+    this.scene.resume(this.sceneKey);
     this.scene.stop();
   }
 
   private restartLevel(): void {
-    const level = this.getLevelScene();
-    level.closePause();
-    this.scene.resume('Level');
-    level.restartFromPause();
+    const target = this.getTargetScene();
+    target.closePause();
+    this.scene.resume(this.sceneKey);
+    target.restartFromPause();
     this.scene.stop();
   }
 
@@ -263,9 +274,9 @@ export class PauseScene extends Phaser.Scene {
 
   private quitRun(): void {
     runService.endRun();
-    this.getLevelScene().closePause();
+    this.getTargetScene().closePause();
     this.scene.stop('HUD');
-    this.scene.stop('Level');
+    this.scene.stop(this.sceneKey);
     this.scene.start('Title', { message: 'Run abandoned. The mine waits.' });
   }
 }

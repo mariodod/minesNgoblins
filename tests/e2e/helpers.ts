@@ -2,7 +2,17 @@ import type { Page } from '@playwright/test';
 
 export async function bootToTitle(page: Page, path = '/'): Promise<void> {
   await page.goto(path);
-  await page.waitForFunction(() => window.__MINES_TEST__?.ready === true);
+  await page.waitForFunction(
+    () => window.__MINES_TEST__?.ready === true && window.__MINES_TEST__?.scene === 'Title',
+  );
+
+  // Let the scene's keyboard plugin begin processing events before tests press keys.
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      }),
+  );
 }
 
 export function collectPageErrors(page: Page): string[] {

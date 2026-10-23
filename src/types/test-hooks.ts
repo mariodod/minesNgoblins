@@ -70,6 +70,29 @@ export interface MinesTestHook {
   runItemsPickedUp?: number;
   runLevelsCompleted?: number;
   runTimeMs?: number;
+  runBossAttempts?: number;
+  runBossDefeated?: boolean;
+  runOutcome?: string | null;
+  runDurationMs?: number;
+  runCompleted?: boolean;
+  bossHp?: number;
+  bossMaxHp?: number;
+  bossPhase?: number;
+  bossState?: string;
+  bossAttack?: string | null;
+  bossVulnerable?: boolean;
+  bossHeadX?: number;
+  bossHeadY?: number;
+  bossHeadHits?: number;
+  bossBodyHits?: number;
+  bossDeflects?: number;
+  bossWormlings?: number;
+  bossProjectiles?: number;
+  bossShockwaves?: number;
+  bossFallingRocks?: number;
+  bossSupplies?: number;
+  bossExitOpen?: boolean;
+  bossVictorySequence?: boolean;
   pauseSelection?: string;
   settingsSelection?: string;
   masterVolume?: number;
@@ -79,7 +102,17 @@ export interface MinesTestHook {
 declare global {
   interface Window {
     __MINES_TEST__?: MinesTestHook;
+    __MINES_DEBUG__?: MinesDebugApi;
   }
+}
+
+export interface MinesDebugApi {
+  hitBoss: (part: 'body' | 'head', amount?: number) => boolean;
+  skipBossPhase: () => void;
+  defeatBoss: () => void;
+  defeatPlayer: () => void;
+  damagePlayer: (amount?: number) => void;
+  healPlayer: () => void;
 }
 
 export {};

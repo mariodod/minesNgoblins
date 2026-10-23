@@ -15,7 +15,7 @@ interface TitleSceneData {
   message?: string;
 }
 
-const DEFAULT_TITLE_MESSAGE = 'M3 descent is live. X throws rocks, C uses items, E interacts.';
+const DEFAULT_TITLE_MESSAGE = 'M4 boss is live. Descend, break the Great Worm, and finish the run.';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
 
@@ -192,7 +192,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(8, 260, `v${APP_VERSION} / M3`, {
+      .text(8, 260, `v${APP_VERSION} / M4`, {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',
@@ -200,7 +200,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0, 0.5);
 
     this.add
-      .text(GAME_WIDTH - 8, 260, 'M3 DESCENT BUILD', {
+      .text(GAME_WIDTH - 8, 260, 'M4 BOSS BUILD', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',
@@ -307,12 +307,22 @@ export class TitleScene extends Phaser.Scene {
     const difficultyId = resolveDifficultyId();
     const levelId = resolveLevelId();
     const level = getLevelAsset(levelId);
-    const spawnAtExit =
-      import.meta.env.DEV && new URLSearchParams(window.location.search).get('spawn') === 'exit';
+    const params = new URLSearchParams(window.location.search);
+    const debugBoss = import.meta.env.DEV && params.get('boss') === '1';
+    const spawnAtExit = import.meta.env.DEV && params.get('spawn') === 'exit';
     runService.startRun(difficultyId);
-    this.showMessage(`Descending into ${level?.title ?? 'the mine'}...`);
+    this.showMessage(
+      debugBoss
+        ? 'Debug descent: the Great Worm awaits...'
+        : `Descending into ${level?.title ?? 'the mine'}...`,
+    );
     this.cameras.main.fadeOut(200, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
+      if (debugBoss) {
+        this.scene.start('Boss', { difficultyId });
+        return;
+      }
+
       this.scene.start('Level', { levelId, difficultyId, spawnAtExit });
     });
   }

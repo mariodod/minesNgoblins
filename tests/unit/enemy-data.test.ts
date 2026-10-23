@@ -9,13 +9,14 @@ import {
 } from '../../src/data/enemies';
 
 describe('enemy data', () => {
-  it('defines the four standard enemies plus the practice dummy', () => {
+  it('defines the four standard enemies, the practice dummy, and the boss add', () => {
     expect(ENEMY_IDS).toEqual([
       'practice-dummy',
       'cave-bat',
       'goblin-scavenger',
       'skeleton-thrower',
       'armored-beetle',
+      'wormling',
     ]);
 
     const expectedHp: Record<EnemyId, number> = {
@@ -24,11 +25,12 @@ describe('enemy data', () => {
       'goblin-scavenger': 2,
       'skeleton-thrower': 2,
       'armored-beetle': 3,
+      wormling: 3,
     };
 
     for (const id of ENEMY_IDS) {
       expect(ENEMIES[id].baseHp).toBe(expectedHp[id]);
-      expect(ENEMIES[id].contactDamage).toBe(1);
+      expect(ENEMIES[id].contactDamage).toBe(id === 'wormling' ? 2 : 1);
       expect(ENEMIES[id].spriteKey.length).toBeGreaterThan(0);
       expect(ENEMIES[id].hitbox.width).toBeGreaterThan(0);
       expect(ENEMIES[id].hitbox.height).toBeGreaterThan(0);

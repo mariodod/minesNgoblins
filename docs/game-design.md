@@ -385,27 +385,27 @@ A colossal worm that has burrowed through the heart of the mine. It attacks from
 
 ### 9.2 Arena
 
-- Two screens wide, one and a half screens tall.
+- Two screens wide (960×270), one screen tall.
 - Three burrow holes: left, center, right.
 - Two elevated side platforms for repositioning.
 - Falling rocks from the ceiling in later phases.
-- Two supply pedestals appear after phase transitions, offering a knife or rune scroll. Picking them up is optional and does not invalidate a Primitive run; using them does.
+- Two supply pedestals appear after the phase 2 and phase 3 transitions. The pair is a healing salve plus either a knife or a rune scroll. Picking them up is optional and does not invalidate a Primitive run; using a secondary weapon does.
 - Arena exits are sealed until the worm dies.
 
 ### 9.3 Health and phases
 
-- Starting base HP: **24**.
-- Difficulty HP multiplier applies: Normal 24, Hard 48, Impossible 72, Crazy 120. This is intentionally a long, demanding fight on Crazy; the balance pass may tune boss base HP separately if needed.
+- Starting base HP: **48**.
+- The boss uses a separate difficulty curve: Normal 48, Hard 72, Impossible 96, Crazy 120. Keeping the curve separate from the standard enemy multiplier preserves the designed 120 HP Crazy fight.
 - Phase thresholds: **66%** and **33%**.
 - Only the **head** is vulnerable. Body hits produce a metallic/stone spark and deal 0 damage.
 - The worm is untargetable while fully burrowed.
-- After a failed charge, the head is stunned and exposed for a 2-second punish window.
+- After a failed charge, the head is exposed for the phase's recovery window (about 2–2.5 seconds).
 
-| Phase | Health range | Behavior                                                                      |
-| ----- | ------------ | ----------------------------------------------------------------------------- |
-| 1     | 100–66%      | Slow burrow, single emerge bite, occasional rock spit                         |
-| 2     | 66–33%       | Faster burrow, horizontal charge, two-rock spit, summons 2 Wormlings          |
-| 3     | 33–0%        | Frenzied emerge pattern, falling rocks, three-rock spit, shorter stun windows |
+| Phase | Health range | Behavior                                                                            |
+| ----- | ------------ | ----------------------------------------------------------------------------------- |
+| 1     | 100–66%      | Alternating emerge bites and single-rock spits; long recovery windows               |
+| 2     | 66–33%       | Adds burrow charge, quake, two-rock spit, and a summon of up to two Wormlings       |
+| 3     | 33–0%        | Faster telegraphs, three-rock spit, four-rock quake, charges, and Wormling pressure |
 
 ### 9.4 Attacks
 
@@ -420,8 +420,8 @@ A colossal worm that has burrowed through the heart of the mine. It attacks from
 ### 9.5 Victory
 
 - The final hit triggers slow motion, a screen-wide rumble, and the worm's collapse.
-- The arena settles; the player walks to the elevator automatically or presses Interact to leave.
-- Results screen appears with run stats, badges, achievements, and unlocks.
+- The arena settles and the elevator opens. Press Interact anywhere to leave, or advance automatically after a short delay.
+- The Results screen appears with run stats; badges, achievements, and unlocks arrive in M5–M6.
 - Boss defeat is the only completion condition for a run.
 
 ### 9.6 Boss design rules
@@ -453,7 +453,7 @@ Rules and edge cases:
 - In Crazy, the exit is locked until the alive-enemy count is zero.
 - Pacifist runs cannot be completed on Crazy because the mode requires killing every enemy. The UI communicates this before the run starts.
 - Difficulties do not change item damage or ammo counts in v1; they change survivability and enemy durability.
-- Boss HP uses the same enemy multiplier. The balance pass may introduce a boss-specific curve if Crazy fights become too long.
+- Boss HP uses a separate `bossHpMultiplier` (Normal 1, Hard 1.5, Impossible 2, Crazy 2.5) on top of its 48 base HP. The balance pass may tune the base value, but the curve is now data-driven.
 - Achievements are difficulty-aware: completing Hard, Impossible, and Crazy each grants a separate reward.
 
 ### 10.1 "Five lives" interpretation
@@ -756,9 +756,9 @@ The balance pass in M7 prioritizes feel over exact numbers. The values in this d
 
 ## 19. Open questions and assumptions
 
-1. **"Five lives" meaning.** The plan assumes 5 HP/hearts, not 5 retries. Confirm before M5.
+1. **"Five lives" meaning.** Resolved in M3: five means 5 HP/hearts, not 5 retries. Death restarts the current level with full HP.
 2. **Scope.** Four standard levels plus one boss is the v1 target. Confirm this is enough content.
-3. **Boss HP scaling.** The plan applies the full difficulty multiplier to the boss, which makes Crazy a 120 HP base fight. A boss-specific curve may be better; decide after the M4 prototype and M7 playtests.
+3. **Boss HP scaling.** Resolved in M4: the boss has 48 base HP and a separate 1/1.5/2/2.5 difficulty curve, producing 48/72/96/120. Normal pacing was checked at 2:01 with a scripted rock-only bot; Crazy still needs a separate timing pass in M7.
 4. **Game language.** Game UI is English for v1, while docs/code are English. Spanish UI can be added later. Confirm.
 5. **Art and audio sourcing.** Custom, commissioned, or licensed placeholder assets? This affects the M6 estimate significantly.
 6. **License.** The repository license and asset licenses are undecided. Choose before public release.
