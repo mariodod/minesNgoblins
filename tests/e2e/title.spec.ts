@@ -1,34 +1,23 @@
 import { expect, test } from '@playwright/test';
+import { bootToTitle, collectPageErrors, pressKey } from './helpers';
 
 test('boots to the title screen and supports keyboard navigation', async ({ page }) => {
-  const consoleErrors: string[] = [];
-  const pageErrors: string[] = [];
+  const errors = collectPageErrors(page);
 
-  page.on('console', (message) => {
-    if (message.type() === 'error') {
-      consoleErrors.push(message.text());
-    }
-  });
-  page.on('pageerror', (error) => {
-    pageErrors.push(error.message);
-  });
-
-  await page.goto('/');
-  await page.waitForFunction(() => window.__MINES_TEST__?.ready === true);
+  await bootToTitle(page);
 
   await expect(page.locator('canvas')).toBeVisible();
   await expect
     .poll(() => page.evaluate(() => window.__MINES_TEST__?.titleSelection))
     .toBe('Start Run');
 
-  await page.keyboard.press('ArrowDown');
+  await pressKey(page, 'ArrowDown');
   await expect
     .poll(() => page.evaluate(() => window.__MINES_TEST__?.titleSelection))
     .toBe('Achievements');
 
-  await page.keyboard.press('Enter');
+  await pressKey(page, 'Enter');
   await expect.poll(() => page.evaluate(() => window.__MINES_TEST__?.message)).toContain('M5');
 
-  expect(pageErrors).toEqual([]);
-  expect(consoleErrors).toEqual([]);
+  expect(errors).toEqual([]);
 });

@@ -1,42 +1,40 @@
 import { expect, test, type Page } from '@playwright/test';
-import { bootToTitle, readHook } from './helpers';
+import { bootToTitle, pressKey, readHook, settleInput } from './helpers';
 
 async function openOptions(page: Page): Promise<void> {
-  for (let index = 0; index < 3; index += 1) {
-    await page.keyboard.press('ArrowDown');
-  }
-
+  await pressKey(page, 'ArrowDown');
+  await expect.poll(() => readHook<string>(page, 'titleSelection')).toBe('Achievements');
+  await pressKey(page, 'ArrowDown');
+  await expect.poll(() => readHook<string>(page, 'titleSelection')).toBe('Skins');
+  await pressKey(page, 'ArrowDown');
   await expect.poll(() => readHook<string>(page, 'titleSelection')).toBe('Options');
-  await page.keyboard.press('Enter');
+  await pressKey(page, 'Enter');
   await expect.poll(() => readHook<string>(page, 'scene')).toBe('Settings');
+  await settleInput(page);
 }
 
 test('title options change and persist volume and screen shake', async ({ page }) => {
   await bootToTitle(page);
   await openOptions(page);
 
-  await page.keyboard.press('ArrowRight');
-  await page.keyboard.press('ArrowRight');
+  await pressKey(page, 'ArrowRight');
+  await expect.poll(() => readHook<number>(page, 'masterVolume')).toBe(0.9);
+  await pressKey(page, 'ArrowRight');
   await expect.poll(() => readHook<number>(page, 'masterVolume')).toBe(1);
 
-  await page.keyboard.press('ArrowDown');
+  await pressKey(page, 'ArrowDown');
   await expect.poll(() => readHook<string>(page, 'settingsSelection')).toBe('Screen Shake');
-  await page.keyboard.press('ArrowRight');
+  await pressKey(page, 'ArrowRight');
   await expect.poll(() => readHook<string>(page, 'screenShake')).toBe('reduced');
 
-  await page.keyboard.press('Escape');
+  await pressKey(page, 'Escape');
   await expect.poll(() => readHook<string>(page, 'scene')).toBe('Title');
 
   await page.reload();
   await page.waitForFunction(
     () => window.__MINES_TEST__?.ready === true && window.__MINES_TEST__?.scene === 'Title',
   );
-  await page.evaluate(
-    () =>
-      new Promise<void>((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-      }),
-  );
+  await settleInput(page);
   await openOptions(page);
 
   await expect.poll(() => readHook<number>(page, 'masterVolume')).toBe(1);

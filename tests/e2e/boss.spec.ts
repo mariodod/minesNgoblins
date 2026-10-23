@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { bootToTitle, collectPageErrors, readHook } from './helpers';
+import { bootToTitle, collectPageErrors, pressKey, readHook } from './helpers';
 
 async function startBoss(
   page: Parameters<typeof bootToTitle>[0],
   path = '/?boss=1',
 ): Promise<void> {
   await bootToTitle(page, path);
-  await page.keyboard.press('Enter');
+  await pressKey(page, 'Enter');
   await page.waitForFunction(() => window.__MINES_TEST__?.scene === 'Boss');
 }
 
@@ -97,7 +97,7 @@ test('phase supplies can be collected from their pedestals', async ({ page }) =>
   await page.waitForFunction(() => (window.__MINES_TEST__?.playerX ?? 0) >= 120);
   await page.keyboard.up('ArrowRight');
   await page.waitForTimeout(80);
-  await page.keyboard.press('E');
+  await pressKey(page, 'E');
 
   await expect.poll(() => readHook<number>(page, 'bossSupplies')).toBe(1);
   await expect.poll(() => readHook<number>(page, 'hp')).toBeGreaterThan(3);
@@ -117,12 +117,12 @@ test('defeating the boss completes the run and reaches Results', async ({ page }
   await expect.poll(() => readHook<number>(page, 'runDurationMs')).toBeGreaterThan(0);
   await expect.poll(() => readHook<boolean>(page, 'bossExitOpen'), { timeout: 9000 }).toBe(true);
 
-  await page.keyboard.press('E');
+  await pressKey(page, 'E');
   await expect.poll(() => readHook<string>(page, 'scene'), { timeout: 8000 }).toBe('Results');
   await expect.poll(() => readHook<boolean>(page, 'runCompleted')).toBe(true);
   await expect.poll(() => readHook<string>(page, 'message')).toContain('Great Worm');
 
-  await page.keyboard.press('Enter');
+  await pressKey(page, 'Enter');
   await expect.poll(() => readHook<string>(page, 'scene'), { timeout: 5000 }).toBe('Title');
 
   expect(errors).toEqual([]);
@@ -154,13 +154,13 @@ test('boss pause menu resumes and can restart the fight', async ({ page }) => {
   await startBoss(page);
   await expect.poll(() => readHook<boolean>(page, 'bossVulnerable')).toBe(true);
 
-  await page.keyboard.press('Escape');
+  await pressKey(page, 'Escape');
   await expect.poll(() => readHook<string>(page, 'scene')).toBe('Pause');
   await expect.poll(() => readHook<string>(page, 'pauseSelection')).toBe('Resume');
 
-  await page.keyboard.press('ArrowDown');
+  await pressKey(page, 'ArrowDown');
   await expect.poll(() => readHook<string>(page, 'pauseSelection')).toBe('Restart Fight');
-  await page.keyboard.press('Enter');
+  await pressKey(page, 'Enter');
 
   await expect.poll(() => readHook<number>(page, 'runBossAttempts'), { timeout: 8000 }).toBe(2);
   await expect.poll(() => readHook<number>(page, 'bossHp')).toBe(48);
