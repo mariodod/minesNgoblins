@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
+import { getChallengeProgress } from '../systems/challenges';
 import { runService } from '../systems/run-service';
 import { setTestHook } from '../utils/test-hooks';
 import type { BossScene } from './boss-scene';
@@ -44,6 +45,7 @@ export class PauseScene extends Phaser.Scene {
   private menuTexts: Phaser.GameObjects.Text[] = [];
   private confirmText!: Phaser.GameObjects.Text;
   private hintText!: Phaser.GameObjects.Text;
+  private challengeSummary = '';
 
   constructor() {
     super('Pause');
@@ -98,6 +100,24 @@ export class PauseScene extends Phaser.Scene {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#7f8c8d',
+      })
+      .setOrigin(0.5)
+      .setDepth(2);
+
+    const progress = getChallengeProgress(runService.snapshot);
+    const anyFailed = progress.some((challenge) => challenge.status === 'failed');
+    this.challengeSummary = progress
+      .map((challenge) => {
+        const label =
+          challenge.status === 'active' ? 'OK' : challenge.status === 'failed' ? 'FAIL' : 'N/A';
+        return `${challenge.name.toUpperCase()} ${label}`;
+      })
+      .join('  ');
+    this.add
+      .text(GAME_WIDTH / 2, 101, this.challengeSummary, {
+        fontFamily: FONT_FAMILY,
+        fontSize: '6px',
+        color: anyFailed ? '#ff9a8a' : '#9fd8cb',
       })
       .setOrigin(0.5)
       .setDepth(2);
@@ -239,6 +259,7 @@ export class PauseScene extends Phaser.Scene {
       pauseSelection: inConfirm
         ? 'Confirm Quit'
         : (this.pauseItems[this.selectedIndex] ?? 'Resume'),
+      challengeSummary: this.challengeSummary,
       message: inConfirm
         ? 'Press Enter to quit the run or Escape to return to the pause menu.'
         : 'Paused. Up and down select, Enter confirms, Escape resumes.',

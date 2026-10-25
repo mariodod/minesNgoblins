@@ -119,11 +119,83 @@ describe('SaveService', () => {
     service.equipSkin('locked-skin');
     expect(service.settings.equippedSkin).toBe('delver');
 
+    service.equipSkin('obsidian');
+    expect(service.settings.equippedSkin).toBe('delver');
+
     service.updateSettings({ masterVolume: 0.1 });
     service.reset();
 
     expect(service.settings.masterVolume).toBe(0.8);
     expect(service.data.stats.runsStarted).toBe(0);
     expect(new SaveService(storage).settings.masterVolume).toBe(0.8);
+  });
+
+  it('records each used secondary item once and persists the set', () => {
+    const storage = new MemoryStorage();
+    const service = new SaveService(storage);
+
+    service.recordItemUsed('knife');
+    service.recordItemUsed('knife');
+    service.recordItemUsed('rune-scroll');
+
+    expect(service.data.stats.usedItems).toEqual(['knife', 'rune-scroll']);
+    expect(new SaveService(storage).data.stats.usedItems).toEqual(['knife', 'rune-scroll']);
+  });
+
+  it('sanitizes invalid and locked equipped skins when loading', () => {
+    const invalidStorage = new MemoryStorage();
+    const invalidSave = createDefaultSaveData();
+    invalidSave.settings.equippedSkin = 'not-a-skin';
+    invalidStorage.setItem(SAVE_KEY, JSON.stringify(invalidSave));
+
+    const invalid = new SaveService(invalidStorage);
+    expect(invalid.settings.equippedSkin).toBe('delver');
+
+    const lockedStorage = new MemoryStorage();
+    const lockedSave = createDefaultSaveData();
+    lockedSave.settings.equippedSkin = 'obsidian';
+    lockedStorage.setItem(SAVE_KEY, JSON.stringify(lockedSave));
+
+    const locked = new SaveService(lockedStorage);
+    expect(locked.settings.equippedSkin).toBe('delver');
+
+    const unlockedStorage = new MemoryStorage();
+    const unlockedSave = createDefaultSaveData();
+    unlockedSave.settings.equippedSkin = 'obsidian';
+    unlockedSave.skins['obsidian'] = { unlockedAt: '2026-10-19T00:00:00.000Z' };
+    unlockedStorage.setItem(SAVE_KEY, JSON.stringify(unlockedSave));
+
+    const unlocked = new SaveService(unlockedStorage);
+    expect(unlocked.settings.equippedSkin).toBe('obsidian');
+  });
+
+  it('filters invalid and duplicate used items from stored data', () => {
+    const parsed = parseSaveData(
+      JSON.stringify({
+        version: 1,
+        stats: {
+          usedItems: ['knife', 'knife', 'bogus', 7, 'rune-scroll'],
+        },
+      }),
+    );
+
+    expect(parsed.status).toBe('ok');
+    expect(parsed.data.stats.usedItems).toEqual(['knife', 'rune-scroll']);
+  });
+
+  it('reports a backup key when recovering through SaveService', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(SAVE_KEY, '{broken');
+
+    const service = new SaveService(storage);
+
+    expect(service.loadStatus).toBe('corrupt');
+    expect(service.backupKey).toBeDefined();
+    expect(service.settings.equippedSkin).toBe('delver');
+    expect(parseSaveData(storage.getItem(SAVE_KEY)).status).toBe('ok');
+
+    if (service.backupKey) {
+      expect(storage.getItem(service.backupKey)).toBe('{broken');
+    }
   });
 });

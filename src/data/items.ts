@@ -75,10 +75,14 @@ export const SECONDARY_ITEMS: Record<SecondaryItemId, SecondaryItemDefinition> =
   },
 };
 
-export const PICKUP_IDS = [
+export const SECONDARY_ITEM_IDS = [
   'knife',
   'flintlock',
   'rune-scroll',
+] as const satisfies readonly SecondaryItemId[];
+
+export const PICKUP_IDS = [
+  ...SECONDARY_ITEM_IDS,
   'healing-salve',
   'ore',
 ] as const satisfies readonly PickupId[];

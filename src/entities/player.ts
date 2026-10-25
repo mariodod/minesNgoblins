@@ -49,8 +49,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     y: number,
     inputService: InputService,
     maxHp: number = PLAYER_TUNING.maxHp,
+    textureKey = 'miner',
   ) {
-    super(scene, x, y, 'miner');
+    super(scene, x, y, textureKey);
 
     scene.add.existing(this);
     scene.physics.add.existing(this);

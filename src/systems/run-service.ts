@@ -1,7 +1,26 @@
 import type { DifficultyId } from '../data/difficulties';
 import type { SecondaryItemId } from '../data/items';
+import type { DamageSource } from './damage';
 
 export type RunOutcome = 'abandoned' | 'victory' | null;
+
+export interface RunKillRecord {
+  enemyId: string;
+  source: DamageSource;
+  levelId: string | null;
+}
+
+export interface RunDamageRecord {
+  amount: number;
+  source: DamageSource;
+  levelId: string | null;
+  boss: boolean;
+}
+
+export interface RunItemUseRecord {
+  itemId: SecondaryItemId;
+  levelId: string | null;
+}
 
 export interface RunSnapshot {
   active: boolean;
@@ -11,13 +30,19 @@ export interface RunSnapshot {
   startedAt: number;
   levelStartedAt: number;
   kills: number;
+  killRecords: RunKillRecord[];
   damageTaken: number;
+  damageRecords: RunDamageRecord[];
   deaths: number;
   itemUses: number;
+  itemUseRecords: RunItemUseRecord[];
   itemsPickedUp: number;
   oreCollected: number;
+  levelOreCollected: number;
+  levelOreTotal: number;
   levelsCompleted: number;
   bossAttempts: number;
+  bossDamageTaken: number;
   bossDefeated: boolean;
   outcome: RunOutcome;
   finishedAt: number;
@@ -39,25 +64,40 @@ const INACTIVE_STATE: RunSnapshot = {
   startedAt: 0,
   levelStartedAt: 0,
   kills: 0,
+  killRecords: [],
   damageTaken: 0,
+  damageRecords: [],
   deaths: 0,
   itemUses: 0,
+  itemUseRecords: [],
   itemsPickedUp: 0,
   oreCollected: 0,
+  levelOreCollected: 0,
+  levelOreTotal: 0,
   levelsCompleted: 0,
   bossAttempts: 0,
+  bossDamageTaken: 0,
   bossDefeated: false,
   outcome: null,
   finishedAt: 0,
   runDurationMs: 0,
 };
 
+function createInactiveState(): RunSnapshot {
+  return {
+    ...INACTIVE_STATE,
+    killRecords: [],
+    damageRecords: [],
+    itemUseRecords: [],
+  };
+}
+
 /**
- * Session-scoped run state. Scenes report gameplay events here; future rule,
- * achievement, and results services can consume the same snapshot.
+ * Session-scoped run state. Scenes report gameplay events here; rule,
+ * achievement, and results services consume the same snapshot.
  */
 export class RunService {
-  private state: RunSnapshot = { ...INACTIVE_STATE };
+  private state: RunSnapshot = createInactiveState();
   private levelCarry: RunCarryState | null = null;
 
   get isActive(): boolean {
@@ -65,12 +105,17 @@ export class RunService {
   }
 
   get snapshot(): RunSnapshot {
-    return { ...this.state };
+    return {
+      ...this.state,
+      killRecords: [...this.state.killRecords],
+      damageRecords: [...this.state.damageRecords],
+      itemUseRecords: [...this.state.itemUseRecords],
+    };
   }
 
   startRun(difficultyId: DifficultyId, now = Date.now()): void {
     this.state = {
-      ...INACTIVE_STATE,
+      ...createInactiveState(),
       active: true,
       difficultyId,
       startedAt: now,
@@ -79,7 +124,7 @@ export class RunService {
     this.levelCarry = null;
   }
 
-  enterLevel(levelIndex: number, levelId: string, now = Date.now()): void {
+  enterLevel(levelIndex: number, levelId: string, now = Date.now(), levelOreTotal = 0): void {
     if (!this.state.active) {
       throw new Error('Cannot enter a level without an active run.');
     }
@@ -87,6 +132,8 @@ export class RunService {
     this.state.levelIndex = Math.max(0, Math.floor(levelIndex));
     this.state.levelId = levelId;
     this.state.levelStartedAt = now;
+    this.state.levelOreCollected = 0;
+    this.state.levelOreTotal = Math.max(0, Math.floor(levelOreTotal));
   }
 
   completeLevel(carry: RunCarryState): void {
@@ -115,6 +162,9 @@ export class RunService {
     this.state.levelId = 'great-worm';
     this.state.levelStartedAt = now;
     this.state.bossAttempts += 1;
+    this.state.bossDamageTaken = 0;
+    this.state.levelOreCollected = 0;
+    this.state.levelOreTotal = 0;
   }
 
   /**
@@ -139,15 +189,30 @@ export class RunService {
     return carry;
   }
 
-  recordKill(): void {
+  recordKill(source: DamageSource, enemyId: string): void {
     if (this.state.active) {
       this.state.kills += 1;
+      this.state.killRecords.push({
+        enemyId,
+        source,
+        levelId: this.state.levelId,
+      });
     }
   }
 
-  recordDamage(amount: number): void {
+  recordDamage(amount: number, source: DamageSource, boss = false): void {
     if (this.state.active && amount > 0) {
       this.state.damageTaken += amount;
+      this.state.damageRecords.push({
+        amount,
+        source,
+        levelId: this.state.levelId,
+        boss,
+      });
+
+      if (boss) {
+        this.state.bossDamageTaken += amount;
+      }
     }
   }
 
@@ -157,9 +222,13 @@ export class RunService {
     }
   }
 
-  recordItemUse(): void {
+  recordItemUse(itemId: SecondaryItemId): void {
     if (this.state.active) {
       this.state.itemUses += 1;
+      this.state.itemUseRecords.push({
+        itemId,
+        levelId: this.state.levelId,
+      });
     }
   }
 
@@ -172,6 +241,7 @@ export class RunService {
   recordOre(amount: number): void {
     if (this.state.active && amount > 0) {
       this.state.oreCollected += amount;
+      this.state.levelOreCollected += amount;
     }
   }
 
@@ -195,7 +265,7 @@ export class RunService {
   }
 
   reset(): void {
-    this.state = { ...INACTIVE_STATE };
+    this.state = createInactiveState();
     this.levelCarry = null;
   }
 }

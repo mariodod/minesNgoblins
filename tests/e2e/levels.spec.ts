@@ -62,13 +62,14 @@ test('the elevator stays locked on Crazy while enemies remain', async ({ page })
   expect(errors).toEqual([]);
 });
 
-test('debug skip advances the run through all four levels into the boss arena', async ({
+test('debug skip advances through all four levels and preserves Hard into the boss', async ({
   page,
 }) => {
   const errors = collectPageErrors(page);
 
-  await startRun(page, '/?level=shaft-entrance');
+  await startRun(page, '/?level=shaft-entrance&difficulty=hard');
   await expect.poll(() => readHook<string>(page, 'levelId')).toBe('shaft-entrance');
+  await expect.poll(() => readHook<string>(page, 'difficulty')).toBe('hard');
 
   for (const level of LEVELS.slice(1)) {
     await page.keyboard.press('F4');
@@ -80,9 +81,10 @@ test('debug skip advances the run through all four levels into the boss arena', 
   await page.keyboard.press('F4');
   await expect.poll(() => readHook<string>(page, 'scene')).toBe('Boss');
   await expect.poll(() => readHook<string>(page, 'levelId')).toBe('great-worm');
+  await expect.poll(() => readHook<string>(page, 'difficulty')).toBe('hard');
   await expect.poll(() => readHook<number>(page, 'runLevelsCompleted')).toBe(4);
   await expect.poll(() => readHook<number>(page, 'runBossAttempts')).toBe(1);
-  await expect.poll(() => readHook<number>(page, 'bossMaxHp')).toBe(48);
+  await expect.poll(() => readHook<number>(page, 'bossMaxHp')).toBe(72);
   await expect.poll(() => readHook<boolean>(page, 'runActive')).toBe(true);
 
   expect(errors).toEqual([]);

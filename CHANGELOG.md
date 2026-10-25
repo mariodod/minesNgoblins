@@ -4,6 +4,33 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses semantic versioning once public releases begin.
 
+## [0.5.0] - 2026-10-24
+
+### Added
+
+- M5: `RunSetupScene` difficulty selector with Normal, Hard, Impossible, and Crazy cards, stat summaries, warnings, and the recommended Normal pick.
+- M5: Crazy full-clear rule, living-enemy HUD counter, locked elevator prompt, and challenge-track summary in Pause.
+- M5: run attribution for standard-enemy kills, Wormling kills, damage by source, boss damage, deaths, item uses, pickups, per-level ore, and boss attempts.
+- M5: pure Pacifist, Primitive, Untouchable, and Legend evaluation with complete, failed, and unavailable states plus readable failure reasons.
+- M5: Results badges, stats, newly unlocked achievements, unlocked skins, and the return-to-title flow.
+- M5: 12 achievements covering level, ore, boss, item, challenge, and difficulty clears, with once-only persistence and non-blocking toasts.
+- M5: 9 palette-only skins, achievement reward mapping, the Achievements and Skins screens, previews, equip flow, and skin sanitization on load.
+- M5: Title menu entries for Start Run, Achievements, Skins, and Options, plus a corrupt-save recovery notice.
+- M5: save v1 with unique `usedItems`, validated settings, achievements, skins, aggregate stats, and raw-value backups under `minesNgoblins.save.backup.<timestamp>`.
+- M5: unit coverage for challenge rules, achievement triggers and duplicate prevention, skin data, save repair, and lethal Impossible/Crazy hits.
+- M5: Playwright coverage for difficulty setup, Crazy HUD and pause state, Results reasons, every available difficulty × challenge combination, achievement toasts, achievement/skin persistence, and corrupt-save recovery.
+- M5: [M5 Test Matrix](docs/m5-test-matrix.md) documenting the full difficulty/run matrix, invalidation rules, and remaining M7 manual checks.
+
+### Changed
+
+- M5: Start Run now opens the difficulty selector before level 1 instead of starting a Normal run immediately.
+- M5: boss victory records the completed run once, then Results evaluates and presents challenge and achievement outcomes.
+- M5: the chosen difficulty now carries from the final level into the boss arena.
+- M5: the Results screen replaces the M4 placeholder with live badge, achievement, and skin reporting.
+- M5: the Title footer identifies the `v0.5.0 / M5` meta build.
+- M5: development `?level=` and `?difficulty=` values now preselect their RunSetup options; `?spawn=exit` and `?boss=1` still bypass setup.
+- M5: achievement reward skins are synchronized for saves that contain an achievement without its matching skin record.
+
 ## [0.4.0] - 2026-10-22
 
 ### Added

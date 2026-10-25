@@ -1,8 +1,8 @@
 # Mines & Goblins — Roadmap
 
-**Version:** 0.5  
-**Date:** 2026-10-22  
-**Status:** M4 complete at `v0.4.0`; M5 difficulties, challenge runs, and meta work is next
+**Version:** 0.6  
+**Date:** 2026-10-24  
+**Status:** M5 complete at `v0.5.0`; M6 final art, audio, UI, accessibility, and content polish is next
 
 ---
 
@@ -37,7 +37,7 @@ These numbers are planning aids, not promises. The art/audio pass in M6 can run 
 | **M2** | Combat and items             | Enemy roster, item arsenal, crates, HUD, feedback               | 8–10 days ✅ |
 | **M3** | Levels and progression       | Four levels, transitions, hazards, Normal playable end to end   | 8–10 days ✅ |
 | **M4** | Boss                         | Great Worm with phases, arena, victory flow                     |  6–8 days ✅ |
-| **M5** | Difficulties, runs, and meta | All difficulties, challenge tracking, achievements, skins, save |    8–10 days |
+| **M5** | Difficulties, runs, and meta | All difficulties, challenge tracking, achievements, skins, save | 8–10 days ✅ |
 | **M6** | Content and polish           | Final art/audio/UI, accessibility, content complete             |   12–18 days |
 | **M7** | Balance and QA               | Playtests, tuning, performance, release candidate               |    8–12 days |
 | **M8** | Release                      | v1.0 tag, live deploy, docs, release notes                      |     2–3 days |
@@ -255,6 +255,8 @@ now lives at `docs/media/m3-run.gif`.
 
 ### M5 — Difficulties, challenge runs, achievements, and skins
 
+**Status:** Complete (2026-10-24, `v0.5.0`).
+
 **Goal:** Turn the core game into a replayable challenge game with persistent rewards.
 
 **Deliverables**
@@ -289,6 +291,8 @@ now lives at `docs/media/m3-run.gif`.
 
 **Dependencies:** M3–M4.  
 **Risks:** Rule edge cases; save schema mistakes; UI complexity; Crazy balance.
+
+**Completion notes:** M5 shipped as `v0.5.0` on 2026-10-24. Difficulty selection, the Crazy full-clear gate and HUD counter, run attribution, pure challenge rules, Results badges with reasons, twelve achievements, nine palette skins, and save v1 with corrupt-save backup recovery are implemented. Unit and Playwright coverage exercises every available difficulty × challenge combination; Crazy Pacifist and Legend are enforced as unavailable and explained in the UI. The per-combination evidence and M7 manual follow-ups are recorded in [M5 Test Matrix](m5-test-matrix.md). Human Hard/Impossible/Crazy route pacing and all-kill balance remain M7 work.
 
 ---
 
@@ -515,19 +519,20 @@ Do **not** cut:
 1. Continue resolving the remaining release decisions:
    - English-only UI for v1.
    - Art/audio sourcing and repository license.
-2. M4 is complete: the four-level run now ends in the Great Worm fight and results flow.
-3. Start M5 with difficulty selection, challenge-run tracking, achievements, skins, and save data.
+2. M5 is complete: all difficulties, challenge badges, achievements, skins, and save v1 are implemented.
+3. Start M6 by replacing placeholder art/audio and finalizing the title, Results, achievement, and skin screens.
 4. Record a boss-fight media capture for the README or release notes.
-5. Schedule the first external playtest for the end of M5 or early M7.
+5. Schedule the first external playtest for M7 and use the M5 matrix as its starting checklist.
 
 ---
 
 ## 11. Revision history
 
-| Version | Date       | Notes                                                                        |
-| ------- | ---------- | ---------------------------------------------------------------------------- |
-| 0.5     | 2026-10-22 | M4 Great Worm, supplies, victory, and results placeholder complete at v0.4.0 |
-| 0.4     | 2026-10-22 | M3 levels and progression complete at v0.3.0; M4 boss next                   |
-| 0.3     | 2026-10-21 | M2 combat and items complete at v0.2.0; M3 levels and progression next       |
-| 0.2     | 2026-10-19 | M0 scaffold, title screen, tooling, tests, CI, and deployment workflows done |
-| 0.1     | 2026-10-19 | Initial roadmap based on the project brief and design draft                  |
+| Version | Date       | Notes                                                                                |
+| ------- | ---------- | ------------------------------------------------------------------------------------ |
+| 0.6     | 2026-10-24 | M5 difficulties, challenge runs, achievements, skins, and save v1 complete at v0.5.0 |
+| 0.5     | 2026-10-22 | M4 Great Worm, supplies, victory, and results placeholder complete at v0.4.0         |
+| 0.4     | 2026-10-22 | M3 levels and progression complete at v0.3.0; M4 boss next                           |
+| 0.3     | 2026-10-21 | M2 combat and items complete at v0.2.0; M3 levels and progression next               |
+| 0.2     | 2026-10-19 | M0 scaffold, title screen, tooling, tests, CI, and deployment workflows done         |
+| 0.1     | 2026-10-19 | Initial roadmap based on the project brief and design draft                          |

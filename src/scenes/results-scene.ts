@@ -3,15 +3,14 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
 import { BOSS_DEFINITION } from '../data/boss';
 import { getDifficulty } from '../data/difficulties';
 import { LEVEL_COUNT } from '../data/level-registry';
-import { runService } from '../systems/run-service';
+import { SKINS, type SkinId } from '../data/skins';
+import type { AchievementService, AchievementUnlock } from '../services/achievement-service';
+import type { SaveService } from '../services/save-service';
+import { evaluateChallenges, type ChallengeResult } from '../systems/challenges';
+import { runService, type RunSnapshot } from '../systems/run-service';
 import { setTestHook } from '../utils/test-hooks';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
-
-interface StatRow {
-  label: string;
-  value: string;
-}
 
 function formatTime(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
@@ -20,13 +19,30 @@ function formatTime(ms: number): string {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
+function statusColor(status: ChallengeResult['status']): string {
+  if (status === 'complete') {
+    return '#6fe3c4';
+  }
+
+  return status === 'unavailable' ? '#9aa0a6' : '#ff9a8a';
+}
+
+function statusLabel(status: ChallengeResult['status']): string {
+  if (status === 'complete') {
+    return 'COMPLETE';
+  }
+
+  return status === 'unavailable' ? 'N/A' : 'FAILED';
+}
+
 /**
- * M4 run summary. The run is frozen before this scene opens, so these stats
- * stay stable while the player reads them. A fuller records screen follows in
- * M6; this version is the complete end-of-run placeholder.
+ * End-of-run record: permanent run stats, challenge badge verdicts with
+ * reasons, and every achievement or skin unlocked by the victory.
  */
 export class ResultsScene extends Phaser.Scene {
   private leaving = false;
+  private challenges: ChallengeResult[] = [];
+  private unlocks: AchievementUnlock[] = [];
 
   constructor() {
     super('Results');
@@ -36,159 +52,220 @@ export class ResultsScene extends Phaser.Scene {
     this.leaving = false;
     const run = runService.snapshot;
     const difficulty = getDifficulty(run.difficultyId);
-    const victory = run.bossDefeated || run.outcome === 'victory';
+    const saveService = this.registry.get('saveService') as SaveService;
+    const achievementService = this.registry.get('achievementService') as AchievementService;
 
+    this.challenges = evaluateChallenges(run);
+    this.unlocks = achievementService.evaluateRun(
+      run,
+      this.challenges,
+      saveService.data.stats.usedItems,
+    );
+
+    this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x0b0c10, 1).setOrigin(0);
     this.drawBackground();
 
     this.add
-      .text(GAME_WIDTH / 2, 28, victory ? 'RUN COMPLETE' : 'RUN ENDED', {
+      .text(GAME_WIDTH / 2, 17, 'RUN COMPLETE', {
         fontFamily: FONT_FAMILY,
-        fontSize: '22px',
-        color: victory ? '#f4d35e' : '#c85c5c',
+        fontSize: '18px',
+        color: '#f4d35e',
       })
-      .setOrigin(0.5)
-      .setShadow(2, 2, '#000000', 0, true, true);
-
+      .setOrigin(0.5);
     this.add
       .text(
         GAME_WIDTH / 2,
-        52,
-        victory ? `${BOSS_DEFINITION.name.toUpperCase()} DEFEATED` : 'THE MINE REMEMBERS',
+        36,
+        `${difficulty.displayName.toUpperCase()} RUN   ${BOSS_DEFINITION.name.toUpperCase()} DEFEATED   ${formatTime(run.runDurationMs)}`,
         {
           fontFamily: FONT_FAMILY,
-          fontSize: '8px',
-          color: victory ? '#9fd8cb' : '#9aa0a6',
+          fontSize: '7px',
+          color: '#9fd8cb',
         },
       )
       .setOrigin(0.5);
 
+    this.drawStats(run.kills, run.damageTaken, run.deaths, run);
+    this.drawChallenges();
+    this.drawRewards();
+    this.installInput();
+
+    const completed = this.challenges.filter((challenge) => challenge.status === 'complete').length;
+    setTestHook({
+      ready: true,
+      scene: 'Results',
+      difficulty: run.difficultyId,
+      runActive: false,
+      runCompleted: true,
+      challengeResults: this.challenges.map((challenge) => ({
+        id: challenge.id,
+        status: challenge.status,
+        reason: challenge.reason,
+      })),
+      challengeSummary: this.challenges
+        .map((challenge) => `${challenge.name}: ${challenge.status}`)
+        .join(', '),
+      achievementsUnlocked: this.unlocks.map((unlock) => unlock.id),
+      skinsUnlocked: this.unlocks
+        .map((unlock) => unlock.skinId)
+        .filter((skinId): skinId is SkinId => skinId !== undefined),
+      runBossDamageTaken: run.bossDamageTaken,
+      message: `${completed}/4 challenge badges completed.`,
+    });
+  }
+
+  private drawBackground(): void {
+    const graphics = this.add.graphics();
+    graphics.fillStyle(0x10151b, 1);
+    graphics.fillTriangle(0, GAME_HEIGHT, 70, 34, 170, GAME_HEIGHT);
+    graphics.fillTriangle(320, GAME_HEIGHT, 410, 28, 480, GAME_HEIGHT);
+    graphics.fillStyle(0x18120e, 1).fillRect(0, 247, GAME_WIDTH, 23);
+    graphics.lineStyle(1, 0x2e343b, 1).lineBetween(0, 247, GAME_WIDTH, 247);
+  }
+
+  private drawStats(kills: number, damageTaken: number, deaths: number, run: RunSnapshot): void {
     this.add
-      .text(GAME_WIDTH / 2, 68, `${difficulty.displayName.toUpperCase()} RUN`, {
+      .rectangle(18, 50, 224, 152, 0x11161b, 0.92)
+      .setOrigin(0)
+      .setStrokeStyle(1, 0x3d454f, 1);
+    this.add.text(26, 56, 'RUN STATS', {
+      fontFamily: FONT_FAMILY,
+      fontSize: '8px',
+      color: '#f4d35e',
+    });
+
+    const stats = [
+      ['KILLS', String(kills)],
+      ['DAMAGE TAKEN', String(damageTaken)],
+      ['DEATHS', String(deaths)],
+      ['ITEM USES', String(run.itemUses)],
+      ['ORE', String(run.oreCollected)],
+      ['LEVELS CLEARED', `${run.levelsCompleted}/${LEVEL_COUNT}`],
+      ['BOSS ATTEMPTS', String(run.bossAttempts)],
+      ['BOSS DAMAGE', String(run.bossDamageTaken)],
+    ] as const;
+
+    stats.forEach(([label, value], index) => {
+      const y = 74 + index * 14;
+      this.add.text(26, y, label, {
+        fontFamily: FONT_FAMILY,
+        fontSize: '7px',
+        color: '#9aa0a6',
+      });
+      this.add
+        .text(232, y, value, {
+          fontFamily: FONT_FAMILY,
+          fontSize: '7px',
+          color: '#c9d1d9',
+        })
+        .setOrigin(1, 0);
+    });
+  }
+
+  private drawChallenges(): void {
+    this.add
+      .rectangle(252, 50, 210, 152, 0x11161b, 0.92)
+      .setOrigin(0)
+      .setStrokeStyle(1, 0x3d454f, 1);
+    this.add.text(260, 56, 'CHALLENGE BADGES', {
+      fontFamily: FONT_FAMILY,
+      fontSize: '8px',
+      color: '#f4d35e',
+    });
+
+    this.challenges.forEach((challenge, index) => {
+      const y = 72 + index * 31;
+      this.add.text(260, y, challenge.name.toUpperCase(), {
         fontFamily: FONT_FAMILY,
         fontSize: '8px',
-        color: '#9aa0a6',
-      })
-      .setOrigin(0.5);
+        color: challenge.status === 'complete' ? '#f4d35e' : '#cfd2d6',
+      });
+      this.add
+        .text(454, y + 1, statusLabel(challenge.status), {
+          fontFamily: FONT_FAMILY,
+          fontSize: '6px',
+          color: statusColor(challenge.status),
+        })
+        .setOrigin(1, 0);
 
-    this.add
-      .text(GAME_WIDTH / 2, 91, formatTime(run.runDurationMs), {
+      if (challenge.reason) {
+        this.add.text(260, y + 10, challenge.reason, {
+          fontFamily: FONT_FAMILY,
+          fontSize: '6px',
+          color: challenge.status === 'unavailable' ? '#77838c' : '#ff9a8a',
+          wordWrap: { width: 194 },
+        });
+      }
+    });
+  }
+
+  private drawRewards(): void {
+    this.add.text(20, 208, 'NEW ACHIEVEMENTS', {
+      fontFamily: FONT_FAMILY,
+      fontSize: '7px',
+      color: '#9fd8cb',
+    });
+
+    if (this.unlocks.length === 0) {
+      this.add.text(20, 219, 'NONE THIS RUN', {
         fontFamily: FONT_FAMILY,
-        fontSize: '28px',
-        color: '#e8c170',
-      })
-      .setOrigin(0.5)
-      .setShadow(2, 2, '#000000', 0, true, true);
+        fontSize: '6px',
+        color: '#5f6b73',
+      });
+    } else {
+      this.unlocks.forEach((unlock, index) => {
+        const column = Math.floor(index / 4);
+        const row = index % 4;
+        this.add.text(20 + column * 138, 219 + row * 8, `+ ${unlock.name}`, {
+          fontFamily: FONT_FAMILY,
+          fontSize: '6px',
+          color: '#f4d35e',
+        });
+      });
+    }
+
+    this.add.text(318, 208, 'SKINS UNLOCKED', {
+      fontFamily: FONT_FAMILY,
+      fontSize: '7px',
+      color: '#9fd8cb',
+    });
+
+    const skins = this.unlocks
+      .map((unlock) => unlock.skinId)
+      .filter((skinId): skinId is SkinId => skinId !== undefined);
+
+    if (skins.length === 0) {
+      this.add.text(318, 219, 'NONE THIS RUN', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '6px',
+        color: '#5f6b73',
+      });
+    } else {
+      skins.forEach((skinId, index) => {
+        const column = Math.floor(index / 4);
+        const row = index % 4;
+        this.add.text(318 + column * 76, 219 + row * 8, SKINS[skinId].name, {
+          fontFamily: FONT_FAMILY,
+          fontSize: '6px',
+          color: '#6fe3c4',
+        });
+      });
+    }
 
     this.add
-      .text(GAME_WIDTH / 2, 114, 'TOTAL RUN TIME', {
+      .text(GAME_WIDTH / 2, 258, 'ENTER / ESC  RETURN TO TITLE', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',
       })
       .setOrigin(0.5);
+  }
 
-    this.add
-      .rectangle(GAME_WIDTH / 2, 187, 342, 122, 0x0b0c10, 0.92)
-      .setStrokeStyle(1, 0x3a3f45)
-      .setDepth(1);
-
-    const stats: StatRow[] = [
-      { label: 'LEVELS CLEARED', value: `${run.levelsCompleted}/${LEVEL_COUNT}` },
-      { label: 'BOSS ATTEMPTS', value: `${run.bossAttempts}` },
-      { label: 'KILLS', value: `${run.kills}` },
-      { label: 'DAMAGE TAKEN', value: `${run.damageTaken}` },
-      { label: 'DEATHS', value: `${run.deaths}` },
-      { label: 'ITEMS USED', value: `${run.itemUses}` },
-      { label: 'PICKUPS', value: `${run.itemsPickedUp}` },
-      { label: 'ORE COLLECTED', value: `${run.oreCollected}` },
-    ];
-
-    const firstRowY = 140;
-    const rowHeight = 11;
-
-    stats.forEach((stat, index) => {
-      const y = firstRowY + index * rowHeight;
-
-      this.add
-        .text(104, y, stat.label, {
-          fontFamily: FONT_FAMILY,
-          fontSize: '8px',
-          color: '#8d949b',
-        })
-        .setDepth(2);
-
-      this.add
-        .text(376, y, stat.value, {
-          fontFamily: FONT_FAMILY,
-          fontSize: '8px',
-          color: '#e8e1d3',
-        })
-        .setOrigin(1, 0)
-        .setDepth(2);
-    });
-
-    this.add
-      .text(GAME_WIDTH / 2, 253, 'ENTER: RETURN TO TITLE', {
-        fontFamily: FONT_FAMILY,
-        fontSize: '8px',
-        color: '#f4d35e',
-      })
-      .setOrigin(0.5);
-
-    this.add
-      .text(GAME_WIDTH / 2, 264, 'M4 RESULTS PLACEHOLDER - FULL RECORDS ARRIVE IN M6', {
-        fontFamily: FONT_FAMILY,
-        fontSize: '6px',
-        color: '#5f6b73',
-      })
-      .setOrigin(0.5);
-
-    setTestHook({
-      ready: true,
-      scene: 'Results',
-      message: victory
-        ? 'The Great Worm is defeated. The run is complete.'
-        : 'Run ended. Press Enter to return to the title.',
-      runActive: run.active,
-      runCompleted: run.outcome === 'victory',
-      runOutcome: run.outcome,
-      runBossAttempts: run.bossAttempts,
-      runBossDefeated: run.bossDefeated,
-      runDurationMs: run.runDurationMs,
-      runLevelsCompleted: run.levelsCompleted,
-      runKills: run.kills,
-      runDamageTaken: run.damageTaken,
-      runDeaths: run.deaths,
-      runItemUses: run.itemUses,
-      runItemsPickedUp: run.itemsPickedUp,
-      runOre: run.oreCollected,
-      difficulty: run.difficultyId,
-      bossVictorySequence: false,
-      bossExitOpen: false,
-    });
-
+  private installInput(): void {
     this.input.keyboard?.on('keydown', this.handleKeyDown);
     this.events.once('shutdown', () => {
       this.input.keyboard?.off('keydown', this.handleKeyDown);
     });
-
-    this.cameras.main.fadeIn(220, 0, 0, 0);
-  }
-
-  private drawBackground(): void {
-    const graphics = this.add.graphics();
-    graphics.fillStyle(0x07090c, 1).fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-    graphics.fillStyle(0x141a21, 1);
-    graphics.fillTriangle(0, GAME_HEIGHT, 96, 40, 220, GAME_HEIGHT);
-    graphics.fillTriangle(250, GAME_HEIGHT, 358, 24, 480, GAME_HEIGHT);
-    graphics.fillStyle(0x1a1210, 1).fillRect(0, 246, GAME_WIDTH, 24);
-    graphics.lineStyle(2, 0x6f5427, 0.8);
-    graphics.lineBetween(0, 246, GAME_WIDTH, 246);
-    graphics.fillStyle(0x24201b, 0.8);
-
-    for (let x = 20; x < GAME_WIDTH; x += 56) {
-      graphics.fillRect(x, 8, 2, GAME_HEIGHT - 16);
-    }
   }
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
@@ -196,7 +273,12 @@ export class ResultsScene extends Phaser.Scene {
       return;
     }
 
-    if (event.code === 'Enter' || event.code === 'Space' || event.code === 'Escape') {
+    if (
+      event.code === 'Enter' ||
+      event.code === 'Escape' ||
+      event.code === 'Space' ||
+      event.code === 'Backspace'
+    ) {
       event.preventDefault();
       this.returnToTitle();
     }
@@ -208,9 +290,10 @@ export class ResultsScene extends Phaser.Scene {
     }
 
     this.leaving = true;
-    this.cameras.main.fadeOut(200, 0, 0, 0);
+    this.cameras.main.fadeOut(180, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
-      this.scene.start('Title', { message: 'The Great Worm is dead. The mine waits.' });
+      runService.reset();
+      this.scene.start('Title');
     });
   }
 }

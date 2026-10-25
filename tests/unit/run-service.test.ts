@@ -33,12 +33,12 @@ describe('RunService', () => {
     run.startRun('hard', 0);
     run.enterLevel(0, 'shaft-entrance', 0);
 
-    run.recordKill();
-    run.recordKill();
-    run.recordDamage(2);
-    run.recordDamage(1);
+    run.recordKill('rock', 'cave-goblin');
+    run.recordKill('magic', 'goblin-shaman');
+    run.recordDamage(2, 'enemy');
+    run.recordDamage(1, 'hazard');
     run.recordDeath();
-    run.recordItemUse();
+    run.recordItemUse('knife');
     run.recordPickup();
     run.recordPickup();
     run.recordOre(25);
@@ -50,13 +50,55 @@ describe('RunService', () => {
       itemUses: 1,
       itemsPickedUp: 2,
       oreCollected: 25,
+      levelOreCollected: 25,
+    });
+    expect(run.snapshot.killRecords).toEqual([
+      { enemyId: 'cave-goblin', source: 'rock', levelId: 'shaft-entrance' },
+      { enemyId: 'goblin-shaman', source: 'magic', levelId: 'shaft-entrance' },
+    ]);
+    expect(run.snapshot.damageRecords).toEqual([
+      { amount: 2, source: 'enemy', levelId: 'shaft-entrance', boss: false },
+      { amount: 1, source: 'hazard', levelId: 'shaft-entrance', boss: false },
+    ]);
+    expect(run.snapshot.itemUseRecords).toEqual([{ itemId: 'knife', levelId: 'shaft-entrance' }]);
+  });
+
+  it('tracks boss damage separately from level damage', () => {
+    run.startRun('normal', 0);
+    run.enterBoss(1000);
+    run.recordDamage(2, 'enemy', true);
+    run.recordDamage(1, 'enemy', true);
+
+    expect(run.snapshot.damageTaken).toBe(3);
+    expect(run.snapshot.bossDamageTaken).toBe(3);
+    expect(run.snapshot.damageRecords.every((record) => record.boss)).toBe(true);
+
+    run.enterBoss(2000);
+
+    expect(run.snapshot.bossAttempts).toBe(2);
+    expect(run.snapshot.bossDamageTaken).toBe(0);
+    expect(run.snapshot.damageTaken).toBe(3);
+  });
+
+  it('tracks current-level ore separately from the run total', () => {
+    run.startRun('normal', 0);
+    run.enterLevel(0, 'shaft-entrance', 0, 100);
+    run.recordOre(25);
+    run.completeLevel({ hp: 3, ore: 25, itemId: null, itemUses: 0 });
+    run.enterLevel(1, 'collapsed-gallery', 1000, 150);
+    run.recordOre(40);
+
+    expect(run.snapshot).toMatchObject({
+      oreCollected: 65,
+      levelOreCollected: 40,
+      levelOreTotal: 150,
     });
   });
 
   it('ignores negative or zero damage and ore', () => {
     run.startRun('normal', 0);
-    run.recordDamage(-2);
-    run.recordDamage(0);
+    run.recordDamage(-2, 'enemy');
+    run.recordDamage(0, 'enemy');
     run.recordOre(-4);
 
     expect(run.snapshot.damageTaken).toBe(0);
@@ -92,7 +134,7 @@ describe('RunService', () => {
   it('keeps final stats readable after ending the run but stops timers', () => {
     run.startRun('normal', 1000);
     run.enterLevel(0, 'shaft-entrance', 1000);
-    run.recordKill();
+    run.recordKill('rock', 'cave-goblin');
     run.endRun();
 
     expect(run.isActive).toBe(false);
@@ -108,7 +150,7 @@ describe('RunService', () => {
   it('registers boss attempts without resetting run stats', () => {
     run.startRun('normal', 0);
     run.enterLevel(0, 'shaft-entrance', 0);
-    run.recordKill();
+    run.recordKill('rock', 'cave-goblin');
     run.completeLevel({ hp: 3, ore: 5, itemId: 'knife', itemUses: 1 });
     run.enterBoss(4000);
 
@@ -161,7 +203,7 @@ describe('RunService', () => {
   it('resets all state when a new run starts', () => {
     run.startRun('hard', 1000);
     run.enterLevel(2, 'crystal-caverns', 1000);
-    run.recordKill();
+    run.recordKill('rock', 'cave-goblin');
     run.completeLevel({ hp: 2, ore: 10, itemId: 'flintlock', itemUses: 1 });
     run.startRun('normal', 9000);
 

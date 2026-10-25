@@ -120,7 +120,12 @@ test('defeating the boss completes the run and reaches Results', async ({ page }
   await pressKey(page, 'E');
   await expect.poll(() => readHook<string>(page, 'scene'), { timeout: 8000 }).toBe('Results');
   await expect.poll(() => readHook<boolean>(page, 'runCompleted')).toBe(true);
-  await expect.poll(() => readHook<string>(page, 'message')).toContain('Great Worm');
+  await expect
+    .poll(() => readHook<string>(page, 'challengeSummary'))
+    .toContain('Pacifist: complete');
+  await expect
+    .poll(() => readHook<string[]>(page, 'achievementsUnlocked'))
+    .toContain('worm_slayer');
 
   await pressKey(page, 'Enter');
   await expect.poll(() => readHook<string>(page, 'scene'), { timeout: 5000 }).toBe('Title');

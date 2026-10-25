@@ -5,7 +5,9 @@ import {
   getDifficulty,
   isDifficultyId,
   resolveDifficultyId,
+  scaleEnemyDamage,
 } from '../../src/data/difficulties';
+import { applyDamage } from '../../src/systems/damage';
 
 describe('difficulty data', () => {
   it('defines the four modes with the designed player HP and multipliers', () => {
@@ -52,5 +54,25 @@ describe('difficulty data', () => {
   it('resolves explicit difficulty before the fallback', () => {
     expect(resolveDifficultyId('hard')).toBe('hard');
     expect(resolveDifficultyId()).toBe('normal');
+  });
+
+  it('kills a full-health Impossible run in two enemy hits', () => {
+    const damage = scaleEnemyDamage(1, DIFFICULTIES.impossible);
+    const firstHit = applyDamage(DIFFICULTIES.impossible.playerMaxHp, damage);
+    const secondHit = applyDamage(firstHit.hp, damage);
+
+    expect(damage).toBe(2);
+    expect(firstHit.hp).toBe(2);
+    expect(secondHit.hp).toBe(0);
+    expect(secondHit.lethal).toBe(true);
+  });
+
+  it('kills a full-health Crazy run in one enemy hit', () => {
+    const damage = scaleEnemyDamage(1, DIFFICULTIES.crazy);
+    const hit = applyDamage(DIFFICULTIES.crazy.playerMaxHp, damage);
+
+    expect(damage).toBe(5);
+    expect(hit.hp).toBe(0);
+    expect(hit.lethal).toBe(true);
   });
 });

@@ -421,7 +421,7 @@ A colossal worm that has burrowed through the heart of the mine. It attacks from
 
 - The final hit triggers slow motion, a screen-wide rumble, and the worm's collapse.
 - The arena settles and the elevator opens. Press Interact anywhere to leave, or advance automatically after a short delay.
-- The Results screen appears with run stats; badges, achievements, and unlocks arrive in M5–M6.
+- The Results screen appears with run stats, completed and failed challenge badges, newly unlocked achievements, and unlocked skins.
 - Boss defeat is the only completion condition for a run.
 
 ### 9.6 Boss design rules
@@ -516,14 +516,14 @@ Notes:
 | `primitive`        | Primitive        | Complete a run using only rocks                        | Boneclad skin      |
 | `untouchable`      | Untouchable      | Complete a run without taking damage                   | Gilded skin        |
 | `legend`           | Legend           | Complete Pacifist + Primitive + Untouchable in one run | Legend skin        |
-| `hard_clear`       | Hardened         | Complete the game on Hard                              | Iron skin          |
-| `impossible_clear` | Against All Odds | Complete the game on Impossible                        | Obsidian skin      |
+| `hard_clear`       | Hardened         | Complete the game on Hard                              | Ironclad skin      |
+| `impossible_clear` | Against the Odds | Complete the game on Impossible                        | Obsidian skin      |
 | `crazy_clear`      | Certified Crazy  | Complete the game on Crazy                             | Crimson skin       |
 | `full_arsenal`     | Full Arsenal     | Use every secondary item at least once                 | —                  |
-| `boss_flawless`    | No Scars         | Defeat the boss without taking damage in the fight     | —                  |
+| `boss_flawless`    | Flawless Warden  | Defeat the boss without taking damage in the fight     | —                  |
 | `ore_hunter`       | Ore Hunter       | Collect all ore in a single level                      | —                  |
 
-Achievements unlock at the moment their condition is met (level completion or run completion). Run-level achievements are evaluated only after the boss dies. The boss is the run's completion condition, not a standard enemy: defeating it does not count as a Pacifist kill, otherwise Pacifist would be impossible by definition.
+Achievements unlock at the moment their condition is met (level completion or run completion). Run-level achievements are evaluated only after the boss dies. The boss is the run's completion condition, not a standard enemy: defeating it does not count as a Pacifist kill, otherwise Pacifist would be impossible by definition. Full Arsenal checks the persistent set of secondary items the player has used at least once across all runs.
 
 ### 11.4 Skins
 
@@ -536,7 +536,7 @@ All skins are cosmetic palette swaps using the same hitbox, animations, and silh
 | Boneclad         | Primitive achievement             |
 | Gilded           | Untouchable achievement           |
 | Wormhide         | Defeat the Great Worm             |
-| Iron             | Complete Hard                     |
+| Ironclad         | Complete Hard                     |
 | Obsidian         | Complete Impossible               |
 | Crimson          | Complete Crazy                    |
 | Legend           | Complete the triple challenge run |
@@ -551,7 +551,7 @@ Skins are equipped from the Skins screen and persist in the local save. No skin 
 
 ```text
 Boot → Title
-Title → New Run → Difficulty Select → Run Intro → Level 1 … Level 4 → Boss → Results
+Title → Start Run → Difficulty Select → Run Intro → Level 1 … Level 4 → Boss → Results
 Title → Achievements
 Title → Skins
 Title → Options
@@ -567,13 +567,13 @@ Boss defeated → Results → Title
 - **Top right:** secondary item icon and remaining uses; rock icon with infinity symbol.
 - **Crazy mode only:** enemies remaining counter.
 - **Boss fight:** boss name, large health bar, phase pips.
-- Run badges are not shown during play by default; they appear on the pause and results screens. An optional "challenge active" line can be shown in the pause menu.
+- Run badges are not shown during play by default. Pause lists the four challenge states, and Results shows the final badges with failure reasons.
 
 The HUD is minimal, readable at 480×270, and uses a pixel font. Important states use icons and shape, not color alone.
 
 ### 12.3 Menus
 
-- **Title:** New Run, Achievements, Skins, Options.
+- **Title:** Start Run, Achievements, Skins, Options.
 - **Difficulty select:** cards with player HP, enemy modifiers, and special rules; warning if Pacifist is incompatible with Crazy.
 - **Pause:** Resume, Restart Level, Options, Quit Run.
 - **Options:** master/music/SFX volume, screen shake, flashing intensity, fullscreen, key remapping, reset save.
@@ -618,11 +618,13 @@ interface SaveDataV1 {
     bestRunTimeMs: number | null;
     totalDeaths: number;
     totalKills: number;
+    usedItems: string[];
   };
 }
 ```
 
-- A corrupt or outdated save is backed up under a separate key and replaced with defaults after a user-visible notice.
+- The save key is `minesNgoblins.save.v1`.
+- A corrupt or outdated save is backed up under `minesNgoblins.save.backup.<timestamp>` and replaced with defaults after a user-visible notice.
 - There is no account, cloud sync, or online leaderboard.
 - A "Reset Save" action requires confirmation.
 - Mid-run progress is not saved in v1. Refreshing or closing the browser ends the run.
@@ -762,13 +764,14 @@ The balance pass in M7 prioritizes feel over exact numbers. The values in this d
 4. **Game language.** Game UI is English for v1, while docs/code are English. Spanish UI can be added later. Confirm.
 5. **Art and audio sourcing.** Custom, commissioned, or licensed placeholder assets? This affects the M6 estimate significantly.
 6. **License.** The repository license and asset licenses are undecided. Choose before public release.
-7. **Difficulty unlocks.** All modes are available from the start for accessibility and challenge. If progression gating is preferred, add it in M5.
+7. **Difficulty unlocks.** Resolved in M5: all modes are available from the start for accessibility and challenge, with a recommended Normal pick and warnings for Impossible and Crazy.
 8. **Mid-run save.** Not planned for v1. A browser refresh ends the run. Confirm this is acceptable.
 
 ---
 
 ## 20. Revision history
 
-| Version | Date       | Notes                                              |
-| ------- | ---------- | -------------------------------------------------- |
-| 0.1     | 2026-10-19 | Initial design document based on the project brief |
+| Version | Date       | Notes                                                                                        |
+| ------- | ---------- | -------------------------------------------------------------------------------------------- |
+| 0.2     | 2026-10-24 | M5: difficulty select, challenge badges, achievements, skins, Results reporting, and save v1 |
+| 0.1     | 2026-10-19 | Initial design document based on the project brief                                           |

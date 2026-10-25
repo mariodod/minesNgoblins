@@ -2,20 +2,23 @@ import Phaser from 'phaser';
 import { APP_VERSION, GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
 import { resolveDifficultyId } from '../data/difficulties';
 import { getLevelAsset, resolveLevelId } from '../data/level-registry';
+import { DEFAULT_SKIN_ID, resolveSkinId, skinTextureKey } from '../data/skins';
+import type { SaveService } from '../services/save-service';
 import { runService } from '../systems/run-service';
 import { setTestHook } from '../utils/test-hooks';
 
 interface MenuItem {
   label: string;
   message: string;
-  action?: 'start-run' | 'settings';
+  action?: 'start-run' | 'achievements' | 'skins' | 'settings';
 }
 
 interface TitleSceneData {
   message?: string;
 }
 
-const DEFAULT_TITLE_MESSAGE = 'M4 boss is live. Descend, break the Great Worm, and finish the run.';
+const DEFAULT_TITLE_MESSAGE =
+  'M5 challenge update: pick a difficulty, chase badges, and unlock skins.';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
 
@@ -27,11 +30,13 @@ const MENU_ITEMS: readonly MenuItem[] = [
   },
   {
     label: 'Achievements',
-    message: 'Achievements and challenge runs arrive in M5.',
+    message: 'Track challenge badges and lifetime achievements.',
+    action: 'achievements',
   },
   {
     label: 'Skins',
-    message: 'Skins and unlockables arrive in M5.',
+    message: 'Equip unlocked miner palettes. Skins never change gameplay.',
+    action: 'skins',
   },
   {
     label: 'Options',
@@ -46,12 +51,16 @@ export class TitleScene extends Phaser.Scene {
   private selectedIndex = 0;
   private startingRun = false;
   private initialMessage = DEFAULT_TITLE_MESSAGE;
+  private hasExplicitMessage = false;
+  private saveNotice = '';
+  private titleMiner: Phaser.GameObjects.Image | undefined;
 
   constructor() {
     super('Title');
   }
 
   init(data: TitleSceneData = {}): void {
+    this.hasExplicitMessage = data.message !== undefined;
     this.initialMessage = data.message ?? DEFAULT_TITLE_MESSAGE;
   }
 
@@ -64,9 +73,35 @@ export class TitleScene extends Phaser.Scene {
     this.installInput();
 
     this.select(0);
-    this.showMessage(this.initialMessage);
+    this.showMessage(this.resolveInitialMessage());
 
     this.publishHook();
+  }
+
+  private resolveInitialMessage(): string {
+    if (this.hasExplicitMessage) {
+      return this.initialMessage;
+    }
+
+    const saveService = this.registry.get('saveService') as SaveService | undefined;
+    if (saveService?.loadStatus === 'corrupt') {
+      this.saveNotice = 'Save data was damaged. A backup was kept and default progress restored.';
+      return this.saveNotice;
+    }
+
+    if (saveService?.loadStatus === 'unsupported') {
+      this.saveNotice =
+        'Save data is from an unsupported version. A backup was kept and defaults restored.';
+      return this.saveNotice;
+    }
+
+    return DEFAULT_TITLE_MESSAGE;
+  }
+
+  private currentSkinTexture(): string {
+    const saveService = this.registry.get('saveService') as SaveService | undefined;
+    const skinId = resolveSkinId(saveService?.settings.equippedSkin ?? DEFAULT_SKIN_ID);
+    return skinTextureKey(skinId);
   }
 
   private drawBackground(): void {
@@ -112,7 +147,7 @@ export class TitleScene extends Phaser.Scene {
 
     // Placeholder miner and props.
     this.add.image(54, 205, 'lantern-glow').setScale(2).setAlpha(0.7);
-    this.add.image(54, 217, 'miner').setScale(3);
+    this.titleMiner = this.add.image(54, 217, this.currentSkinTexture()).setScale(3);
     this.add.image(94, 248, 'rock').setScale(2);
     this.add.image(422, 232, 'crate').setScale(2);
   }
@@ -192,7 +227,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(8, 260, `v${APP_VERSION} / M4`, {
+      .text(8, 260, `v${APP_VERSION} / M5`, {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',
@@ -200,7 +235,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0, 0.5);
 
     this.add
-      .text(GAME_WIDTH - 8, 260, 'M4 BOSS BUILD', {
+      .text(GAME_WIDTH - 8, 260, 'M5 META BUILD', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',
@@ -210,12 +245,17 @@ export class TitleScene extends Phaser.Scene {
 
   private installInput(): void {
     this.input.keyboard?.on('keydown', this.handleKeyDown);
-    this.events.on(Phaser.Scenes.Events.RESUME, this.publishHook, this);
+    this.events.on(Phaser.Scenes.Events.RESUME, this.handleResume, this);
 
     this.events.once('shutdown', () => {
       this.input.keyboard?.off('keydown', this.handleKeyDown);
-      this.events.off(Phaser.Scenes.Events.RESUME, this.publishHook, this);
+      this.events.off(Phaser.Scenes.Events.RESUME, this.handleResume, this);
     });
+  }
+
+  private handleResume(): void {
+    this.titleMiner?.setTexture(this.currentSkinTexture());
+    this.publishHook();
   }
 
   private publishHook(): void {
@@ -224,6 +264,7 @@ export class TitleScene extends Phaser.Scene {
       scene: 'Title',
       titleSelection: MENU_ITEMS[this.selectedIndex]?.label ?? '',
       runActive: runService.isActive,
+      ...(this.saveNotice ? { saveNotice: this.saveNotice } : {}),
     });
   }
 
@@ -290,6 +331,16 @@ export class TitleScene extends Phaser.Scene {
       return;
     }
 
+    if (item.action === 'achievements') {
+      this.openOverlay('Achievements');
+      return;
+    }
+
+    if (item.action === 'skins') {
+      this.openOverlay('Skins');
+      return;
+    }
+
     this.showMessage(item.message);
   }
 
@@ -298,8 +349,23 @@ export class TitleScene extends Phaser.Scene {
     this.scene.pause();
   }
 
+  private openOverlay(sceneKey: 'Achievements' | 'Skins'): void {
+    this.scene.launch(sceneKey, { returnScene: 'Title' });
+    this.scene.pause();
+  }
+
   private startRun(): void {
     if (this.startingRun) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const debugBoss = import.meta.env.DEV && params.get('boss') === '1';
+    const spawnAtExit = import.meta.env.DEV && params.get('spawn') === 'exit';
+
+    if (!debugBoss && !spawnAtExit) {
+      this.scene.launch('RunSetup');
+      this.scene.pause();
       return;
     }
 
@@ -307,10 +373,9 @@ export class TitleScene extends Phaser.Scene {
     const difficultyId = resolveDifficultyId();
     const levelId = resolveLevelId();
     const level = getLevelAsset(levelId);
-    const params = new URLSearchParams(window.location.search);
-    const debugBoss = import.meta.env.DEV && params.get('boss') === '1';
-    const spawnAtExit = import.meta.env.DEV && params.get('spawn') === 'exit';
+    const saveService = this.registry.get('saveService') as SaveService;
     runService.startRun(difficultyId);
+    saveService.recordRunStarted();
     this.showMessage(
       debugBoss
         ? 'Debug descent: the Great Worm awaits...'

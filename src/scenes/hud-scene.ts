@@ -13,6 +13,8 @@ interface HudSceneData {
   difficultyName: string;
   player: Player;
   isBoss?: boolean;
+  requiresAllEnemiesDead?: boolean;
+  getEnemiesRemaining?: () => number;
 }
 
 /**
@@ -24,11 +26,14 @@ export class HudScene extends Phaser.Scene {
   private levelCount = 1;
   private difficultyName = '';
   private isBoss = false;
+  private requiresAllEnemiesDead = false;
+  private getEnemiesRemaining: (() => number) | undefined;
   private player!: Player;
   private hearts: Phaser.GameObjects.Image[] = [];
   private itemIcon!: Phaser.GameObjects.Image;
   private itemText!: Phaser.GameObjects.Text;
   private oreText!: Phaser.GameObjects.Text;
+  private enemiesText: Phaser.GameObjects.Text | undefined;
 
   constructor() {
     super('HUD');
@@ -40,12 +45,36 @@ export class HudScene extends Phaser.Scene {
     this.levelCount = data.levelCount ?? 1;
     this.difficultyName = data.difficultyName;
     this.isBoss = data.isBoss ?? false;
+    this.requiresAllEnemiesDead = data.requiresAllEnemiesDead ?? false;
+    this.getEnemiesRemaining = data.getEnemiesRemaining;
     this.player = data.player;
     this.hearts = [];
+    this.enemiesText = undefined;
   }
 
   create(): void {
     this.add.rectangle(0, 0, GAME_WIDTH, 20, 0x050608, 0.82).setOrigin(0).setDepth(100);
+
+    if (this.requiresAllEnemiesDead && this.getEnemiesRemaining) {
+      this.add
+        .rectangle(7, 23, 96, 13, 0x11161b, 0.82)
+        .setOrigin(0)
+        .setStrokeStyle(1, 0xe74c3c)
+        .setDepth(100);
+      this.enemiesText = this.add
+        .text(12, 26, '', {
+          fontFamily: FONT_FAMILY,
+          fontSize: '7px',
+          color: '#ff9a8a',
+        })
+        .setDepth(101);
+      this.updateEnemiesRemaining();
+      this.time.addEvent({
+        delay: 200,
+        loop: true,
+        callback: () => this.updateEnemiesRemaining(),
+      });
+    }
 
     for (let index = 0; index < this.player.maxHp; index += 1) {
       const heart = this.add.image(10 + index * 10, 10, 'heart-full').setDepth(101);
@@ -174,6 +203,17 @@ export class HudScene extends Phaser.Scene {
 
   private handleOreChanged(ore: number): void {
     this.oreText.setText(`ORE ${ore}`);
+  }
+
+  private updateEnemiesRemaining(): void {
+    if (!this.enemiesText || !this.getEnemiesRemaining) {
+      return;
+    }
+
+    const remaining = this.getEnemiesRemaining();
+    this.enemiesText
+      .setText(remaining > 0 ? `ENEMIES LEFT ${remaining}` : 'EXIT UNLOCKED')
+      .setColor(remaining > 0 ? '#ff9a8a' : '#6fe3c4');
   }
 
   private handleDied(): void {

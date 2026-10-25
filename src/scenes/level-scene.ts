@@ -30,6 +30,7 @@ import {
   levelCacheKey,
   resolveLevelId,
 } from '../data/level-registry';
+import { resolveSkinId, skinTextureKey } from '../data/skins';
 import { Bat } from '../entities/enemies/bat';
 import { Beetle } from '../entities/enemies/beetle';
 import type { Enemy, EnemyHitResult } from '../entities/enemies/enemy';
@@ -45,11 +46,13 @@ import type { ProjectileLaunch } from '../entities/projectiles/aim';
 import { Bone, type BoneLaunch } from '../entities/projectiles/bone';
 import { ItemProjectile } from '../entities/projectiles/item-projectile';
 import { Rock } from '../entities/projectiles/rock';
+import type { AchievementService } from '../services/achievement-service';
 import type { AudioService } from '../services/audio-service';
 import { InputService } from '../services/input-service';
 import type { SaveService } from '../services/save-service';
-import type { DamageEvent } from '../systems/damage';
+import type { DamageEvent, DamageSource } from '../systems/damage';
 import { runService, type RunCarryState } from '../systems/run-service';
+import { showAchievementToast } from '../ui/toast';
 import { setTestHook } from '../utils/test-hooks';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
@@ -90,6 +93,8 @@ export class LevelScene extends Phaser.Scene {
   private player!: Player;
   private inputService!: InputService;
   private audio!: AudioService;
+  private saveService!: SaveService;
+  private achievementService!: AchievementService;
   private solidGroup!: Phaser.GameObjects.Group;
   private oneWayGroup!: Phaser.GameObjects.Group;
   private enemyGroup!: Phaser.GameObjects.Group;
@@ -167,12 +172,15 @@ export class LevelScene extends Phaser.Scene {
     this.exitPrompt = undefined;
     this.frameCount = 0;
     this.levelIndex = Math.max(0, getLevelIndex(this.level.id));
+    this.saveService = this.registry.get('saveService') as SaveService;
+    this.achievementService = this.registry.get('achievementService') as AchievementService;
 
     if (!runService.isActive) {
       runService.startRun(this.difficulty.id);
+      this.saveService.recordRunStarted();
     }
 
-    runService.enterLevel(this.levelIndex, this.level.id);
+    runService.enterLevel(this.levelIndex, this.level.id, Date.now(), this.countLevelOre());
 
     this.physics.world.setBounds(0, 0, this.level.worldWidth, this.level.worldHeight + 160);
     this.cameras.main.setBounds(0, 0, this.level.worldWidth, this.level.worldHeight);
@@ -192,6 +200,7 @@ export class LevelScene extends Phaser.Scene {
       this.level.spawn.y,
       this.inputService,
       this.difficulty.playerMaxHp,
+      skinTextureKey(resolveSkinId(this.saveService.settings.equippedSkin)),
     );
 
     if (this.entryCarry) {
@@ -238,6 +247,8 @@ export class LevelScene extends Phaser.Scene {
       levelCount: LEVEL_COUNT,
       player: this.player,
       difficultyName: this.difficulty.displayName,
+      requiresAllEnemiesDead: this.difficulty.requiresAllEnemiesDead,
+      getEnemiesRemaining: () => this.countAliveEnemies(),
     });
 
     this.showLevelIntro();
@@ -629,14 +640,14 @@ export class LevelScene extends Phaser.Scene {
       const nextIndex = this.levelIndex + 1;
 
       if (nextIndex >= LEVEL_COUNT) {
-        this.scene.start('Boss');
+        this.scene.start('Boss', { difficultyId: this.difficulty.id });
         return;
       }
 
       const nextLevelId = LEVEL_ORDER[nextIndex];
 
       if (!nextLevelId) {
-        this.scene.start('Boss');
+        this.scene.start('Boss', { difficultyId: this.difficulty.id });
         return;
       }
 
@@ -649,6 +660,11 @@ export class LevelScene extends Phaser.Scene {
 
   private runServiceCompleteLevel(): void {
     runService.completeLevel(this.player.getCarryState());
+
+    const run = runService.snapshot;
+    const oreHunter = run.levelOreTotal > 0 && run.levelOreCollected >= run.levelOreTotal;
+    const unlocks = this.achievementService.evaluateLevel(run, this.levelIndex, oreHunter);
+    showAchievementToast(this, unlocks);
   }
 
   private createSpikes(hazard: HazardSpawn): void {
@@ -878,9 +894,15 @@ export class LevelScene extends Phaser.Scene {
   private cleanupFallenEnemies(): void {
     for (const enemy of this.enemies) {
       if (enemy.active && enemy.y > this.level.killY) {
+        this.recordEnemyKill(enemy, 'environment');
         enemy.destroy();
       }
     }
+  }
+
+  private recordEnemyKill(enemy: Enemy, source: DamageSource): void {
+    runService.recordKill(source, enemy.definition.id);
+    this.saveService.recordKills();
   }
 
   private handlePlayerThrow(launch: ProjectileLaunch): void {
@@ -903,7 +925,14 @@ export class LevelScene extends Phaser.Scene {
     const projectile = new ItemProjectile(this, use.itemId, use.launch);
     this.itemProjectileGroup.add(projectile);
     this.itemsUsed += 1;
-    runService.recordItemUse();
+    runService.recordItemUse(use.itemId);
+    this.saveService.recordItemUsed(use.itemId);
+
+    const unlocks = this.achievementService.evaluateItemUse(
+      runService.snapshot,
+      this.saveService.data.stats.usedItems,
+    );
+    showAchievementToast(this, unlocks);
 
     if (use.itemId === 'knife') {
       this.audio.play('knife');
@@ -963,7 +992,7 @@ export class LevelScene extends Phaser.Scene {
     this.playEnemyHitFeedback(result, rock.x, rock.y, 0xb8c0c8);
 
     if (result.killed) {
-      runService.recordKill();
+      this.recordEnemyKill(enemy, 'rock');
     }
 
     rock.destroy();
@@ -998,7 +1027,7 @@ export class LevelScene extends Phaser.Scene {
     this.playEnemyHitFeedback(result, projectile.x, projectile.y, color);
 
     if (result.killed) {
-      runService.recordKill();
+      this.recordEnemyKill(enemy, projectile.definition.damageSource);
     }
 
     projectile.destroy();
@@ -1130,7 +1159,7 @@ export class LevelScene extends Phaser.Scene {
       killedAny = killedAny || result.killed;
 
       if (result.killed) {
-        runService.recordKill();
+        this.recordEnemyKill(enemy, definition.damageSource);
       }
 
       this.spawnHitBurst(enemy.x, enemy.y, 0x6fe3c4, 5);
@@ -1455,7 +1484,7 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private handlePlayerDamaged(event: PlayerDamageEvent): void {
-    runService.recordDamage(event.amount);
+    runService.recordDamage(event.amount, event.source);
     this.audio.play('hurt');
     this.shakeScreen(FEEDBACK_TUNING.screenShakeMs, FEEDBACK_TUNING.screenShakeIntensity);
     this.spawnHitBurst(this.player.x, this.player.y, 0xff6b6b, FEEDBACK_TUNING.hitParticles);
@@ -1471,6 +1500,7 @@ export class LevelScene extends Phaser.Scene {
     }
 
     runService.recordDeath();
+    this.saveService.recordDeath();
     this.restarting = true;
     this.audio.play('death');
     this.shakeScreen(220, 0.01);
@@ -1811,11 +1841,27 @@ export class LevelScene extends Phaser.Scene {
       runItemsPickedUp: run.itemsPickedUp,
       runLevelsCompleted: run.levelsCompleted,
       runTimeMs: runService.elapsedMs(),
+      ...(this.difficulty.requiresAllEnemiesDead
+        ? { crazyEnemiesRemaining: livingEnemies.length }
+        : {}),
+      runBossDamageTaken: run.bossDamageTaken,
     });
   }
 
   private countAliveEnemies(): number {
     return this.enemies.filter((enemy) => enemy.active && !enemy.isDead).length;
+  }
+
+  private countLevelOre(): number {
+    const orePickups = this.level.props.filter((prop) => {
+      if (prop.type === 'crate') {
+        return prop.contents === ORE.id;
+      }
+
+      return prop.type === 'pedestal' && prop.item === ORE.id;
+    }).length;
+
+    return orePickups * ORE.value;
   }
 
   private showLevelError(message: string): void {

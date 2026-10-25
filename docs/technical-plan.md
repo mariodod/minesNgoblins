@@ -1,8 +1,8 @@
 # Mines & Goblins — Technical Plan
 
-**Version:** 0.4  
-**Date:** 2026-10-22  
-**Status:** M4 complete at `v0.4.0`; four-level run, Great Worm boss, victory flow, pause/options, and settings persistence shipped
+**Version:** 0.5  
+**Date:** 2026-10-24  
+**Status:** M5 complete at `v0.5.0`; difficulty select, challenge rules, achievements, skins, Results reporting, and save v1 shipped
 
 ---
 
@@ -163,18 +163,16 @@ main.ts
 
 ### 5.2 Services and ownership
 
-| Service              | Responsibility                                                |
-| -------------------- | ------------------------------------------------------------- |
-| `SaveService`        | Load/validate/migrate/write local save data                   |
-| `SettingsService`    | Volume, accessibility, keybinds, equipped skin                |
-| `RunService`         | Current run state, difficulty, level index, timers, stats     |
-| `RuleService`        | Pacifist/Primitive/Untouchable validation from events         |
-| `AchievementService` | Evaluate unlock conditions, persist unlocks, queue toasts     |
-| `SkinService`        | Unlock/equip skins, expose palette data                       |
-| `AudioService`       | Buses, music transitions, SFX throttling, unlock              |
-| `InputService`       | Keyboard mappings, buffered actions, future gamepad adapter   |
-| `LevelService`       | Load Tiled map, instantiate entities, validate spawn manifest |
-| `EventBus`           | Typed pub/sub for gameplay events                             |
+| Service / module        | Responsibility                                                     |
+| ----------------------- | ------------------------------------------------------------------ |
+| `SaveService`           | Load, validate, back up, recover, and write save data              |
+| `RunService`            | Current run state, difficulty, timers, attribution, boss lifecycle |
+| `systems/challenges.ts` | Pure Pacifist/Primitive/Untouchable/Legend evaluation and reasons  |
+| `AchievementService`    | Trigger evaluation, once-only unlocks, reward-skin synchronization |
+| `data/skins.ts`         | Skin definitions, palette data, sanitization, and texture keys     |
+| `AudioService`          | Buses, music transitions, SFX throttling, unlock                   |
+| `InputService`          | Keyboard mappings, buffered actions, future gamepad adapter        |
+| `LevelScene` + data     | Load authored maps, instantiate entities, enforce exit rules       |
 
 Services are created once at boot and accessed through a small typed service registry or Phaser's `registry`. Avoid global mutable singletons in tests; inject dependencies where practical.
 
@@ -182,10 +180,11 @@ Services are created once at boot and accessed through a small typed service reg
 
 - Scenes own presentation and local lifecycle.
 - Scenes must not directly write save data; they call services.
-- `LevelScene` emits gameplay events; `RunService` and `RuleService` consume them.
-- `HUDScene` subscribes to player/run events and renders state.
-- `PauseScene` pauses `LevelScene`/`BossScene` and resumes them cleanly.
+- `LevelScene` and `BossScene` report kills, damage, deaths, item uses, ore, and boss attempts to `RunService` at the moment they happen.
+- `HUDScene` renders snapshots supplied by the active gameplay scene, including the Crazy enemies-remaining counter.
+- `PauseScene` pauses `LevelScene`/`BossScene` and shows the current challenge-track summary.
 - `SettingsScene` pauses its caller, applies volume and screen-shake changes immediately, and persists them through `SaveService`.
+- `ToastScene` renders non-blocking achievement unlock notices above gameplay.
 - Scene transitions use a short fade; gameplay state is not persisted across a browser refresh in v1.
 
 ### 5.4 Entity model
@@ -236,47 +235,62 @@ Order of operations:
 4. Hit feedback (flash, knockback, hit-stop, SFX, particles).
 5. Emit `enemy:damaged` or `player:damaged`.
 6. If HP reaches 0, emit `enemy:killed` or `player:died` with full attribution.
-7. `RuleService` updates challenge-run validity based on events.
+7. The active scene reports the attributed event to `RunService`; pure challenge functions derive badge validity from the snapshot.
 
 This ensures Pacifist, Primitive, and Crazy all see the same source-of-truth data.
 
 ### 5.6 Run and rule tracking
 
 ```ts
-interface RunState {
-  runId: string;
-  difficulty: 'normal' | 'hard' | 'impossible' | 'crazy';
-  startedAt: number;
+interface RunSnapshot {
+  active: boolean;
+  difficultyId: 'normal' | 'hard' | 'impossible' | 'crazy';
   levelIndex: number;
-  kills: KillRecord[];
-  damageTaken: DamageTakenRecord[];
+  levelId: string | null;
+  startedAt: number;
+  levelStartedAt: number;
+  kills: number;
+  killRecords: Array<{ enemyId: string; source: DamageSource; levelId: string | null }>;
+  damageTaken: number;
+  damageRecords: Array<{ amount: number; source: DamageSource; boss: boolean }>;
   deaths: number;
-  itemUses: ItemUseRecord[];
-  itemsPickedUp: string[];
+  itemUses: number;
+  itemUseRecords: Array<{ itemId: string; levelId: string | null }>;
+  itemsPickedUp: number;
   oreCollected: number;
+  levelOreCollected: number;
+  levelOreTotal: number;
+  levelsCompleted: number;
+  bossAttempts: number;
   bossDefeated: boolean;
+  bossDamageTaken: number;
+  outcome: 'abandoned' | 'victory' | null;
+  endedAt: number | null;
+  runDurationMs: number;
 }
 ```
 
-Rules are pure functions:
+Challenge rules are pure functions over that snapshot plus the difficulty config:
 
 ```ts
-function isPacifistValid(run: RunState): boolean {
-  return run.kills.length === 0;
+function isPacifistAvailable(difficulty: DifficultyConfig): boolean {
+  return difficulty.pacifistAllowed;
 }
 
-function isPrimitiveValid(run: RunState): boolean {
-  return (
-    run.kills.every((k) => k.source === 'rock') && run.itemUses.filter((u) => u.weapon).length === 0
-  );
+function isPacifistValid(run: RunSnapshot): boolean {
+  return run.kills === 0;
 }
 
-function isUntouchableValid(run: RunState): boolean {
-  return run.damageTaken.length === 0 && run.deaths === 0;
+function isPrimitiveValid(run: RunSnapshot): boolean {
+  return run.itemUses === 0 && run.killRecords.every((kill) => kill.source === 'rock');
+}
+
+function isUntouchableValid(run: RunSnapshot): boolean {
+  return run.damageTaken === 0 && run.deaths === 0;
 }
 ```
 
-Exact semantics are defined in the game design document. Unit tests drive edge cases: environmental kills, item uses that miss, hazards, pit deaths, boss kills, and restarts.
+Crazy marks Pacifist and Legend unavailable. Legend requires all three base badges to be complete in the same victorious run. Evaluation returns complete, failed, or unavailable plus a player-readable reason. The boss does not add a kill record; Wormlings do. Unit tests drive edge cases: environmental kills, item uses that miss, hazards, pit deaths, boss kills, and restarts.
 
 ### 5.7 Difficulty configuration
 
@@ -312,11 +326,12 @@ Enemy spawns compute effective HP at spawn time from base HP, level bonus, and t
 
 ### 5.9 Save pipeline
 
-- Key: `minesNgoblins.save.v1`.
-- Read → parse → validate schema → migrate if an older known version → merge defaults.
-- On parse/validation failure: preserve the raw value under `minesNgoblins.save.corrupt.<timestamp>`, show a notice, start with defaults.
-- Writes are debounced and performed on meaningful changes (settings, achievements, skins, run completion).
-- No secrets or personal data are stored.
+- Key: `minesNgoblins.save.v1`; schema version `1`.
+- Read, parse, validate, and fill missing fields from defaults. Version 1 stores settings, achievement records, skin records, aggregate stats, and the unique `usedItems` set.
+- Unknown skin IDs and locked equipped skins are sanitized on load.
+- On parse, validation, or unsupported-version failure: preserve the raw value under `minesNgoblins.save.backup.<timestamp>`, write defaults, and show a Title notice.
+- Writes happen on meaningful changes: settings, achievements, skins, kill/death/item stats, run start, and run completion.
+- No secrets or personal data are stored; there is no backend or cloud sync.
 
 ---
 
@@ -380,13 +395,13 @@ Target: high coverage of pure systems (80%+ lines for `systems/`, `data/`, and r
 - Scene boot with a mocked Phaser context where practical.
 - Event attribution: simulate a rock kill, a magic kill, and a hazard kill, then assert run state.
 - Level load: map → spawned entities → exit lock state.
-- Crazy mode: enemy counter reaches 0 → exit unlocks.
+- Crazy mode: an enemy remains → exit stays locked; zero-enemy unlock is checked in manual QA.
 - Achievement persistence across a save/load round trip.
 
 ### 7.3 Browser tests (Playwright)
 
 - Page loads and canvas is present.
-- Title → New Run → Level 1 boots without console errors.
+- Title → Start Run → difficulty select → Level 1 boots without console errors.
 - Keyboard input moves the player and throws a rock (using a dev/test-only state hook).
 - Pause/resume works.
 - Options persist after reload.
@@ -557,7 +572,7 @@ Notes:
 | Save corruption or schema changes            | Low        | Medium | Versioned schema, validation, backup key, tests                                                            |
 | Browser audio autoplay blocks music          | High       | Low    | Unlock audio on first user gesture; show a clear start prompt                                              |
 | Performance drops with particles/boss        | Medium     | Medium | Budgets, pooling, profiling, reduced-effects option                                                        |
-| "5 lives" ambiguity                          | High       | Medium | Confirm before M5; current assumption documented and isolated in difficulty config                         |
+| "5 lives" ambiguity                          | Resolved   | Low    | Interpreted as 5 HP on Normal; death restarts the current level with full HP                               |
 | GitHub Pages base path breaks assets         | Low        | Medium | Set `base` correctly; smoke-test the deployed build, not only local dev                                    |
 
 ---
@@ -589,22 +604,24 @@ Then:
 
 ## 14. Decision log
 
-| Date       | Decision                                                                        | Status         |
-| ---------- | ------------------------------------------------------------------------------- | -------------- |
-| 2026-10-19 | M0 scaffold implemented (Vite, TypeScript, Phaser, ESLint, Vitest, Playwright)  | Done           |
-| 2026-10-19 | M1 movement slice implemented (player, level scene, rocks, dummy, HUD, debug)   | Done           |
-| 2026-10-21 | M2 combat, enemies, items, hazards, and HUD implemented at `v0.2.0`             | Done           |
-| 2026-10-22 | M3 four-level run, pause/options, settings, and boss placeholder at `v0.3.0`    | Done           |
-| 2026-10-22 | M4 Great Worm, supply drops, boss retry, victory, and results at `v0.4.0`       | Done           |
-| 2026-10-22 | Browser-level held-key state restores movement across scene recreation          | Done           |
-| 2026-10-22 | Pause and Settings use dedicated overlay scenes above Level and HUD             | Done           |
-| 2026-10-19 | Use Phaser 4.2.x + TypeScript + Vite                                            | Accepted       |
-| 2026-10-19 | Browser-first, static hosting on GitHub Pages                                   | Accepted       |
-| 2026-10-19 | Handcrafted Tiled levels, no procedural generation in v1                        | Accepted       |
-| 2026-10-19 | One secondary item slot; deterministic authored pickups                         | Accepted       |
-| 2026-10-19 | Local-only save data; no backend                                                | Accepted       |
-| 2026-10-19 | Internal resolution 480×270, 16×16 tiles                                        | Accepted in M1 |
-| 2026-10-22 | "5 lives" means 5 HP; death restarts the current level with carried entry state | Resolved in M3 |
-| 2026-10-22 | Boss uses a separate HP curve: base 48 × 1/1.5/2/2.5 by difficulty              | Resolved in M4 |
-| TBD        | Game UI localization scope                                                      | Open           |
-| TBD        | Repository and asset licenses                                                   | Open           |
+| Date       | Decision                                                                                                  | Status         |
+| ---------- | --------------------------------------------------------------------------------------------------------- | -------------- |
+| 2026-10-19 | M0 scaffold implemented (Vite, TypeScript, Phaser, ESLint, Vitest, Playwright)                            | Done           |
+| 2026-10-19 | M1 movement slice implemented (player, level scene, rocks, dummy, HUD, debug)                             | Done           |
+| 2026-10-21 | M2 combat, enemies, items, hazards, and HUD implemented at `v0.2.0`                                       | Done           |
+| 2026-10-22 | M3 four-level run, pause/options, settings, and boss placeholder at `v0.3.0`                              | Done           |
+| 2026-10-22 | M4 Great Worm, supply drops, boss retry, victory, and results at `v0.4.0`                                 | Done           |
+| 2026-10-24 | M5 difficulty select, challenge rules, achievements, skins, and save v1 at `v0.5.0`                       | Done           |
+| 2026-10-24 | Challenge evaluation returns complete/failed/unavailable with reasons; Crazy disables Pacifist and Legend | Done           |
+| 2026-10-22 | Browser-level held-key state restores movement across scene recreation                                    | Done           |
+| 2026-10-22 | Pause and Settings use dedicated overlay scenes above Level and HUD                                       | Done           |
+| 2026-10-19 | Use Phaser 4.2.x + TypeScript + Vite                                                                      | Accepted       |
+| 2026-10-19 | Browser-first, static hosting on GitHub Pages                                                             | Accepted       |
+| 2026-10-19 | Handcrafted Tiled levels, no procedural generation in v1                                                  | Accepted       |
+| 2026-10-19 | One secondary item slot; deterministic authored pickups                                                   | Accepted       |
+| 2026-10-19 | Local-only save data; no backend                                                                          | Accepted       |
+| 2026-10-19 | Internal resolution 480×270, 16×16 tiles                                                                  | Accepted in M1 |
+| 2026-10-22 | "5 lives" means 5 HP; death restarts the current level with carried entry state                           | Resolved in M3 |
+| 2026-10-22 | Boss uses a separate HP curve: base 48 × 1/1.5/2/2.5 by difficulty                                        | Resolved in M4 |
+| TBD        | Game UI localization scope                                                                                | Open           |
+| TBD        | Repository and asset licenses                                                                             | Open           |

@@ -97,6 +97,26 @@ export interface MinesTestHook {
   settingsSelection?: string;
   masterVolume?: number;
   screenShake?: string;
+  difficultySelection?: string;
+  selectedDifficulty?: string;
+  difficultyWarning?: string;
+  challengeSummary?: string;
+  challengeResults?: Array<{
+    id: string;
+    status: string;
+    reason: string | null;
+  }>;
+  achievementsUnlocked?: string[];
+  skinsUnlocked?: string[];
+  achievementToast?: string[];
+  achievementCount?: number;
+  skinSelection?: string;
+  skinName?: string;
+  skinUnlocked?: boolean;
+  equippedSkin?: string;
+  saveNotice?: string;
+  crazyEnemiesRemaining?: number;
+  runBossDamageTaken?: number;
 }
 
 declare global {

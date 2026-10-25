@@ -1,7 +1,28 @@
 import Phaser from 'phaser';
+import { SKINS, SKIN_LIST, skinTextureKey, type SkinPalette } from '../data/skins';
+import { AchievementService } from '../services/achievement-service';
 import { AudioService } from '../services/audio-service';
 import { SaveService } from '../services/save-service';
 import { setTestHook } from '../utils/test-hooks';
+
+function drawMiner(graphics: Phaser.GameObjects.Graphics, palette: SkinPalette): void {
+  graphics.fillStyle(palette.clothes, 1).fillRect(4, 12, 8, 8);
+  graphics.fillStyle(palette.clothesShade, 1).fillRect(4, 18, 8, 2);
+  graphics.fillStyle(palette.arms, 1).fillRect(2, 13, 2, 6);
+  graphics.fillStyle(palette.arms, 1).fillRect(12, 13, 2, 6);
+  graphics.fillStyle(palette.helmet, 1).fillRect(3, 3, 10, 4);
+  graphics.fillStyle(palette.helmet, 1).fillRect(2, 6, 12, 2);
+  graphics.fillStyle(palette.helmetHighlight, 1).fillRect(4, 3, 8, 1);
+  graphics.fillStyle(palette.skin, 1).fillRect(4, 7, 8, 5);
+  graphics.fillStyle(palette.skinShade, 1).fillRect(4, 11, 8, 1);
+  graphics.fillStyle(palette.eyes, 1).fillRect(5, 9, 2, 1);
+  graphics.fillStyle(palette.eyes, 1).fillRect(9, 9, 2, 1);
+  graphics.fillStyle(palette.lamp, 1).fillRect(7, 4, 2, 2);
+  graphics.fillStyle(palette.boots, 1).fillRect(4, 20, 3, 3);
+  graphics.fillStyle(palette.boots, 1).fillRect(9, 20, 3, 3);
+  graphics.fillStyle(palette.bootShade, 1).fillRect(3, 23, 4, 1);
+  graphics.fillStyle(palette.bootShade, 1).fillRect(9, 23, 4, 1);
+}
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -13,11 +34,12 @@ export class BootScene extends Phaser.Scene {
     this.createPlaceholderTextures();
 
     const saveService = new SaveService();
+    const achievementService = new AchievementService(saveService);
     const audioService = new AudioService();
     audioService.setVolume(saveService.settings.masterVolume);
 
     this.registry.set('saveService', saveService);
-    this.registry.set('saveData', saveService.data);
+    this.registry.set('achievementService', achievementService);
     this.registry.set('audioService', audioService);
 
     this.scene.start('Preload');
@@ -26,20 +48,15 @@ export class BootScene extends Phaser.Scene {
   private createPlaceholderTextures(): void {
     const graphics = this.make.graphics({}, false);
 
-    // Miner placeholder: 16x24, readable at 3x scale.
-    graphics.fillStyle(0x2f3640, 1).fillRect(4, 12, 8, 8);
-    graphics.fillStyle(0x3d5560, 1).fillRect(2, 13, 2, 6);
-    graphics.fillStyle(0x3d5560, 1).fillRect(12, 13, 2, 6);
-    graphics.fillStyle(0xf2c14e, 1).fillRect(3, 3, 10, 4);
-    graphics.fillStyle(0xf2c14e, 1).fillRect(2, 6, 12, 2);
-    graphics.fillStyle(0xf1c27d, 1).fillRect(4, 7, 8, 5);
-    graphics.fillStyle(0x11161b, 1).fillRect(5, 9, 2, 1);
-    graphics.fillStyle(0x11161b, 1).fillRect(9, 9, 2, 1);
-    graphics.fillStyle(0xfff3b0, 1).fillRect(7, 4, 2, 2);
-    graphics.fillStyle(0x2f3640, 1).fillRect(4, 20, 3, 3);
-    graphics.fillStyle(0x2f3640, 1).fillRect(9, 20, 3, 3);
-    graphics.fillStyle(0x1b1f24, 1).fillRect(3, 23, 4, 1);
-    graphics.fillStyle(0x1b1f24, 1).fillRect(9, 23, 4, 1);
+    // Miner placeholders: one 16x24 palette variant per unlockable skin.
+    for (const skin of SKIN_LIST) {
+      drawMiner(graphics, skin.palette);
+      graphics.generateTexture(skinTextureKey(skin.id), 16, 24);
+      graphics.clear();
+    }
+
+    // The plain 'miner' key remains the title/fallback texture.
+    drawMiner(graphics, SKINS.delver.palette);
     graphics.generateTexture('miner', 16, 24);
 
     graphics.clear();

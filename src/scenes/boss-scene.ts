@@ -37,6 +37,7 @@ import {
   pickupTextureKey,
   type PickupId,
 } from '../data/items';
+import { resolveSkinId, skinTextureKey } from '../data/skins';
 import { BossRock } from '../entities/boss/boss-rock';
 import { GreatWorm } from '../entities/boss/great-worm';
 import { Shockwave } from '../entities/boss/shockwave';
@@ -47,11 +48,13 @@ import { Player, type PlayerDamageEvent, type PlayerItemUse } from '../entities/
 import { computeAimedArc, type ProjectileLaunch } from '../entities/projectiles/aim';
 import { ItemProjectile } from '../entities/projectiles/item-projectile';
 import { Rock } from '../entities/projectiles/rock';
+import type { AchievementService } from '../services/achievement-service';
 import type { AudioService } from '../services/audio-service';
 import { InputService } from '../services/input-service';
 import type { SaveService } from '../services/save-service';
-import type { DamageEvent } from '../systems/damage';
+import type { DamageEvent, DamageSource } from '../systems/damage';
 import { runService, type RunCarryState } from '../systems/run-service';
+import { showAchievementToast } from '../ui/toast';
 import { setTestHook } from '../utils/test-hooks';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
@@ -94,6 +97,8 @@ export class BossScene extends Phaser.Scene {
   private player!: Player;
   private inputService!: InputService;
   private audio!: AudioService;
+  private saveService!: SaveService;
+  private achievementService!: AchievementService;
 
   private solidGroup!: Phaser.GameObjects.Group;
   private oneWayGroup!: Phaser.GameObjects.Group;
@@ -177,8 +182,12 @@ export class BossScene extends Phaser.Scene {
       this.physics.world.resume();
     }
 
+    this.saveService = this.registry.get('saveService') as SaveService;
+    this.achievementService = this.registry.get('achievementService') as AchievementService;
+
     if (!runService.isActive) {
       runService.startRun(this.difficulty.id);
+      this.saveService.recordRunStarted();
     }
 
     runService.enterBoss();
@@ -481,6 +490,7 @@ export class BossScene extends Phaser.Scene {
       BOSS_ARENA.spawn.y,
       this.inputService,
       this.difficulty.playerMaxHp,
+      skinTextureKey(resolveSkinId(this.saveService.settings.equippedSkin)),
     );
 
     if (this.entryCarry) {
@@ -1565,6 +1575,7 @@ export class BossScene extends Phaser.Scene {
     this.boss.hp = 0;
     this.updateBossHud();
     runService.completeBoss();
+    this.saveService.recordRunCompleted(runService.snapshot.runDurationMs);
     this.audio.play('boss-defeat');
     this.shakeScreen(900, 0.014);
     this.cameras.main.flash(320, 120, 25, 20);
@@ -1845,7 +1856,14 @@ export class BossScene extends Phaser.Scene {
     const projectile = new ItemProjectile(this, use.itemId, use.launch);
     this.itemProjectileGroup.add(projectile);
     this.itemsUsed += 1;
-    runService.recordItemUse();
+    runService.recordItemUse(use.itemId);
+    this.saveService.recordItemUsed(use.itemId);
+
+    const unlocks = this.achievementService.evaluateItemUse(
+      runService.snapshot,
+      this.saveService.data.stats.usedItems,
+    );
+    showAchievementToast(this, unlocks);
 
     if (use.itemId === 'knife') {
       this.audio.play('knife');
@@ -1933,6 +1951,11 @@ export class BossScene extends Phaser.Scene {
     projectile.destroy();
   }
 
+  private recordWormlingKill(wormling: Wormling, source: DamageSource): void {
+    runService.recordKill(source, wormling.definition.id);
+    this.saveService.recordKills();
+  }
+
   private handleRockHitWormling(rockObject: ColliderTarget, wormlingObject: ColliderTarget): void {
     const rock = rockObject as Rock;
     const wormling = wormlingObject as Wormling;
@@ -1952,7 +1975,7 @@ export class BossScene extends Phaser.Scene {
     this.playEnemyHitFeedback(result, wormling.x, wormling.y, 0xb8c0c8);
 
     if (result.killed) {
-      runService.recordKill();
+      this.recordWormlingKill(wormling, 'rock');
     }
 
     rock.destroy();
@@ -1987,7 +2010,7 @@ export class BossScene extends Phaser.Scene {
     this.playEnemyHitFeedback(result, projectile.x, projectile.y, color);
 
     if (result.killed) {
-      runService.recordKill();
+      this.recordWormlingKill(wormling, projectile.definition.damageSource);
     }
 
     projectile.destroy();
@@ -2180,7 +2203,7 @@ export class BossScene extends Phaser.Scene {
       killedAny = killedAny || result.killed;
 
       if (result.killed) {
-        runService.recordKill();
+        this.recordWormlingKill(wormling, definition.damageSource);
       }
 
       this.spawnHitBurst(wormling.x, wormling.y, 0x6fe3c4, 5);
@@ -2196,7 +2219,7 @@ export class BossScene extends Phaser.Scene {
   }
 
   private handlePlayerDamaged(event: PlayerDamageEvent): void {
-    runService.recordDamage(event.amount);
+    runService.recordDamage(event.amount, event.source, true);
     this.audio.play('hurt');
     this.shakeScreen(FEEDBACK_TUNING.screenShakeMs, FEEDBACK_TUNING.screenShakeIntensity);
     this.spawnHitBurst(this.player.x, this.player.y, 0xff6b6b, FEEDBACK_TUNING.hitParticles);
@@ -2222,6 +2245,7 @@ export class BossScene extends Phaser.Scene {
     this.tweens.killTweensOf(this.boss.head);
     this.destroyHostiles();
     runService.recordDeath();
+    this.saveService.recordDeath();
     this.audio.play('death');
     this.shakeScreen(220, 0.01);
 
@@ -2692,6 +2716,7 @@ export class BossScene extends Phaser.Scene {
       runActive: run.active,
       runKills: run.kills,
       runDamageTaken: run.damageTaken,
+      runBossDamageTaken: run.bossDamageTaken,
       runDeaths: run.deaths,
       runItemUses: run.itemUses,
       runOre: run.oreCollected,

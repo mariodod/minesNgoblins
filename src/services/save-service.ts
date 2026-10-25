@@ -1,6 +1,9 @@
+import { DEFAULT_SKIN_ID, isSkinId } from '../data/skins';
+import { isSecondaryItemId, type SecondaryItemId } from '../data/items';
+
 export const SAVE_KEY = 'minesNgoblins.save.v1';
 export const SAVE_VERSION = 1;
-export const DEFAULT_SKIN_ID = 'delver';
+export { DEFAULT_SKIN_ID } from '../data/skins';
 
 const SAVE_BACKUP_PREFIX = 'minesNgoblins.save.backup.';
 
@@ -41,6 +44,7 @@ export interface SaveStats {
   bestRunTimeMs: number | null;
   totalDeaths: number;
   totalKills: number;
+  usedItems: SecondaryItemId[];
 }
 
 export interface SaveDataV1 {
@@ -102,6 +106,7 @@ export function createDefaultSaveData(): SaveDataV1 {
       bestRunTimeMs: null,
       totalDeaths: 0,
       totalKills: 0,
+      usedItems: [],
     },
   };
 }
@@ -186,12 +191,15 @@ export class SaveService {
   private readonly storage: StorageLike;
   private cached: SaveDataV1;
   readonly loadStatus: SaveLoadStatus;
+  readonly backupKey: string | undefined;
 
   constructor(storage: StorageLike = getDefaultStorage()) {
     this.storage = storage;
     const loaded = loadSave(storage);
     this.cached = loaded.data;
     this.loadStatus = loaded.status;
+    this.backupKey = loaded.backupKey;
+    this.sanitizeEquippedSkin();
   }
 
   get data(): Readonly<SaveDataV1> {
@@ -233,7 +241,7 @@ export class SaveService {
   }
 
   unlockSkin(id: string, unlockedAt = new Date().toISOString()): boolean {
-    if (this.cached.skins[id]) {
+    if (!isSkinId(id) || this.cached.skins[id]) {
       return false;
     }
 
@@ -249,11 +257,21 @@ export class SaveService {
   }
 
   equipSkin(id: string): void {
-    if (id !== DEFAULT_SKIN_ID && !this.cached.skins[id]) {
+    if (!isSkinId(id) || (id !== DEFAULT_SKIN_ID && !this.cached.skins[id])) {
       return;
     }
 
     this.updateSettings({ equippedSkin: id });
+  }
+
+  recordItemUsed(itemId: SecondaryItemId): void {
+    if (this.cached.stats.usedItems.includes(itemId)) {
+      return;
+    }
+
+    this.updateStats({
+      usedItems: [...this.cached.stats.usedItems, itemId],
+    });
   }
 
   recordRunStarted(): void {
@@ -276,6 +294,24 @@ export class SaveService {
 
   recordKills(count = 1): void {
     this.updateStats({ totalKills: this.cached.stats.totalKills + Math.max(0, count) });
+  }
+
+  private sanitizeEquippedSkin(): void {
+    const id = this.cached.settings.equippedSkin;
+    const usable = id === DEFAULT_SKIN_ID || (isSkinId(id) && this.cached.skins[id] !== undefined);
+
+    if (usable) {
+      return;
+    }
+
+    this.cached = {
+      ...this.cached,
+      settings: {
+        ...this.cached.settings,
+        equippedSkin: DEFAULT_SKIN_ID,
+      },
+    };
+    this.persist();
   }
 
   reset(): void {
@@ -371,7 +407,24 @@ function parseStats(value: unknown): SaveStats {
     bestRunTimeMs: readNullableNonNegativeInt(record['bestRunTimeMs']),
     totalDeaths: readNonNegativeInt(record['totalDeaths'], 0),
     totalKills: readNonNegativeInt(record['totalKills'], 0),
+    usedItems: parseUsedItems(record['usedItems']),
   };
+}
+
+function parseUsedItems(value: unknown): SecondaryItemId[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const items: SecondaryItemId[] = [];
+
+  for (const entry of value) {
+    if (typeof entry === 'string' && isSecondaryItemId(entry) && !items.includes(entry)) {
+      items.push(entry);
+    }
+  }
+
+  return items;
 }
 
 function readVolume(value: unknown, fallback: number): number {
