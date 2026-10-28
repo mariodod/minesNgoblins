@@ -1,0 +1,206 @@
+/**
+ * Shared palette for the generated art pack. Every theme keeps the same
+ * structural roles so gameplay silhouettes and props stay readable while the
+ * mine changes character from level to level.
+ */
+
+export const COMMON = {
+  ink: 0x0b0c10,
+  inkDeep: 0x050608,
+  lamp: 0xffcf5a,
+  lampBright: 0xfff3b0,
+  lampDim: 0xc9973c,
+  bone: 0xe8e2d0,
+  boneShade: 0xb8b09a,
+  boneDark: 0x8a8474,
+  steel: 0x8b949e,
+  steelLight: 0xc7d0d9,
+  steelDark: 0x4a515a,
+  leather: 0x6b4a2f,
+  leatherLight: 0xa97945,
+  leatherDark: 0x3d2a17,
+  blood: 0x7a1f2b,
+  bloodBright: 0xc8504a,
+  magic: 0x6fe3c4,
+  magicBright: 0xbff7ee,
+  gold: 0xf2c14e,
+  goldBright: 0xffe6a0,
+  dust: 0xd8cdb4,
+  white: 0xf2f5f8,
+};
+
+export const THEMES = {
+  'shaft-entrance': {
+    id: 'shaft-entrance',
+    name: 'Shaft Entrance',
+    stone: {
+      base: 0x2c313a,
+      light: 0x414956,
+      mid: 0x252b33,
+      shade: 0x1a1e25,
+      dark: 0x11141a,
+      mineral: 0xc9a227,
+    },
+    wood: {
+      base: 0x6e4a2b,
+      light: 0xa87643,
+      shade: 0x4a2f1c,
+      dark: 0x2c1b10,
+      metal: 0x8b949e,
+    },
+    background: {
+      deep: 0x070a0f,
+      mid: 0x0d131b,
+      rock: 0x151d27,
+      rockLight: 0x1d2834,
+      accent: 0x2c3a44,
+      glow: 0xffcf5a,
+    },
+    crystal: 'teal',
+  },
+  'goblin-tunnels': {
+    id: 'goblin-tunnels',
+    name: 'Goblin Tunnels',
+    stone: {
+      base: 0x2b332b,
+      light: 0x41503e,
+      mid: 0x232b23,
+      shade: 0x171d17,
+      dark: 0x0f130f,
+      mineral: 0x7ec850,
+    },
+    wood: {
+      base: 0x5d4428,
+      light: 0x8f6b3a,
+      shade: 0x3d2b18,
+      dark: 0x25180d,
+      metal: 0x6d7a5a,
+    },
+    background: {
+      deep: 0x080c09,
+      mid: 0x0f1610,
+      rock: 0x18221a,
+      rockLight: 0x233026,
+      accent: 0x33452e,
+      glow: 0xa8d46a,
+    },
+    crystal: 'moss',
+  },
+  'crystal-caverns': {
+    id: 'crystal-caverns',
+    name: 'Crystal Caverns',
+    stone: {
+      base: 0x272c3d,
+      light: 0x3b4560,
+      mid: 0x1f2433,
+      shade: 0x151926,
+      dark: 0x0d0f18,
+      mineral: 0x6fe3c4,
+    },
+    wood: {
+      base: 0x4e3a44,
+      light: 0x7c5b68,
+      shade: 0x34242d,
+      dark: 0x1d1218,
+      metal: 0x6f8f9a,
+    },
+    background: {
+      deep: 0x060910,
+      mid: 0x0c131f,
+      rock: 0x151d2e,
+      rockLight: 0x1e2a40,
+      accent: 0x244052,
+      glow: 0x6fe3c4,
+    },
+    crystal: 'teal',
+  },
+  'deep-vein': {
+    id: 'deep-vein',
+    name: 'The Deep Vein',
+    stone: {
+      base: 0x2b2530,
+      light: 0x453a4f,
+      mid: 0x231d28,
+      shade: 0x18131c,
+      dark: 0x0f0b12,
+      mineral: 0xf2c14e,
+    },
+    wood: {
+      base: 0x55322a,
+      light: 0x8a5340,
+      shade: 0x39201b,
+      dark: 0x21110e,
+      metal: 0x9a7a4a,
+    },
+    background: {
+      deep: 0x0a060e,
+      mid: 0x140c19,
+      rock: 0x201326,
+      rockLight: 0x2d1c35,
+      accent: 0x43233f,
+      glow: 0xff8a5a,
+    },
+    crystal: 'gold',
+  },
+  'worm-lair': {
+    id: 'worm-lair',
+    name: 'The Worm Lair',
+    stone: {
+      base: 0x3a2229,
+      light: 0x5a343e,
+      mid: 0x2e1a20,
+      shade: 0x201116,
+      dark: 0x13090c,
+      mineral: 0xe8e2d0,
+    },
+    wood: {
+      base: 0x4a2a22,
+      light: 0x7a4a38,
+      shade: 0x311b15,
+      dark: 0x1d0e0a,
+      metal: 0x8a6a5a,
+    },
+    background: {
+      deep: 0x0d0408,
+      mid: 0x190a10,
+      rock: 0x29121a,
+      rockLight: 0x381923,
+      accent: 0x4d2230,
+      glow: 0xffcf5a,
+    },
+    crystal: 'rose',
+  },
+};
+
+export const LEVEL_THEME_IDS = Object.keys(THEMES);
+
+export const CRYSTAL_PALETTES = {
+  teal: {
+    base: 0x2a8c82,
+    light: 0x6fe3c4,
+    bright: 0xbff7ee,
+    dark: 0x14544f,
+    glow: 0x6fe3c4,
+  },
+  gold: {
+    base: 0xc9a227,
+    light: 0xf2c14e,
+    bright: 0xffe6a0,
+    dark: 0x7a5f14,
+    glow: 0xffcf5a,
+  },
+  moss: {
+    base: 0x4f7a35,
+    light: 0x8fbf6a,
+    bright: 0xd4f0b8,
+    dark: 0x2f4a1f,
+    glow: 0xa8d46a,
+  },
+  rose: {
+    base: 0x8a4656,
+    light: 0xc96a7e,
+    bright: 0xf2c0ca,
+    dark: 0x4a2432,
+    glow: 0xff9a8a,
+  },
+};
