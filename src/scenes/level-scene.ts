@@ -25,12 +25,14 @@ import {
 import {
   getLevelAsset,
   getLevelIndex,
+  getLevelTheme,
   LEVEL_COUNT,
   LEVEL_ORDER,
   levelCacheKey,
   resolveLevelId,
 } from '../data/level-registry';
 import { resolveSkinId, skinTextureKey } from '../data/skins';
+import type { LevelTheme } from '../data/themes';
 import { Bat } from '../entities/enemies/bat';
 import { Beetle } from '../entities/enemies/beetle';
 import type { Enemy, EnemyHitResult } from '../entities/enemies/enemy';
@@ -70,9 +72,8 @@ interface PedestalState {
   y: number;
   itemId: PickupId;
   icon: Phaser.GameObjects.Image;
-  glow: Phaser.GameObjects.Ellipse;
-  base: Phaser.GameObjects.Rectangle;
-  top: Phaser.GameObjects.Rectangle;
+  glow: Phaser.GameObjects.Image;
+  stand: Phaser.GameObjects.Image;
   claimed: boolean;
 }
 
@@ -85,6 +86,7 @@ type ColliderTarget =
 export class LevelScene extends Phaser.Scene {
   private levelId = 'shaft-entrance';
   private level!: LevelDefinition;
+  private theme!: LevelTheme;
   private levelIndex = 0;
   private difficulty: DifficultyConfig = getDifficulty('normal');
   private entryCarry: RunCarryState | null = null;
@@ -172,6 +174,7 @@ export class LevelScene extends Phaser.Scene {
     this.exitPrompt = undefined;
     this.frameCount = 0;
     this.levelIndex = Math.max(0, getLevelIndex(this.level.id));
+    this.theme = getLevelTheme(this.level.id);
     this.saveService = this.registry.get('saveService') as SaveService;
     this.achievementService = this.registry.get('achievementService') as AchievementService;
 
@@ -193,6 +196,7 @@ export class LevelScene extends Phaser.Scene {
     this.createProps();
     this.createHazards();
     this.createExit();
+    this.createAmbientFx();
 
     this.player = new Player(
       this,
@@ -298,8 +302,10 @@ export class LevelScene extends Phaser.Scene {
   }
 
   private createBackground(): void {
+    const theme = this.theme;
+
     this.add
-      .tileSprite(0, 0, GAME_WIDTH, GAME_HEIGHT, 'bg-cave')
+      .tileSprite(0, 0, GAME_WIDTH, GAME_HEIGHT, theme.backgroundKey)
       .setOrigin(0)
       .setScrollFactor(0)
       .setDepth(-20);
@@ -310,17 +316,73 @@ export class LevelScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(-19);
 
+    // Timber supports and the ceiling beam use the chapter's own wood palette.
     for (let x = 0; x < this.level.worldWidth; x += 160) {
-      this.add.rectangle(x, 0, 8, this.level.worldHeight, 0x1a1210, 0.9).setOrigin(0).setDepth(-10);
       this.add
-        .rectangle(x + 2, 0, 2, this.level.worldHeight, 0x2f2318, 0.7)
+        .tileSprite(x, 0, 8, this.level.worldHeight, theme.pillarTileKey)
         .setOrigin(0)
-        .setDepth(-9);
+        .setDepth(-10);
+
+      if (x % 320 === 0) {
+        this.add
+          .image(x + 4, 14, 'lantern')
+          .setOrigin(0.5, 0)
+          .setScale(0.8)
+          .setDepth(-9);
+        this.add
+          .image(x + 4, 30, 'lantern-glow')
+          .setTint(0xffcf5a)
+          .setScale(0.6)
+          .setAlpha(0.28)
+          .setDepth(-9);
+      }
     }
 
     this.add
-      .rectangle(this.level.worldWidth / 2, 56, this.level.worldWidth, 8, 0x241a13, 0.95)
+      .tileSprite(0, 52, this.level.worldWidth, 8, theme.beamTileKey)
+      .setOrigin(0)
       .setDepth(-8);
+  }
+
+  private createAmbientFx(): void {
+    const dustCount = Math.max(8, Math.min(24, Math.floor(this.level.worldWidth / 90)));
+
+    for (let index = 0; index < dustCount; index += 1) {
+      const x = 24 + ((index * 149) % Math.max(1, this.level.worldWidth - 48));
+      const y = 70 + ((index * 47) % 110);
+      const dust = this.add
+        .image(x, y, 'dust')
+        .setAlpha(0.18 + (index % 4) * 0.05)
+        .setDepth(-6);
+
+      this.tweens.add({
+        targets: dust,
+        x: x + 6 + (index % 4) * 3,
+        y: y - 8 - (index % 5) * 2,
+        alpha: 0.02,
+        duration: 2600 + (index % 6) * 320,
+        delay: (index % 7) * 240,
+        yoyo: true,
+        repeat: -1,
+      });
+    }
+
+    // Sparse ceiling drips sit behind the terrain so they never read as hazards.
+    for (let index = 0; index < 4; index += 1) {
+      const sweep = Math.floor(this.level.worldWidth / 5);
+      const x = 100 + index * Math.max(120, sweep);
+      const drip = this.add.image(x, 62, 'drip').setAlpha(0).setDepth(-6);
+
+      this.tweens.add({
+        targets: drip,
+        y: this.level.worldHeight - 24,
+        alpha: { from: 0, to: 0.45 },
+        duration: 1100,
+        delay: index * 620,
+        repeat: -1,
+        repeatDelay: 2600,
+      });
+    }
   }
 
   private createPlatforms(): void {
@@ -329,7 +391,7 @@ export class LevelScene extends Phaser.Scene {
 
     for (const rect of this.level.solids) {
       this.add
-        .tileSprite(rect.x, rect.y, rect.width, rect.height, 'tile-stone')
+        .tileSprite(rect.x, rect.y, rect.width, rect.height, this.theme.stoneTileKey)
         .setOrigin(0)
         .setDepth(0);
       this.addSolidBody(rect, this.solidGroup);
@@ -337,10 +399,13 @@ export class LevelScene extends Phaser.Scene {
 
     for (const rect of this.level.oneWayPlatforms) {
       this.add
-        .tileSprite(rect.x, rect.y, rect.width, rect.height, 'tile-wood')
+        .tileSprite(rect.x, rect.y, rect.width, rect.height, this.theme.woodTileKey)
         .setOrigin(0)
         .setDepth(1);
-      this.add.rectangle(rect.x, rect.y, rect.width, 2, 0x9aa0a6, 0.35).setOrigin(0).setDepth(2);
+      this.add
+        .tileSprite(rect.x, rect.y, rect.width, Math.min(rect.height, 8), this.theme.beamTileKey)
+        .setOrigin(0)
+        .setDepth(2);
       this.addSolidBody(rect, this.oneWayGroup);
     }
   }
@@ -389,9 +454,9 @@ export class LevelScene extends Phaser.Scene {
       }
 
       const glow = this.add
-        .image(prop.x, prop.y, 'lantern-glow')
+        .image(prop.x, prop.y - 4, 'lantern-glow')
         .setDepth(4)
-        .setScale(1.4)
+        .setScale(1.1)
         .setAlpha(0.5);
 
       this.tweens.add({
@@ -402,39 +467,51 @@ export class LevelScene extends Phaser.Scene {
         repeat: -1,
       });
 
-      this.add.rectangle(prop.x, prop.y + 1, 3, 5, 0xffe6a0, 0.9).setDepth(5);
+      this.add
+        .image(prop.x, prop.y + 4, 'lantern')
+        .setOrigin(0.5, 1)
+        .setDepth(5);
     });
   }
 
   private createCrystal(x: number, y: number): void {
     const glow = this.add
-      .image(x, y, 'lantern-glow')
-      .setTint(0x5ce0d0)
-      .setScale(1.1)
-      .setAlpha(0.18)
+      .image(x, y - 2, 'lantern-glow')
+      .setTint(this.theme.accentColor)
+      .setScale(1)
+      .setAlpha(0.16)
       .setDepth(2);
 
     this.tweens.add({
       targets: glow,
-      alpha: 0.32,
+      alpha: 0.3,
       duration: 1100,
       yoyo: true,
       repeat: -1,
     });
 
-    this.add.triangle(x, y, 0, 14, 6, -12, 12, 14, 0x2a8c82, 0.9).setDepth(3);
-    this.add.triangle(x + 7, y + 3, 0, 9, 4, -8, 8, 9, 0x6fe3c4, 0.75).setDepth(3);
-    this.add.rectangle(x + 6, y - 2, 1, 10, 0xbff7ee, 0.55).setDepth(4);
+    this.add
+      .image(x, y + 14, this.theme.crystalKey)
+      .setOrigin(0.5, 1)
+      .setScale(1.2)
+      .setDepth(3);
   }
 
   private createPedestal(x: number, y: number, itemId: PickupId): void {
-    const base = this.add.rectangle(x, y + 3, 14, 6, 0x4a3320, 1).setDepth(4);
-    const top = this.add.rectangle(x, y, 14, 2, 0x8a5f3a, 1).setDepth(5);
+    const stand = this.add
+      .image(x, y + 8, 'pedestal')
+      .setOrigin(0.5, 1)
+      .setDepth(4);
 
-    const glow = this.add.ellipse(x, y - 8, 20, 10, 0xffcf5a, 0.12).setDepth(5);
+    const glow = this.add
+      .image(x, y - 8, 'lantern-glow')
+      .setTint(0xffcf5a)
+      .setScale(0.5)
+      .setAlpha(0.28)
+      .setDepth(5);
     this.tweens.add({
       targets: glow,
-      alpha: 0.28,
+      alpha: 0.45,
       duration: 800,
       yoyo: true,
       repeat: -1,
@@ -456,8 +533,7 @@ export class LevelScene extends Phaser.Scene {
       itemId,
       icon,
       glow,
-      base,
-      top,
+      stand,
       claimed: false,
     });
   }
@@ -481,12 +557,6 @@ export class LevelScene extends Phaser.Scene {
     const centerX = exit.x + exit.width / 2;
     const centerY = exit.y + exit.height / 2;
 
-    this.add
-      .rectangle(exit.x, exit.y, exit.width, exit.height, 0x080d11, 0.92)
-      .setOrigin(0)
-      .setDepth(2)
-      .setStrokeStyle(1, 0x8a6b32);
-
     const glow = this.add
       .image(centerX, centerY, 'lantern-glow')
       .setTint(0xffcf5a)
@@ -502,17 +572,10 @@ export class LevelScene extends Phaser.Scene {
       repeat: -1,
     });
 
-    for (let bar = 8; bar < exit.height - 4; bar += 8) {
-      this.add
-        .rectangle(exit.x + 4, exit.y + bar, exit.width - 8, 1, 0x6f5427, 0.8)
-        .setOrigin(0)
-        .setDepth(4);
-    }
-
     this.add
-      .rectangle(centerX, exit.y + exit.height - 6, exit.width - 12, 4, 0x2f3640, 1)
-      .setDepth(5);
-    this.add.rectangle(centerX, exit.y + exit.height - 11, 5, 6, 0xffcf5a, 0.9).setDepth(6);
+      .image(centerX, centerY, 'elevator-door')
+      .setDisplaySize(exit.width, exit.height)
+      .setDepth(4);
 
     this.add
       .text(centerX, exit.y - 8, 'ELEVATOR', {
@@ -1223,8 +1286,7 @@ export class LevelScene extends Phaser.Scene {
       nearby.claimed = true;
       nearby.icon.destroy();
       nearby.glow.destroy();
-      nearby.base.destroy();
-      nearby.top.destroy();
+      nearby.stand.destroy();
       this.interactPrompt?.setVisible(false);
       this.audio.play(this.pickupSfx(nearby.itemId));
       this.showFloatingText(nearby.x, nearby.y - 18, pickupDisplayName(nearby.itemId), '#f4d35e');

@@ -126,7 +126,7 @@ export class SkinsScene extends Phaser.Scene {
       .setScale(5)
       .setAlpha(unlocked ? 1 : 0.35);
     const name = this.add
-      .text(351, 166, skin.name.toUpperCase(), {
+      .text(351, 174, skin.name.toUpperCase(), {
         fontFamily: FONT_FAMILY,
         fontSize: '10px',
         color: unlocked ? '#f4d35e' : '#77838c',

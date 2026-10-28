@@ -4,7 +4,7 @@ import Phaser from 'phaser';
  * Ground shockwave from the worm's quake. It travels horizontally along the
  * arena floor and must be jumped rather than attacked.
  */
-export class Shockwave extends Phaser.Physics.Arcade.Image {
+export class Shockwave extends Phaser.Physics.Arcade.Sprite {
   readonly damage: number;
 
   constructor(scene: Phaser.Scene, x: number, y: number, direction: -1 | 1, damage: number) {
@@ -15,6 +15,7 @@ export class Shockwave extends Phaser.Physics.Arcade.Image {
 
     this.damage = damage;
     this.setDepth(13);
+    this.play('shockwave-move');
 
     const body = this.arcadeBody;
     body.setAllowGravity(false);

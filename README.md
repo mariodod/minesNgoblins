@@ -2,7 +2,7 @@
 
 **A retro mine-crawling action platformer. One rock. Many problems.**
 
-> **Status:** M5 complete at `v0.5.0` — every difficulty, challenge badge, achievement, and skin is implemented, the Great Worm fight feeds a full Results breakdown, and save v1 persists progress with corrupt-save recovery. M6 final art, audio, UI, accessibility, and content polish is next.
+> **Status:** M6 in progress at `v0.5.0` — the generated pixel-art pack and crisp bitmap text layer are in. Final audio, UI/accessibility polish, content checks, and release documentation are next.
 >
 > The repository was empty when work began, so the documents below define the direction for a new game.
 
@@ -41,17 +41,17 @@ The game is built around short, replayable runs. Players dodge or defeat enemies
 
 ## Technology at a glance
 
-| Area         | Choice                                             |
-| ------------ | -------------------------------------------------- |
-| Language     | TypeScript (strict)                                |
-| Game engine  | Phaser 4.2.x                                       |
-| Build tool   | Vite                                               |
-| Level editor | Tiled (JSON maps)                                  |
-| Art          | Aseprite, 16×16 tiles, 480×270 internal resolution |
-| Audio        | Phaser Web Audio + original/CC0 assets             |
-| Tests        | Vitest + Playwright                                |
-| CI / hosting | GitHub Actions + GitHub Pages                      |
-| Persistence  | Versioned `localStorage` save                      |
+| Area         | Choice                                                             |
+| ------------ | ------------------------------------------------------------------ |
+| Language     | TypeScript (strict)                                                |
+| Game engine  | Phaser 4.2.x                                                       |
+| Build tool   | Vite                                                               |
+| Level editor | Tiled (JSON maps)                                                  |
+| Art          | Generated pixel-art pack, 16×16 tiles, 480×270 internal resolution |
+| Audio        | Phaser Web Audio + original/CC0 assets                             |
+| Tests        | Vitest + Playwright                                                |
+| CI / hosting | GitHub Actions + GitHub Pages                                      |
+| Persistence  | Versioned `localStorage` save                                      |
 
 See [docs/technical-plan.md](docs/technical-plan.md) for the rationale and alternatives considered.
 
@@ -111,6 +111,7 @@ Development builds accept `?difficulty=normal|hard|impossible|crazy` to preselec
 | `npm run build`     | Typecheck and create the production bundle in `dist/` |
 | `npm run preview`   | Preview the production bundle at `/minesNgoblins/`    |
 | `npm run lint`      | Run ESLint                                            |
+| `npm run assets`    | Regenerate the committed art, animations, and font    |
 | `npm run format`    | Format the repository with Prettier                   |
 | `npm run typecheck` | Run TypeScript without emitting files                 |
 | `npm run test`      | Run Vitest unit tests                                 |
@@ -132,7 +133,7 @@ The production base path defaults to `/minesNgoblins/`. If the site moves to a c
 
 - All documentation, source code, comments, commit messages, and project discussion are in **English**.
 - Game UI text is English for v1, with the text layer kept ready for localization.
-- Assets must be original, commissioned, or clearly licensed. A license inventory will live under `docs/` when asset production begins.
+- Assets must be original, commissioned, or clearly licensed. The generated pack is original work; its inventory and license statement live in [`public/assets/README.md`](public/assets/README.md).
 - Manual QA notes live in `docs/m1-playtest.md`, `docs/m2-playtest.md`, `docs/m3-playtest.md`, `docs/m4-playtest.md`, and `docs/m5-test-matrix.md`.
 
 ## License

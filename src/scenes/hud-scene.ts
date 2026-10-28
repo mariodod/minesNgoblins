@@ -91,7 +91,7 @@ export class HudScene extends Phaser.Scene {
       })
       .setDepth(101);
 
-    const slotX = ammoX + 44;
+    const slotX = ammoX + 56;
     this.add
       .rectangle(slotX, 2, 58, 16, 0x11161b, 0.9)
       .setOrigin(0)

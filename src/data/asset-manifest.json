@@ -1,0 +1,881 @@
+{
+  "version": 1,
+  "images": [
+    {
+      "key": "worm-segment",
+      "url": "assets/sprites/worm-segment.png",
+      "width": 24,
+      "height": 20
+    },
+    {
+      "key": "burrow-hole",
+      "url": "assets/sprites/burrow-hole.png",
+      "width": 32,
+      "height": 10
+    },
+    {
+      "key": "rock",
+      "url": "assets/items/rock.png",
+      "width": 6,
+      "height": 6
+    },
+    {
+      "key": "bone",
+      "url": "assets/items/bone.png",
+      "width": 6,
+      "height": 3
+    },
+    {
+      "key": "boulder",
+      "url": "assets/items/boulder.png",
+      "width": 12,
+      "height": 12
+    },
+    {
+      "key": "spike",
+      "url": "assets/items/spike.png",
+      "width": 16,
+      "height": 8
+    },
+    {
+      "key": "crate",
+      "url": "assets/items/crate.png",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "knife",
+      "url": "assets/items/knife.png",
+      "width": 9,
+      "height": 3
+    },
+    {
+      "key": "flintlock",
+      "url": "assets/items/flintlock.png",
+      "width": 12,
+      "height": 8
+    },
+    {
+      "key": "rune-scroll",
+      "url": "assets/items/rune-scroll.png",
+      "width": 10,
+      "height": 9
+    },
+    {
+      "key": "bullet",
+      "url": "assets/items/bullet.png",
+      "width": 6,
+      "height": 2
+    },
+    {
+      "key": "salve",
+      "url": "assets/items/salve.png",
+      "width": 8,
+      "height": 9
+    },
+    {
+      "key": "ore",
+      "url": "assets/items/ore.png",
+      "width": 9,
+      "height": 8
+    },
+    {
+      "key": "heart-full",
+      "url": "assets/ui/heart-full.png",
+      "width": 7,
+      "height": 7
+    },
+    {
+      "key": "heart-empty",
+      "url": "assets/ui/heart-empty.png",
+      "width": 7,
+      "height": 7
+    },
+    {
+      "key": "lantern-glow",
+      "url": "assets/fx/lantern-glow.png",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "key": "lantern",
+      "url": "assets/props/lantern.png",
+      "width": 10,
+      "height": 14
+    },
+    {
+      "key": "pedestal",
+      "url": "assets/props/pedestal.png",
+      "width": 16,
+      "height": 10
+    },
+    {
+      "key": "elevator-door",
+      "url": "assets/props/elevator-door.png",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "key": "dust",
+      "url": "assets/fx/dust.png",
+      "width": 4,
+      "height": 4
+    },
+    {
+      "key": "drip",
+      "url": "assets/fx/drip.png",
+      "width": 2,
+      "height": 4
+    },
+    {
+      "key": "crystal-teal",
+      "url": "assets/props/crystal-teal.png",
+      "width": 16,
+      "height": 22
+    },
+    {
+      "key": "crystal-gold",
+      "url": "assets/props/crystal-gold.png",
+      "width": 16,
+      "height": 22
+    },
+    {
+      "key": "crystal-moss",
+      "url": "assets/props/crystal-moss.png",
+      "width": 16,
+      "height": 22
+    },
+    {
+      "key": "crystal-rose",
+      "url": "assets/props/crystal-rose.png",
+      "width": 16,
+      "height": 22
+    },
+    {
+      "key": "tile-stone-shaft-entrance",
+      "url": "assets/tiles/stone-shaft-entrance.png",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "tile-wood-shaft-entrance",
+      "url": "assets/tiles/wood-shaft-entrance.png",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "bg-shaft-entrance",
+      "url": "assets/tiles/bg-shaft-entrance.png",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "key": "pillar-shaft-entrance",
+      "url": "assets/tiles/pillar-shaft-entrance.png",
+      "width": 8,
+      "height": 16
+    },
+    {
+      "key": "beam-shaft-entrance",
+      "url": "assets/tiles/beam-shaft-entrance.png",
+      "width": 16,
+      "height": 8
+    },
+    {
+      "key": "stalactite-shaft-entrance",
+      "url": "assets/tiles/stalactite-shaft-entrance.png",
+      "width": 12,
+      "height": 12
+    },
+    {
+      "key": "tile-stone-goblin-tunnels",
+      "url": "assets/tiles/stone-goblin-tunnels.png",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "tile-wood-goblin-tunnels",
+      "url": "assets/tiles/wood-goblin-tunnels.png",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "bg-goblin-tunnels",
+      "url": "assets/tiles/bg-goblin-tunnels.png",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "key": "pillar-goblin-tunnels",
+      "url": "assets/tiles/pillar-goblin-tunnels.png",
+      "width": 8,
+      "height": 16
+    },
+    {
+      "key": "beam-goblin-tunnels",
+      "url": "assets/tiles/beam-goblin-tunnels.png",
+      "width": 16,
+      "height": 8
+    },
+    {
+      "key": "stalactite-goblin-tunnels",
+      "url": "assets/tiles/stalactite-goblin-tunnels.png",
+      "width": 12,
+      "height": 12
+    },
+    {
+      "key": "tile-stone-crystal-caverns",
+      "url": "assets/tiles/stone-crystal-caverns.png",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "tile-wood-crystal-caverns",
+      "url": "assets/tiles/wood-crystal-caverns.png",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "bg-crystal-caverns",
+      "url": "assets/tiles/bg-crystal-caverns.png",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "key": "pillar-crystal-caverns",
+      "url": "assets/tiles/pillar-crystal-caverns.png",
+      "width": 8,
+      "height": 16
+    },
+    {
+      "key": "beam-crystal-caverns",
+      "url": "assets/tiles/beam-crystal-caverns.png",
+      "width": 16,
+      "height": 8
+    },
+    {
+      "key": "stalactite-crystal-caverns",
+      "url": "assets/tiles/stalactite-crystal-caverns.png",
+      "width": 12,
+      "height": 12
+    },
+    {
+      "key": "tile-stone-deep-vein",
+      "url": "assets/tiles/stone-deep-vein.png",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "tile-wood-deep-vein",
+      "url": "assets/tiles/wood-deep-vein.png",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "bg-deep-vein",
+      "url": "assets/tiles/bg-deep-vein.png",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "key": "pillar-deep-vein",
+      "url": "assets/tiles/pillar-deep-vein.png",
+      "width": 8,
+      "height": 16
+    },
+    {
+      "key": "beam-deep-vein",
+      "url": "assets/tiles/beam-deep-vein.png",
+      "width": 16,
+      "height": 8
+    },
+    {
+      "key": "stalactite-deep-vein",
+      "url": "assets/tiles/stalactite-deep-vein.png",
+      "width": 12,
+      "height": 12
+    },
+    {
+      "key": "tile-stone-worm-lair",
+      "url": "assets/tiles/stone-worm-lair.png",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "tile-wood-worm-lair",
+      "url": "assets/tiles/wood-worm-lair.png",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "key": "bg-worm-lair",
+      "url": "assets/tiles/bg-worm-lair.png",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "key": "pillar-worm-lair",
+      "url": "assets/tiles/pillar-worm-lair.png",
+      "width": 8,
+      "height": 16
+    },
+    {
+      "key": "beam-worm-lair",
+      "url": "assets/tiles/beam-worm-lair.png",
+      "width": 16,
+      "height": 8
+    },
+    {
+      "key": "stalactite-worm-lair",
+      "url": "assets/tiles/stalactite-worm-lair.png",
+      "width": 12,
+      "height": 12
+    },
+    {
+      "key": "title-backdrop",
+      "url": "assets/title/backdrop.png",
+      "width": 480,
+      "height": 270
+    }
+  ],
+  "spritesheets": [
+    {
+      "key": "miner-skin-delver",
+      "url": "assets/sprites/player-delver.png",
+      "frameWidth": 16,
+      "frameHeight": 24,
+      "frameCount": 8,
+      "animations": [
+        {
+          "key": "miner-skin-delver-idle",
+          "frames": [0, 1],
+          "frameRate": 2,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-delver-run",
+          "frames": [2, 3, 4, 5],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-delver-jump",
+          "frames": [6],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "miner-skin-delver-hurt",
+          "frames": [7],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "miner-skin-pale-wanderer",
+      "url": "assets/sprites/player-pale-wanderer.png",
+      "frameWidth": 16,
+      "frameHeight": 24,
+      "frameCount": 8,
+      "animations": [
+        {
+          "key": "miner-skin-pale-wanderer-idle",
+          "frames": [0, 1],
+          "frameRate": 2,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-pale-wanderer-run",
+          "frames": [2, 3, 4, 5],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-pale-wanderer-jump",
+          "frames": [6],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "miner-skin-pale-wanderer-hurt",
+          "frames": [7],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "miner-skin-boneclad",
+      "url": "assets/sprites/player-boneclad.png",
+      "frameWidth": 16,
+      "frameHeight": 24,
+      "frameCount": 8,
+      "animations": [
+        {
+          "key": "miner-skin-boneclad-idle",
+          "frames": [0, 1],
+          "frameRate": 2,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-boneclad-run",
+          "frames": [2, 3, 4, 5],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-boneclad-jump",
+          "frames": [6],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "miner-skin-boneclad-hurt",
+          "frames": [7],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "miner-skin-gilded",
+      "url": "assets/sprites/player-gilded.png",
+      "frameWidth": 16,
+      "frameHeight": 24,
+      "frameCount": 8,
+      "animations": [
+        {
+          "key": "miner-skin-gilded-idle",
+          "frames": [0, 1],
+          "frameRate": 2,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-gilded-run",
+          "frames": [2, 3, 4, 5],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-gilded-jump",
+          "frames": [6],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "miner-skin-gilded-hurt",
+          "frames": [7],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "miner-skin-wormhide",
+      "url": "assets/sprites/player-wormhide.png",
+      "frameWidth": 16,
+      "frameHeight": 24,
+      "frameCount": 8,
+      "animations": [
+        {
+          "key": "miner-skin-wormhide-idle",
+          "frames": [0, 1],
+          "frameRate": 2,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-wormhide-run",
+          "frames": [2, 3, 4, 5],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-wormhide-jump",
+          "frames": [6],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "miner-skin-wormhide-hurt",
+          "frames": [7],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "miner-skin-iron",
+      "url": "assets/sprites/player-iron.png",
+      "frameWidth": 16,
+      "frameHeight": 24,
+      "frameCount": 8,
+      "animations": [
+        {
+          "key": "miner-skin-iron-idle",
+          "frames": [0, 1],
+          "frameRate": 2,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-iron-run",
+          "frames": [2, 3, 4, 5],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-iron-jump",
+          "frames": [6],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "miner-skin-iron-hurt",
+          "frames": [7],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "miner-skin-obsidian",
+      "url": "assets/sprites/player-obsidian.png",
+      "frameWidth": 16,
+      "frameHeight": 24,
+      "frameCount": 8,
+      "animations": [
+        {
+          "key": "miner-skin-obsidian-idle",
+          "frames": [0, 1],
+          "frameRate": 2,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-obsidian-run",
+          "frames": [2, 3, 4, 5],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-obsidian-jump",
+          "frames": [6],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "miner-skin-obsidian-hurt",
+          "frames": [7],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "miner-skin-crimson",
+      "url": "assets/sprites/player-crimson.png",
+      "frameWidth": 16,
+      "frameHeight": 24,
+      "frameCount": 8,
+      "animations": [
+        {
+          "key": "miner-skin-crimson-idle",
+          "frames": [0, 1],
+          "frameRate": 2,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-crimson-run",
+          "frames": [2, 3, 4, 5],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-crimson-jump",
+          "frames": [6],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "miner-skin-crimson-hurt",
+          "frames": [7],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "miner-skin-legend",
+      "url": "assets/sprites/player-legend.png",
+      "frameWidth": 16,
+      "frameHeight": 24,
+      "frameCount": 8,
+      "animations": [
+        {
+          "key": "miner-skin-legend-idle",
+          "frames": [0, 1],
+          "frameRate": 2,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-legend-run",
+          "frames": [2, 3, 4, 5],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        {
+          "key": "miner-skin-legend-jump",
+          "frames": [6],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "miner-skin-legend-hurt",
+          "frames": [7],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "bat",
+      "url": "assets/sprites/bat.png",
+      "frameWidth": 14,
+      "frameHeight": 10,
+      "frameCount": 6,
+      "animations": [
+        {
+          "key": "bat-idle",
+          "frames": [0, 1],
+          "frameRate": 4,
+          "repeat": -1
+        },
+        {
+          "key": "bat-move",
+          "frames": [2, 3],
+          "frameRate": 12,
+          "repeat": -1
+        },
+        {
+          "key": "bat-windup",
+          "frames": [4],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "bat-attack",
+          "frames": [5],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "goblin",
+      "url": "assets/sprites/goblin.png",
+      "frameWidth": 16,
+      "frameHeight": 20,
+      "frameCount": 6,
+      "animations": [
+        {
+          "key": "goblin-idle",
+          "frames": [0, 1],
+          "frameRate": 2,
+          "repeat": -1
+        },
+        {
+          "key": "goblin-move",
+          "frames": [2, 3],
+          "frameRate": 9,
+          "repeat": -1
+        },
+        {
+          "key": "goblin-windup",
+          "frames": [4],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "goblin-attack",
+          "frames": [5],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "skeleton",
+      "url": "assets/sprites/skeleton.png",
+      "frameWidth": 16,
+      "frameHeight": 22,
+      "frameCount": 6,
+      "animations": [
+        {
+          "key": "skeleton-idle",
+          "frames": [0, 1],
+          "frameRate": 2,
+          "repeat": -1
+        },
+        {
+          "key": "skeleton-move",
+          "frames": [2, 3],
+          "frameRate": 6,
+          "repeat": -1
+        },
+        {
+          "key": "skeleton-windup",
+          "frames": [4],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "skeleton-attack",
+          "frames": [5],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "beetle",
+      "url": "assets/sprites/beetle.png",
+      "frameWidth": 20,
+      "frameHeight": 14,
+      "frameCount": 6,
+      "animations": [
+        {
+          "key": "beetle-idle",
+          "frames": [0, 1],
+          "frameRate": 2,
+          "repeat": -1
+        },
+        {
+          "key": "beetle-move",
+          "frames": [2, 3],
+          "frameRate": 8,
+          "repeat": -1
+        },
+        {
+          "key": "beetle-windup",
+          "frames": [4],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "beetle-attack",
+          "frames": [5],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "wormling",
+      "url": "assets/sprites/wormling.png",
+      "frameWidth": 16,
+      "frameHeight": 12,
+      "frameCount": 6,
+      "animations": [
+        {
+          "key": "wormling-idle",
+          "frames": [0, 1],
+          "frameRate": 3,
+          "repeat": -1
+        },
+        {
+          "key": "wormling-move",
+          "frames": [2, 3],
+          "frameRate": 10,
+          "repeat": -1
+        },
+        {
+          "key": "wormling-windup",
+          "frames": [4],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "wormling-attack",
+          "frames": [5],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "dummy",
+      "url": "assets/sprites/dummy.png",
+      "frameWidth": 16,
+      "frameHeight": 20,
+      "frameCount": 2,
+      "animations": [
+        {
+          "key": "dummy-idle",
+          "frames": [0, 1],
+          "frameRate": 2,
+          "repeat": -1
+        },
+        {
+          "key": "dummy-move",
+          "frames": [0, 1],
+          "frameRate": 2,
+          "repeat": -1
+        },
+        {
+          "key": "dummy-windup",
+          "frames": [0],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "dummy-attack",
+          "frames": [0],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "worm-head",
+      "url": "assets/sprites/worm-head.png",
+      "frameWidth": 40,
+      "frameHeight": 32,
+      "frameCount": 2,
+      "animations": [
+        {
+          "key": "worm-head-idle",
+          "frames": [0],
+          "frameRate": 1,
+          "repeat": 0
+        },
+        {
+          "key": "worm-head-roar",
+          "frames": [1],
+          "frameRate": 1,
+          "repeat": 0
+        }
+      ]
+    },
+    {
+      "key": "shockwave",
+      "url": "assets/sprites/shockwave.png",
+      "frameWidth": 18,
+      "frameHeight": 12,
+      "frameCount": 3,
+      "animations": [
+        {
+          "key": "shockwave-move",
+          "frames": [0, 1, 2],
+          "frameRate": 14,
+          "repeat": -1
+        }
+      ]
+    }
+  ],
+  "bitmapFonts": [
+    {
+      "key": "pixel-5x7",
+      "textureUrl": "assets/fonts/pixel-5x7.png",
+      "dataUrl": "assets/fonts/pixel-5x7.xml"
+    }
+  ]
+}

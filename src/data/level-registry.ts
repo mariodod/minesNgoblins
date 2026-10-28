@@ -1,9 +1,12 @@
+import { getTheme, type LevelTheme, type LevelThemeId } from './themes';
+
 export interface LevelAsset {
   id: string;
   path: string;
   number: number;
   title: string;
   intro: string;
+  theme: LevelThemeId;
 }
 
 /**
@@ -17,6 +20,7 @@ export const LEVEL_ASSETS: readonly LevelAsset[] = [
     number: 1,
     title: 'Shaft Entrance',
     intro: 'Find the elevator. The first descent is always the quietest.',
+    theme: 'shaft-entrance',
   },
   {
     id: 'goblin-tunnels',
@@ -24,6 +28,7 @@ export const LEVEL_ASSETS: readonly LevelAsset[] = [
     number: 2,
     title: 'Goblin Tunnels',
     intro: 'Timber creaks overhead. Scavengers have claimed the lower rails.',
+    theme: 'goblin-tunnels',
   },
   {
     id: 'crystal-caverns',
@@ -31,6 +36,7 @@ export const LEVEL_ASSETS: readonly LevelAsset[] = [
     number: 3,
     title: 'Crystal Caverns',
     intro: 'The rock hums here. Stay above the teeth and keep moving.',
+    theme: 'crystal-caverns',
   },
   {
     id: 'deep-vein',
@@ -38,6 +44,7 @@ export const LEVEL_ASSETS: readonly LevelAsset[] = [
     number: 4,
     title: 'The Deep Vein',
     intro: 'No more scaffolds. Only the gauntlet and the worm below it.',
+    theme: 'deep-vein',
   },
 ];
 
@@ -50,6 +57,10 @@ export function getLevelAsset(id: string): LevelAsset | undefined {
 
 export function getLevelIndex(id: string): number {
   return LEVEL_ORDER.indexOf(id);
+}
+
+export function getLevelTheme(id: string): LevelTheme {
+  return getTheme(getLevelAsset(id)?.theme ?? 'shaft-entrance');
 }
 
 /**

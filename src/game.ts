@@ -14,8 +14,11 @@ import { SettingsScene } from './scenes/settings-scene';
 import { SkinsScene } from './scenes/skins-scene';
 import { TitleScene } from './scenes/title-scene';
 import { ToastScene } from './scenes/toast-scene';
+import { installPixelTextFactory } from './ui/pixel-text';
 
 export function createGame(): Phaser.Game {
+  installPixelTextFactory();
+
   const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     parent: 'game',
@@ -27,8 +30,11 @@ export function createGame(): Phaser.Game {
     pixelArt: true,
     roundPixels: true,
     scale: {
-      mode: Phaser.Scale.FIT,
+      // The canvas is sized by hand to whole device-pixel multiples so text and
+      // tiles never land on fractional screen pixels.
+      mode: Phaser.Scale.NONE,
       autoCenter: Phaser.Scale.CENTER_BOTH,
+      zoom: displayZoom(),
     },
     physics: {
       default: 'arcade',
@@ -54,5 +60,29 @@ export function createGame(): Phaser.Game {
     ],
   };
 
-  return new Phaser.Game(config);
+  const game = new Phaser.Game(config);
+
+  window.addEventListener('resize', () => {
+    game.scale.setZoom(displayZoom());
+  });
+
+  return game;
+}
+
+/**
+ * Largest zoom that maps one 480x270 game pixel onto a whole number of physical
+ * screen pixels. Fractional multiples are what made the bitmap font look soft.
+ */
+function displayZoom(): number {
+  const dpr = window.devicePixelRatio || 1;
+  const deviceScale = Math.min(
+    (window.innerWidth * dpr) / GAME_WIDTH,
+    (window.innerHeight * dpr) / GAME_HEIGHT,
+  );
+
+  if (deviceScale < 1) {
+    return Math.max(deviceScale, 0.1);
+  }
+
+  return Math.floor(deviceScale) / dpr;
 }

@@ -47,6 +47,7 @@ export class GreatWorm {
     this.head = scene.physics.add.sprite(0, 0, 'worm-head');
     this.head.setDepth(15);
     this.head.setData('bossPart', 'head');
+    this.head.play('worm-head-idle', true);
     this.configureBody(this.head);
     group.add(this.head);
 
@@ -119,7 +120,25 @@ export class GreatWorm {
   }
 
   setPhase(phase: BossPhase): void {
+    if (phase === this.phase) {
+      return;
+    }
+
     this.phase = phase;
+    this.playRoar();
+  }
+
+  private playRoar(): void {
+    if (!this.head.active) {
+      return;
+    }
+
+    this.head.play('worm-head-roar', true);
+    this.scene.time.delayedCall(360, () => {
+      if (this.head.active && this.visible && !this.isDead) {
+        this.head.play('worm-head-idle', true);
+      }
+    });
   }
 
   surfaceAt(x: number, y: number, facing: number, anchorX: number, anchorY: number): void {
@@ -130,6 +149,7 @@ export class GreatWorm {
     this.setFacing(facing);
     this.setVisible(true);
     this.syncBodies();
+    this.playRoar();
   }
 
   burrow(): void {
@@ -211,6 +231,7 @@ export class GreatWorm {
     this.setBodiesEnabled(false);
     this.weakSpot.setVisible(false);
     this.weakSpotGlow.setVisible(false);
+    this.head.anims.stop();
     this.scene.tweens.killTweensOf([this.weakSpot, this.weakSpotGlow]);
 
     this.scene.tweens.add({

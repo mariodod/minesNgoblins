@@ -72,7 +72,7 @@ export class PauseScene extends Phaser.Scene {
       .setDepth(1);
 
     this.add
-      .text(GAME_WIDTH / 2, 56, 'PAUSED', {
+      .text(GAME_WIDTH / 2, 54, 'PAUSED', {
         fontFamily: FONT_FAMILY,
         fontSize: '18px',
         color: '#e8c170',
@@ -84,7 +84,7 @@ export class PauseScene extends Phaser.Scene {
     this.add
       .text(
         GAME_WIDTH / 2,
-        76,
+        73,
         `${this.levelNumber}/${this.levelCount}  ${this.levelName.toUpperCase()}  [${this.difficultyName.toUpperCase()}]`,
         {
           fontFamily: FONT_FAMILY,
@@ -96,7 +96,7 @@ export class PauseScene extends Phaser.Scene {
       .setDepth(2);
 
     this.add
-      .text(GAME_WIDTH / 2, 88, `RUN TIME ${formatTime(this.runTimeMs)}`, {
+      .text(GAME_WIDTH / 2, 85, `RUN TIME ${formatTime(this.runTimeMs)}`, {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#7f8c8d',
@@ -106,25 +106,29 @@ export class PauseScene extends Phaser.Scene {
 
     const progress = getChallengeProgress(runService.snapshot);
     const anyFailed = progress.some((challenge) => challenge.status === 'failed');
-    this.challengeSummary = progress
-      .map((challenge) => {
-        const label =
-          challenge.status === 'active' ? 'OK' : challenge.status === 'failed' ? 'FAIL' : 'N/A';
-        return `${challenge.name.toUpperCase()} ${label}`;
-      })
-      .join('  ');
+    const challengeLabels = progress.map((challenge) => {
+      const label =
+        challenge.status === 'active' ? 'OK' : challenge.status === 'failed' ? 'FAIL' : 'N/A';
+      return `${challenge.name.toUpperCase()} ${label}`;
+    });
+    this.challengeSummary = challengeLabels.join('  ');
+    const summaryLines = [
+      challengeLabels.slice(0, 2).join('  '),
+      challengeLabels.slice(2).join('  '),
+    ].join('\n');
     this.add
-      .text(GAME_WIDTH / 2, 101, this.challengeSummary, {
+      .text(GAME_WIDTH / 2, 100, summaryLines, {
         fontFamily: FONT_FAMILY,
         fontSize: '6px',
         color: anyFailed ? '#ff9a8a' : '#9fd8cb',
+        align: 'center',
       })
       .setOrigin(0.5)
       .setDepth(2);
 
     this.menuTexts = this.pauseItems.map((label, index) =>
       this.add
-        .text(GAME_WIDTH / 2, 116 + index * 22, label, {
+        .text(GAME_WIDTH / 2, 120 + index * 20, label, {
           fontFamily: FONT_FAMILY,
           fontSize: '10px',
           color: '#cfd2d6',

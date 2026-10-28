@@ -38,6 +38,7 @@ import {
   type PickupId,
 } from '../data/items';
 import { resolveSkinId, skinTextureKey } from '../data/skins';
+import { BOSS_THEME } from '../data/themes';
 import { BossRock } from '../entities/boss/boss-rock';
 import { GreatWorm } from '../entities/boss/great-worm';
 import { Shockwave } from '../entities/boss/shockwave';
@@ -118,7 +119,7 @@ export class BossScene extends Phaser.Scene {
   private exitPrompt: Phaser.GameObjects.Text | undefined;
   private exitLabel: Phaser.GameObjects.Text | undefined;
   private exitGlow: Phaser.GameObjects.Image | undefined;
-  private exitBars: Phaser.GameObjects.Rectangle[] = [];
+  private exitDoor: Phaser.GameObjects.Image | undefined;
   private victoryPrompt: Phaser.GameObjects.Text | undefined;
 
   private bossBarFill!: Phaser.GameObjects.Rectangle;
@@ -291,7 +292,7 @@ export class BossScene extends Phaser.Scene {
     this.itemsCollected = 0;
     this.wormlings = [];
     this.pedestals = [];
-    this.exitBars = [];
+    this.exitDoor = undefined;
     this.frameCount = 0;
     this.testHookAccumulator = 0;
     this.debugEnabled = false;
@@ -311,8 +312,10 @@ export class BossScene extends Phaser.Scene {
   }
 
   private createArena(): void {
+    const theme = BOSS_THEME;
+
     this.add
-      .tileSprite(0, 0, GAME_WIDTH, GAME_HEIGHT, 'bg-cave')
+      .tileSprite(0, 0, GAME_WIDTH, GAME_HEIGHT, theme.backgroundKey)
       .setOrigin(0)
       .setScrollFactor(0)
       .setDepth(-20);
@@ -323,20 +326,18 @@ export class BossScene extends Phaser.Scene {
       .setDepth(-19);
 
     for (let x = 0; x < BOSS_ARENA.width; x += 160) {
-      this.add.rectangle(x, 0, 9, BOSS_ARENA.floorY, 0x1a1210, 0.94).setOrigin(0).setDepth(-10);
       this.add
-        .rectangle(x + 2, 0, 2, BOSS_ARENA.floorY, 0x2f2318, 0.7)
+        .tileSprite(x, 0, 8, BOSS_ARENA.floorY, theme.pillarTileKey)
         .setOrigin(0)
-        .setDepth(-9);
+        .setDepth(-10);
     }
 
-    this.add.rectangle(0, 4, BOSS_ARENA.width, 10, 0x241a13, 1).setOrigin(0).setDepth(-8);
-    this.add.rectangle(0, 14, BOSS_ARENA.width, 5, 0x171015, 1).setOrigin(0).setDepth(-7);
+    this.add.tileSprite(0, 4, BOSS_ARENA.width, 8, theme.beamTileKey).setOrigin(0).setDepth(-8);
+    this.add.rectangle(0, 12, BOSS_ARENA.width, 8, 0x150f13, 0.92).setOrigin(0).setDepth(-7);
 
     // Ceiling teeth make the quake rocks readable before they fall.
     for (const rock of BOSS_ARENA.ceilingRocks) {
-      this.add.triangle(rock.x, 19, 0, 0, 10, 0, 5, 12, 0x2a2f36, 1).setDepth(-6);
-      this.add.triangle(rock.x + 2, 19, 0, 0, 6, 0, 3, 8, 0x4a515a, 0.7).setDepth(-5);
+      this.add.image(rock.x, 16, theme.stalactiteKey).setOrigin(0.5, 0).setDepth(-6);
     }
 
     this.add
@@ -345,7 +346,7 @@ export class BossScene extends Phaser.Scene {
         BOSS_ARENA.floorY,
         BOSS_ARENA.width,
         BOSS_ARENA.height - BOSS_ARENA.floorY,
-        'tile-stone',
+        theme.stoneTileKey,
       )
       .setOrigin(0)
       .setDepth(2);
@@ -370,11 +371,17 @@ export class BossScene extends Phaser.Scene {
 
     for (const platform of BOSS_ARENA.oneWayPlatforms) {
       this.add
-        .tileSprite(platform.x, platform.y, platform.width, platform.height, 'tile-wood')
+        .tileSprite(platform.x, platform.y, platform.width, platform.height, theme.woodTileKey)
         .setOrigin(0)
         .setDepth(4);
       this.add
-        .rectangle(platform.x, platform.y, platform.width, 2, 0x9aa0a6, 0.35)
+        .tileSprite(
+          platform.x,
+          platform.y,
+          platform.width,
+          Math.min(platform.height, 8),
+          theme.beamTileKey,
+        )
         .setOrigin(0)
         .setDepth(5);
       this.addSolidBody(platform, this.oneWayGroup);
@@ -386,26 +393,49 @@ export class BossScene extends Phaser.Scene {
     }
 
     for (const lanternX of [120, 600, 840]) {
+      this.add.rectangle(lanternX, 82, 1, 16, 0x3a3f45, 0.9).setDepth(-3);
+
       const glow = this.add
-        .image(lanternX, 105, 'lantern-glow')
+        .image(lanternX, 104, 'lantern-glow')
         .setTint(0xffcf5a)
-        .setScale(1.3)
-        .setAlpha(0.12)
+        .setScale(1.2)
+        .setAlpha(0.14)
         .setDepth(-3);
       this.tweens.add({
         targets: glow,
-        alpha: 0.22,
+        alpha: 0.26,
         duration: 1200 + (lanternX % 3) * 120,
         yoyo: true,
         repeat: -1,
       });
-      this.add.rectangle(lanternX, 110, 3, 5, 0xffe6a0, 0.75).setDepth(-2);
+      this.add.image(lanternX, 112, 'lantern').setScale(0.9).setDepth(-2);
     }
 
-    this.add.rectangle(2, BOSS_ARENA.floorY / 2, 4, BOSS_ARENA.floorY, 0x15100d, 1).setDepth(8);
+    this.add.tileSprite(0, 0, 8, BOSS_ARENA.floorY, theme.pillarTileKey).setOrigin(0).setDepth(8);
     this.add
-      .rectangle(BOSS_ARENA.width - 2, BOSS_ARENA.floorY / 2, 4, BOSS_ARENA.floorY, 0x15100d, 1)
+      .tileSprite(BOSS_ARENA.width - 8, 0, 8, BOSS_ARENA.floorY, theme.pillarTileKey)
+      .setOrigin(0)
       .setDepth(8);
+
+    for (let index = 0; index < 12; index += 1) {
+      const x = 40 + ((index * 173) % (BOSS_ARENA.width - 80));
+      const y = 70 + ((index * 41) % 96);
+      const dust = this.add
+        .image(x, y, 'dust')
+        .setAlpha(0.14 + (index % 3) * 0.05)
+        .setDepth(-5);
+
+      this.tweens.add({
+        targets: dust,
+        x: x + 5,
+        y: y - 9,
+        alpha: 0.02,
+        duration: 2800 + (index % 5) * 260,
+        delay: (index % 6) * 260,
+        yoyo: true,
+        repeat: -1,
+      });
+    }
   }
 
   private addSolidBody(
@@ -427,12 +457,6 @@ export class BossScene extends Phaser.Scene {
     const centerX = exit.x + exit.width / 2;
     const centerY = exit.y + exit.height / 2;
 
-    this.add
-      .rectangle(exit.x, exit.y, exit.width, exit.height, 0x080d11, 0.94)
-      .setOrigin(0)
-      .setDepth(5)
-      .setStrokeStyle(1, 0x8a6b32);
-
     this.exitGlow = this.add
       .image(centerX, centerY, 'lantern-glow')
       .setTint(0xffcf5a)
@@ -440,19 +464,11 @@ export class BossScene extends Phaser.Scene {
       .setAlpha(0.1)
       .setDepth(6);
 
-    this.exitBars = [];
-    for (let bar = 8; bar < exit.height - 4; bar += 8) {
-      const rectangle = this.add
-        .rectangle(exit.x + 4, exit.y + bar, exit.width - 8, 2, 0x6f5427, 0.9)
-        .setOrigin(0)
-        .setDepth(7);
-      this.exitBars.push(rectangle);
-    }
-
-    this.add
-      .rectangle(centerX, exit.y + exit.height - 6, exit.width - 12, 4, 0x2f3640, 1)
-      .setDepth(8);
-    this.add.rectangle(centerX, exit.y + exit.height - 11, 5, 6, 0xffcf5a, 0.9).setDepth(8);
+    this.exitDoor = this.add
+      .image(centerX, centerY, 'elevator-door')
+      .setDisplaySize(exit.width, exit.height)
+      .setTint(0x6a7078)
+      .setDepth(7);
 
     this.exitLabel = this.add
       .text(centerX, exit.y - 9, 'SEALED', {
@@ -1629,7 +1645,7 @@ export class BossScene extends Phaser.Scene {
 
   private openExit(): void {
     this.exitOpen = true;
-    this.exitBars.forEach((bar) => bar.setAlpha(0.12));
+    this.exitDoor?.clearTint();
     this.exitGlow?.setAlpha(0.65);
     this.exitLabel?.setText('OPEN').setColor('#ffcf5a');
     this.exitPrompt?.setText('E ASCEND').setVisible(true);

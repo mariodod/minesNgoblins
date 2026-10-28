@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { ENEMY_TUNING } from '../../config/tuning';
+import { animationKey } from '../../data/assets';
 import type { EnemyDefinition, EnemyId } from '../../data/enemies';
 import { applyDamage, type DamageEvent } from '../../systems/damage';
 
@@ -115,6 +116,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     this.think(time, delta, context);
+    this.updateAnimation();
   }
 
   takeDamage(event: DamageEvent): EnemyHitResult {
@@ -180,6 +182,45 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   protected setPhase(phase: EnemyAttackPhase): void {
     this.phase = phase;
+  }
+
+  private updateAnimation(): void {
+    const speed = Math.abs(this.arcadeBody.velocity.x);
+    let state: string;
+
+    switch (this.phase) {
+      case 'windup':
+        state = 'windup';
+        break;
+      case 'attack':
+        state = this.definition.flying || speed > 8 ? 'move' : 'attack';
+        break;
+      case 'patrol':
+        state = this.definition.flying || speed > 4 ? 'move' : 'idle';
+        break;
+      case 'recover':
+      case 'idle':
+      case 'dead':
+      default:
+        state = 'idle';
+        break;
+    }
+
+    this.playAnimation(state);
+  }
+
+  private playAnimation(state: string): void {
+    const key = animationKey(this.definition.spriteKey, state);
+
+    if (!this.scene.anims.exists(key)) {
+      return;
+    }
+
+    if (this.anims.currentAnim?.key === key && this.anims.isPlaying) {
+      return;
+    }
+
+    this.play(key, true);
   }
 
   protected setFacing(direction: number): void {
@@ -321,6 +362,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setPhase('dead');
     this.arcadeBody.enable = false;
     this.clearTint();
+    this.anims.stop();
+    this.setFrame(0);
     this.telegraph.setVisible(false);
     this.destroyPips();
     this.emit('enemy-killed', { enemy: this, event });

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { APP_VERSION, GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
+import { APP_VERSION, GAME_WIDTH } from '../config/constants';
+import { animationKey } from '../data/assets';
 import { resolveDifficultyId } from '../data/difficulties';
 import { getLevelAsset, resolveLevelId } from '../data/level-registry';
 import { DEFAULT_SKIN_ID, resolveSkinId, skinTextureKey } from '../data/skins';
@@ -53,7 +54,7 @@ export class TitleScene extends Phaser.Scene {
   private initialMessage = DEFAULT_TITLE_MESSAGE;
   private hasExplicitMessage = false;
   private saveNotice = '';
-  private titleMiner: Phaser.GameObjects.Image | undefined;
+  private titleMiner: Phaser.GameObjects.Sprite | undefined;
 
   constructor() {
     super('Title');
@@ -105,51 +106,36 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private drawBackground(): void {
-    const graphics = this.add.graphics();
+    this.add.image(0, 0, 'title-backdrop').setOrigin(0).setDepth(-2);
 
-    graphics.fillStyle(0x0b0c10, 1).fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-    // Layered cave silhouettes.
-    graphics.fillStyle(0x10151b, 1);
-    graphics.fillTriangle(0, GAME_HEIGHT, 80, 54, 190, GAME_HEIGHT);
-    graphics.fillTriangle(280, GAME_HEIGHT, 390, 44, 480, GAME_HEIGHT);
-
-    graphics.fillStyle(0x141a21, 1);
-    graphics.fillTriangle(150, GAME_HEIGHT, 250, 92, 350, GAME_HEIGHT);
-
-    // Mine floor and rails.
-    graphics.fillStyle(0x18120e, 1).fillRect(0, 246, GAME_WIDTH, 24);
-    graphics.lineStyle(2, 0x2e343b, 1).lineBetween(0, 246, GAME_WIDTH, 246);
-    graphics.lineStyle(1, 0x3a424a, 1).lineBetween(0, 252, GAME_WIDTH, 252);
-    for (let x = 4; x < GAME_WIDTH; x += 34) {
-      graphics.lineStyle(1, 0x241f1b, 1).lineBetween(x, 246, x + 12, 252);
-    }
-
-    // Timber supports.
-    graphics.fillStyle(0x241a13, 1).fillRect(26, 64, 10, 182);
-    graphics.fillRect(444, 52, 10, 194);
-    graphics.fillRect(0, 78, GAME_WIDTH, 8);
-    graphics.fillStyle(0x3a2a1d, 1).fillRect(28, 64, 3, 182);
-    graphics.fillRect(446, 52, 3, 194);
-
-    // Crystals and dust.
-    graphics.fillStyle(0x1f6f68, 0.95).fillTriangle(398, 246, 410, 212, 422, 246);
-    graphics.fillStyle(0x2a8c82, 0.9).fillTriangle(416, 246, 429, 196, 442, 246);
-    graphics.fillStyle(0x9fd8cb, 0.5).fillCircle(100, 120, 1);
-    graphics.fillCircle(178, 160, 1);
-    graphics.fillCircle(330, 112, 1);
-    graphics.fillCircle(388, 176, 1);
-
-    // Menu backing panel.
+    // Menu backing panel. Its bottom edge stops short of the status line.
     this.add
-      .rectangle(GAME_WIDTH / 2, 155, 300, 126, 0x0b0c10, 0.72)
-      .setStrokeStyle(1, 0x3a3f45, 0.9);
+      .rectangle(GAME_WIDTH / 2, 146, 300, 112, 0x0b0c10, 0.72)
+      .setStrokeStyle(1, 0x3a3f45, 0.9)
+      .setDepth(0);
 
-    // Placeholder miner and props.
-    this.add.image(54, 205, 'lantern-glow').setScale(2).setAlpha(0.7);
-    this.titleMiner = this.add.image(54, 217, this.currentSkinTexture()).setScale(3);
-    this.add.image(94, 248, 'rock').setScale(2);
-    this.add.image(422, 232, 'crate').setScale(2);
+    const lanternGlow = this.add
+      .image(414, 108, 'lantern-glow')
+      .setScale(1.2)
+      .setAlpha(0.35)
+      .setDepth(0);
+
+    this.tweens.add({
+      targets: lanternGlow,
+      alpha: 0.55,
+      duration: 1400,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    this.add.image(54, 205, 'lantern-glow').setScale(2).setAlpha(0.7).setDepth(0);
+
+    const textureKey = this.currentSkinTexture();
+    this.titleMiner = this.add.sprite(54, 217, textureKey).setScale(3).setDepth(1);
+    this.titleMiner.play(animationKey(textureKey, 'idle'));
+
+    this.add.image(94, 248, 'rock').setScale(2).setDepth(1);
+    this.add.image(422, 232, 'crate').setScale(2).setDepth(1);
   }
 
   private drawTitle(): void {
@@ -171,7 +157,7 @@ export class TitleScene extends Phaser.Scene {
       .setShadow(2, 2, '#000000', 0, true, true);
 
     this.add
-      .text(GAME_WIDTH / 2, 66, 'ONE ROCK. MANY PROBLEMS.', {
+      .text(GAME_WIDTH / 2, 57, 'ONE ROCK. MANY PROBLEMS.', {
         fontFamily: FONT_FAMILY,
         fontSize: '8px',
         color: '#9aa0a6',
@@ -179,7 +165,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     const divider = this.add.graphics();
-    divider.lineStyle(1, 0x3a3f45, 0.8).lineBetween(138, 82, 342, 82);
+    divider.lineStyle(1, 0x3a3f45, 0.8).lineBetween(138, 84, 342, 84);
   }
 
   private createMenu(): void {
@@ -191,7 +177,7 @@ export class TitleScene extends Phaser.Scene {
 
     this.menuTexts = MENU_ITEMS.map((item, index) => {
       const text = this.add
-        .text(GAME_WIDTH / 2, 112 + index * 26, item.label, style)
+        .text(GAME_WIDTH / 2, 108 + index * 24, item.label, style)
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true });
 
@@ -209,14 +195,15 @@ export class TitleScene extends Phaser.Scene {
 
   private createFooter(): void {
     this.messageText = this.add
-      .text(GAME_WIDTH / 2, 224, '', {
+      .text(GAME_WIDTH / 2, 220, '', {
         fontFamily: FONT_FAMILY,
         fontSize: '8px',
         color: '#9fd8cb',
         align: 'center',
-        wordWrap: { width: 410 },
+        wordWrap: { width: 300 },
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(2);
 
     this.add
       .text(GAME_WIDTH / 2, 242, 'UP / DOWN TO SELECT   ENTER TO CONFIRM', {

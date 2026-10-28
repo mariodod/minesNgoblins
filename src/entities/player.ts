@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { PLAYER_TUNING, ROCK_TUNING } from '../config/tuning';
+import { animationKey } from '../data/assets';
 import { HEALING_SALVE, ORE, type PickupId, type SecondaryItemId } from '../data/items';
 import type { InputService } from '../services/input-service';
 import type { LevelPoint } from '../data/level-definition';
@@ -42,6 +43,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private invulnerableUntil = 0;
   private nextThrowAt = 0;
   private nextItemUseAt = 0;
+  private hurtUntil = 0;
 
   constructor(
     scene: Phaser.Scene,
@@ -66,6 +68,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     body.setSize(10, 20);
     body.setOffset(3, 4);
     this.setCollideWorldBounds(true);
+    this.playAnimation('idle');
   }
 
   override update(time: number, delta: number): void {
@@ -129,6 +132,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.handleThrow(time);
     this.handleUseItem(time);
     this.updateInvulnerabilityVisual(time);
+
+    if (time >= this.hurtUntil) {
+      this.updateMovementAnimation(onGround);
+    }
 
     this.wasOnGround = onGround;
     this.lastFallSpeed = body.velocity.y;
@@ -212,6 +219,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.hp = Math.max(0, this.hp - amount);
     this.invulnerableUntil = time + PLAYER_TUNING.invulnerableMs;
+    this.hurtUntil = time + 180;
+    this.playAnimation('hurt');
 
     this.setTint(0xff6b6b).setTintMode(Phaser.TintModes.FILL);
     this.scene.time.delayedCall(90, () => {
@@ -244,6 +253,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setAlpha(1);
     this.arcadeBody.setVelocity(0, 0);
     this.arcadeBody.enable = false;
+    this.playAnimation('hurt');
+    this.anims.pause();
     this.emit('player-died');
   }
 
@@ -333,6 +344,25 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       aim,
       speed,
     });
+  }
+
+  private updateMovementAnimation(onGround: boolean): void {
+    const state = !onGround ? 'jump' : Math.abs(this.arcadeBody.velocity.x) > 4 ? 'run' : 'idle';
+    this.playAnimation(state);
+  }
+
+  private playAnimation(state: string): void {
+    const key = animationKey(this.texture.key, state);
+
+    if (!this.scene.anims.exists(key)) {
+      return;
+    }
+
+    if (this.anims.currentAnim?.key === key && this.anims.isPlaying) {
+      return;
+    }
+
+    this.play(key, true);
   }
 
   private updateInvulnerabilityVisual(time: number): void {

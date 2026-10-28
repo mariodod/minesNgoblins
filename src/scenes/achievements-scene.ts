@@ -56,26 +56,26 @@ export class AchievementsScene extends Phaser.Scene {
       const column = Math.floor(index / 6);
       const row = index % 6;
       const x = COLUMN_X[column] ?? COLUMN_X[0];
-      const y = 51 + row * 28;
+      const y = 51 + row * 31;
       const unlocked = Boolean(saveService.data.achievements[achievement.id]);
 
       this.add
-        .rectangle(x, y, 218, 25, unlocked ? 0x252d36 : 0x11161b, 0.9)
+        .rectangle(x, y, 218, 28, unlocked ? 0x252d36 : 0x11161b, 0.9)
         .setOrigin(0)
         .setStrokeStyle(1, unlocked ? 0x9fd8cb : 0x3d454f, 0.9);
-      this.add.text(x + 6, y + 3, achievement.name, {
+      this.add.text(x + 6, y + 2, achievement.name, {
         fontFamily: FONT_FAMILY,
         fontSize: '8px',
         color: unlocked ? '#f4d35e' : '#77838c',
       });
       this.add
-        .text(x + 212, y + 4, unlocked ? 'UNLOCKED' : 'LOCKED', {
+        .text(x + 212, y + 3, unlocked ? 'UNLOCKED' : 'LOCKED', {
           fontFamily: FONT_FAMILY,
           fontSize: '6px',
           color: unlocked ? '#6fe3c4' : '#5f6b73',
         })
         .setOrigin(1, 0);
-      this.add.text(x + 6, y + 14, achievement.description, {
+      this.add.text(x + 6, y + 11, achievement.description, {
         fontFamily: FONT_FAMILY,
         fontSize: '6px',
         color: unlocked ? '#c9d1d9' : '#5f6b73',

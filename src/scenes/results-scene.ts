@@ -200,14 +200,14 @@ export class ResultsScene extends Phaser.Scene {
   }
 
   private drawRewards(): void {
-    this.add.text(20, 208, 'NEW ACHIEVEMENTS', {
+    this.add.text(20, 204, 'NEW ACHIEVEMENTS', {
       fontFamily: FONT_FAMILY,
       fontSize: '7px',
       color: '#9fd8cb',
     });
 
     if (this.unlocks.length === 0) {
-      this.add.text(20, 219, 'NONE THIS RUN', {
+      this.add.text(20, 213, 'NONE THIS RUN', {
         fontFamily: FONT_FAMILY,
         fontSize: '6px',
         color: '#5f6b73',
@@ -216,7 +216,7 @@ export class ResultsScene extends Phaser.Scene {
       this.unlocks.forEach((unlock, index) => {
         const column = Math.floor(index / 4);
         const row = index % 4;
-        this.add.text(20 + column * 138, 219 + row * 8, `+ ${unlock.name}`, {
+        this.add.text(20 + column * 138, 213 + row * 8, `+ ${unlock.name}`, {
           fontFamily: FONT_FAMILY,
           fontSize: '6px',
           color: '#f4d35e',
@@ -224,7 +224,7 @@ export class ResultsScene extends Phaser.Scene {
       });
     }
 
-    this.add.text(318, 208, 'SKINS UNLOCKED', {
+    this.add.text(318, 204, 'SKINS UNLOCKED', {
       fontFamily: FONT_FAMILY,
       fontSize: '7px',
       color: '#9fd8cb',
@@ -235,7 +235,7 @@ export class ResultsScene extends Phaser.Scene {
       .filter((skinId): skinId is SkinId => skinId !== undefined);
 
     if (skins.length === 0) {
-      this.add.text(318, 219, 'NONE THIS RUN', {
+      this.add.text(318, 213, 'NONE THIS RUN', {
         fontFamily: FONT_FAMILY,
         fontSize: '6px',
         color: '#5f6b73',
@@ -244,7 +244,7 @@ export class ResultsScene extends Phaser.Scene {
       skins.forEach((skinId, index) => {
         const column = Math.floor(index / 4);
         const row = index % 4;
-        this.add.text(318 + column * 76, 219 + row * 8, SKINS[skinId].name, {
+        this.add.text(318 + column * 76, 213 + row * 8, SKINS[skinId].name, {
           fontFamily: FONT_FAMILY,
           fontSize: '6px',
           color: '#6fe3c4',

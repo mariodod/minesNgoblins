@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH } from '../config/constants';
+import { ASSET_MANIFEST, assetUrl } from '../data/assets';
 import { LEVEL_ASSETS, levelCacheKey } from '../data/level-registry';
 import { setTestHook } from '../utils/test-hooks';
 
@@ -37,9 +38,35 @@ export class PreloadScene extends Phaser.Scene {
     for (const asset of LEVEL_ASSETS) {
       this.load.json(levelCacheKey(asset.id), asset.path);
     }
+
+    for (const image of ASSET_MANIFEST.images) {
+      this.load.image(image.key, assetUrl(image.url));
+    }
+
+    for (const asset of ASSET_MANIFEST.spritesheets) {
+      this.load.spritesheet(asset.key, assetUrl(asset.url), {
+        frameWidth: asset.frameWidth,
+        frameHeight: asset.frameHeight,
+      });
+    }
   }
 
   create(): void {
+    for (const asset of ASSET_MANIFEST.spritesheets) {
+      for (const animation of asset.animations) {
+        if (this.anims.exists(animation.key)) {
+          continue;
+        }
+
+        this.anims.create({
+          key: animation.key,
+          frames: animation.frames.map((frame) => ({ key: asset.key, frame })),
+          frameRate: animation.frameRate,
+          repeat: animation.repeat,
+        });
+      }
+    }
+
     this.scene.start('Title');
   }
 }
