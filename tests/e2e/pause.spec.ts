@@ -82,3 +82,48 @@ test('quit run confirms, ends the run, and returns to the title screen', async (
 
   expect(errors).toEqual([]);
 });
+
+test('starts a fresh run after quitting, twice in a row', async ({ page }) => {
+  const errors = collectPageErrors(page);
+
+  const quitRun = async (): Promise<void> => {
+    await pressKey(page, 'Escape');
+    await expect.poll(() => readHook<string>(page, 'scene')).toBe('Pause');
+    for (let step = 0; step < 3; step += 1) {
+      await pressKey(page, 'ArrowDown');
+    }
+    await expect.poll(() => readHook<string>(page, 'pauseSelection')).toBe('Quit Run');
+    await pressKey(page, 'Enter');
+    await expect.poll(() => readHook<string>(page, 'pauseSelection')).toBe('Confirm Quit');
+    await pressKey(page, 'Enter');
+    await expect.poll(() => readHook<string>(page, 'scene')).toBe('Title');
+  };
+
+  const startFreshRun = async (): Promise<void> => {
+    await pressKey(page, 'Enter');
+    await expect.poll(() => readHook<string>(page, 'scene')).toBe('RunSetup');
+    await pressKey(page, 'Enter');
+    await expect.poll(() => readHook<string>(page, 'scene'), { timeout: 8000 }).toBe('Level');
+    await expect.poll(() => readHook<string>(page, 'levelId')).toBe('shaft-entrance');
+    await expect.poll(() => readHook<number>(page, 'hp')).toBe(5);
+    await expect.poll(() => readHook<boolean>(page, 'runActive')).toBe(true);
+
+    const before = (await readHook<number>(page, 'frameCount')) ?? 0;
+    await page.waitForTimeout(300);
+    const after = (await readHook<number>(page, 'frameCount')) ?? 0;
+    expect(after).toBeGreaterThan(before);
+
+    await page.keyboard.down('ArrowRight');
+    await page.waitForTimeout(400);
+    await page.keyboard.up('ArrowRight');
+    await expect.poll(() => readHook<number>(page, 'playerX')).toBeGreaterThan(56);
+  };
+
+  await startRun(page);
+  await quitRun();
+  await startFreshRun();
+  await quitRun();
+  await startFreshRun();
+
+  expect(errors).toEqual([]);
+});

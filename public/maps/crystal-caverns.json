@@ -20,15 +20,15 @@
     { "x": 640, "y": 224, "width": 64, "height": 16 },
     { "x": 760, "y": 272, "width": 64, "height": 16 },
     { "x": 920, "y": 320, "width": 96, "height": 16 },
-    { "x": 1040, "y": 264, "width": 80, "height": 16 },
-    { "x": 1160, "y": 216, "width": 64, "height": 16 },
+    { "x": 1040, "y": 272, "width": 80, "height": 16 },
+    { "x": 1160, "y": 224, "width": 64, "height": 16 },
     { "x": 1280, "y": 300, "width": 64, "height": 16 },
     { "x": 1360, "y": 320, "width": 80, "height": 16 },
-    { "x": 1480, "y": 264, "width": 96, "height": 16 },
-    { "x": 1600, "y": 216, "width": 64, "height": 16 },
+    { "x": 1480, "y": 272, "width": 96, "height": 16 },
+    { "x": 1600, "y": 224, "width": 64, "height": 16 },
     { "x": 1720, "y": 264, "width": 80, "height": 16 },
-    { "x": 1840, "y": 312, "width": 80, "height": 16 },
-    { "x": 1940, "y": 248, "width": 80, "height": 16 }
+    { "x": 1840, "y": 320, "width": 80, "height": 16 },
+    { "x": 1940, "y": 272, "width": 80, "height": 16 }
   ],
   "enemies": [
     { "type": "cave-bat", "x": 300, "y": 230 },

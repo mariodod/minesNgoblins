@@ -5,7 +5,9 @@ export const PLAYER_TUNING = {
   groundFriction: 1800,
   airAcceleration: 900,
   airDrag: 200,
-  jumpVelocity: 300,
+  // 320 gives a measured 54 px held-jump rise at 60 Hz. The analytic 50 px
+  // figure at 300 left 48 px platform steps one pixel short after integration.
+  jumpVelocity: 320,
   gravity: 900,
   maxFallSpeed: 500,
   coyoteMs: 100,

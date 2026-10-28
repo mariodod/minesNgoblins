@@ -135,7 +135,7 @@ The player is a compact, readable pixel-art miner.
 | Run speed           | 110 px/s                                     |
 | Ground acceleration | 1400 px/s²                                   |
 | Ground friction     | 1800 px/s²                                   |
-| Jump velocity       | 300 px/s                                     |
+| Jump velocity       | 320 px/s (M6; see note)                      |
 | Gravity             | 900 px/s²                                    |
 | Jump cut            | 50% upward velocity removed on early release |
 | Max fall speed      | 500 px/s                                     |
@@ -143,6 +143,8 @@ The player is a compact, readable pixel-art miner.
 | Jump buffer         | 120 ms                                       |
 
 **M1 result:** the starting values were retained after the internal passes: a short tap reaches about 34 px and a full jump reaches about 46-50 px. Details are in [M1 Playtest Notes](m1-playtest.md).
+
+**M6 note:** Arcade Physics applies gravity before moving a body, so the M1 value of 300 px/s peaked at about 47.5 px at 60 Hz. M6 raises jump velocity to 320 px/s, which measures about 54 px in-game. This clears the authored 48 px platform steps with a small safety margin; `tests/unit/level-reachability.test.ts` locks the geometry and measured height together.
 
 - Jumping is the primary defensive verb. The player should be able to jump over most contact enemies and projectiles.
 - There is no melee attack, stomp attack, or dodge roll in v1. The rock is the answer to nearly every combat problem.
