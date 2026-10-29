@@ -8,10 +8,11 @@ run:
 npm run assets
 ```
 
-The generator is deterministic and writes both the pack and
-`src/data/asset-manifest.json`. `PreloadScene` reads the manifest to load every
-image and spritesheet and to register all animations, so adding art does not
-require a second hardcoded asset list.
+The generator is deterministic and writes the art pack, the
+[audio pack](../audio/README.md), and `src/data/asset-manifest.json`.
+`PreloadScene` reads the manifest to load every image, spritesheet, and sound
+and to register all animations, so adding an asset does not require a second
+hardcoded asset list.
 
 ## Contents
 

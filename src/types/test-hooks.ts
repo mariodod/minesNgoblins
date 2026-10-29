@@ -96,6 +96,11 @@ export interface MinesTestHook {
   pauseSelection?: string;
   settingsSelection?: string;
   masterVolume?: number;
+  musicVolume?: number;
+  sfxVolume?: number;
+  muted?: boolean;
+  music?: string;
+  audioAssets?: number;
   screenShake?: string;
   difficultySelection?: string;
   selectedDifficulty?: string;

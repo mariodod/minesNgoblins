@@ -25,6 +25,7 @@ export interface SaveSettings {
   masterVolume: number;
   musicVolume: number;
   sfxVolume: number;
+  muted: boolean;
   screenShake: ScreenShakeSetting;
   flashIntensity: FlashIntensitySetting;
   equippedSkin: string;
@@ -81,6 +82,7 @@ export const DEFAULT_SETTINGS: SaveSettings = {
   masterVolume: 0.8,
   musicVolume: 0.6,
   sfxVolume: 0.8,
+  muted: false,
   screenShake: 'full',
   flashIntensity: 'full',
   equippedSkin: DEFAULT_SKIN_ID,
@@ -353,6 +355,7 @@ function parseSettings(value: unknown): SaveSettings {
     masterVolume: readVolume(record['masterVolume'], DEFAULT_SETTINGS.masterVolume),
     musicVolume: readVolume(record['musicVolume'], DEFAULT_SETTINGS.musicVolume),
     sfxVolume: readVolume(record['sfxVolume'], DEFAULT_SETTINGS.sfxVolume),
+    muted: readBoolean(record['muted'], DEFAULT_SETTINGS.muted),
     screenShake: readEnum(
       record['screenShake'],
       ['full', 'reduced', 'off'] as const,
@@ -433,6 +436,10 @@ function readVolume(value: unknown, fallback: number): number {
   }
 
   return Math.min(1, Math.max(0, value));
+}
+
+function readBoolean(value: unknown, fallback: boolean): boolean {
+  return typeof value === 'boolean' ? value : fallback;
 }
 
 function readEnum<T extends string>(value: unknown, allowed: readonly T[], fallback: T): T {

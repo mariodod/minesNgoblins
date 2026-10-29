@@ -6,7 +6,17 @@ import { setTestHook } from '../utils/test-hooks';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
 const SHAKE_ORDER: readonly ScreenShakeSetting[] = ['full', 'reduced', 'off'];
-const SETTINGS_ITEMS = ['Master Volume', 'Screen Shake', 'Back'] as const;
+const SETTINGS_ITEMS = [
+  'Master Volume',
+  'Music Volume',
+  'Sfx Volume',
+  'Mute',
+  'Screen Shake',
+  'Back',
+] as const;
+
+const ROW_START_Y = 86;
+const ROW_SPACING = 24;
 
 interface SettingsSceneData {
   returnScene: string;
@@ -40,12 +50,12 @@ export class SettingsScene extends Phaser.Scene {
 
     this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x020304, 0.78).setOrigin(0).setDepth(0);
     this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 4, 300, 196, 0x10151b, 0.97)
+      .rectangle(GAME_WIDTH / 2, 134, 348, 226, 0x10151b, 0.97)
       .setStrokeStyle(1, 0x4a515a, 1)
       .setDepth(1);
 
     this.add
-      .text(GAME_WIDTH / 2, 52, 'OPTIONS', {
+      .text(GAME_WIDTH / 2, 40, 'OPTIONS', {
         fontFamily: FONT_FAMILY,
         fontSize: '17px',
         color: '#e8c170',
@@ -55,7 +65,7 @@ export class SettingsScene extends Phaser.Scene {
       .setShadow(2, 2, '#000000', 0, true, true);
 
     this.add
-      .text(GAME_WIDTH / 2, 70, 'CHANGES SAVE AUTOMATICALLY', {
+      .text(GAME_WIDTH / 2, 58, 'CHANGES SAVE AUTOMATICALLY', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#7f8c8d',
@@ -65,9 +75,9 @@ export class SettingsScene extends Phaser.Scene {
 
     this.rowTexts = SETTINGS_ITEMS.map((label, index) =>
       this.add
-        .text(GAME_WIDTH / 2, 112 + index * 27, label, {
+        .text(GAME_WIDTH / 2, ROW_START_Y + index * ROW_SPACING, label, {
           fontFamily: FONT_FAMILY,
-          fontSize: '10px',
+          fontSize: '14px',
           color: '#cfd2d6',
         })
         .setOrigin(0.5)
@@ -75,18 +85,18 @@ export class SettingsScene extends Phaser.Scene {
     );
 
     this.statusText = this.add
-      .text(GAME_WIDTH / 2, 202, '', {
+      .text(GAME_WIDTH / 2, 222, '', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#9fd8cb',
         align: 'center',
-        wordWrap: { width: 268 },
+        wordWrap: { width: 320 },
       })
       .setOrigin(0.5)
       .setDepth(2);
 
     this.add
-      .text(GAME_WIDTH / 2, 228, 'UP/DOWN SELECT   LEFT/RIGHT CHANGE   ESC BACK', {
+      .text(GAME_WIDTH / 2, 254, 'UP/DOWN SELECT   LEFT/RIGHT CHANGE   ESC BACK', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',
@@ -158,20 +168,49 @@ export class SettingsScene extends Phaser.Scene {
       return;
     }
 
-    if (this.selectedIndex === 0) {
-      const next = clampStep(this.saveService.settings.masterVolume + direction * 0.1);
-      this.saveService.updateSettings({ masterVolume: next });
-      this.audioService?.setVolume(next);
-      this.statusText.setText(`Master volume ${Math.round(next * 100)}%.`);
-    } else if (this.selectedIndex === 1) {
-      const current = this.saveService.settings.screenShake;
-      const currentIndex = SHAKE_ORDER.indexOf(current);
-      const nextIndex =
-        (((currentIndex + direction) % SHAKE_ORDER.length) + SHAKE_ORDER.length) %
-        SHAKE_ORDER.length;
-      const next = SHAKE_ORDER[nextIndex] ?? 'full';
-      this.saveService.updateSettings({ screenShake: next });
-      this.statusText.setText(`Screen shake ${next}.`);
+    const settings = this.saveService.settings;
+
+    switch (this.selectedIndex) {
+      case 0: {
+        const next = clampStep(settings.masterVolume + direction * 0.1);
+        this.saveService.updateSettings({ masterVolume: next });
+        this.audioService?.setMasterVolume(next);
+        this.statusText.setText(`Master volume ${Math.round(next * 100)}%.`);
+        break;
+      }
+      case 1: {
+        const next = clampStep(settings.musicVolume + direction * 0.1);
+        this.saveService.updateSettings({ musicVolume: next });
+        this.audioService?.setMusicVolume(next);
+        this.statusText.setText(`Music volume ${Math.round(next * 100)}%.`);
+        break;
+      }
+      case 2: {
+        const next = clampStep(settings.sfxVolume + direction * 0.1);
+        this.saveService.updateSettings({ sfxVolume: next });
+        this.audioService?.setSfxVolume(next);
+        this.statusText.setText(`Effects volume ${Math.round(next * 100)}%.`);
+        break;
+      }
+      case 3: {
+        const next = !settings.muted;
+        this.saveService.updateSettings({ muted: next });
+        this.audioService?.setMuted(next);
+        this.statusText.setText(next ? 'Audio muted.' : 'Audio on.');
+        break;
+      }
+      case 4: {
+        const currentIndex = SHAKE_ORDER.indexOf(settings.screenShake);
+        const nextIndex =
+          (((currentIndex + direction) % SHAKE_ORDER.length) + SHAKE_ORDER.length) %
+          SHAKE_ORDER.length;
+        const next = SHAKE_ORDER[nextIndex] ?? 'full';
+        this.saveService.updateSettings({ screenShake: next });
+        this.statusText.setText(`Screen shake ${next}.`);
+        break;
+      }
+      default:
+        break;
     }
 
     this.refresh();
@@ -179,21 +218,24 @@ export class SettingsScene extends Phaser.Scene {
 
   private refresh(): void {
     const settings = this.saveService?.settings;
-    const volume = Math.round((settings?.masterVolume ?? 0.8) * 100);
+    const master = Math.round((settings?.masterVolume ?? 0.8) * 100);
+    const music = Math.round((settings?.musicVolume ?? 0.6) * 100);
+    const sfx = Math.round((settings?.sfxVolume ?? 0.8) * 100);
+    const muted = settings?.muted ?? false;
     const shake = settings?.screenShake ?? 'full';
+
+    const rows = [
+      `MASTER VOLUME  < ${master}% >`,
+      `MUSIC VOLUME   < ${music}% >`,
+      `SFX VOLUME     < ${sfx}% >`,
+      `MUTE           < ${muted ? 'ON' : 'OFF'} >`,
+      `SCREEN SHAKE   < ${shake.toUpperCase()} >`,
+      'BACK',
+    ];
 
     this.rowTexts.forEach((text, index) => {
       const selected = index === this.selectedIndex;
-      const prefix = selected ? '> ' : '  ';
-
-      if (index === 0) {
-        text.setText(`${prefix}MASTER VOLUME   < ${volume}% >`);
-      } else if (index === 1) {
-        text.setText(`${prefix}SCREEN SHAKE    < ${shake.toUpperCase()} >`);
-      } else {
-        text.setText(`${prefix}BACK`);
-      }
-
+      text.setText(`${selected ? '> ' : '  '}${rows[index] ?? ''}`);
       text.setColor(selected ? '#f4d35e' : '#cfd2d6');
     });
 
@@ -206,6 +248,9 @@ export class SettingsScene extends Phaser.Scene {
       scene: 'Settings',
       settingsSelection: SETTINGS_ITEMS[this.selectedIndex] ?? 'Master Volume',
       masterVolume: settings?.masterVolume ?? 0.8,
+      musicVolume: settings?.musicVolume ?? 0.6,
+      sfxVolume: settings?.sfxVolume ?? 0.8,
+      muted,
       screenShake: settings?.screenShake ?? 'full',
       message: this.statusText.text,
     });

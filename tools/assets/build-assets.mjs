@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BOSS_IMAGES, createBossAssets } from './boss.mjs';
+import { buildAudio } from '../audio/build-audio.mjs';
 import { ENEMY_ASSETS } from './enemies.mjs';
 import { createPixelFont } from './font.mjs';
 import { ITEM_IMAGES } from './items.mjs';
@@ -119,6 +120,7 @@ const manifest = {
       dataUrl: 'assets/fonts/pixel-5x7.xml',
     },
   ],
+  audio: buildAudio(publicRoot, projectRoot),
 };
 
 mkdirSync(dirname(manifestPath), { recursive: true });
@@ -129,5 +131,6 @@ const sheetCount = spritesheets.length;
 const animationCount = spritesheets.reduce((total, asset) => total + asset.animations.length, 0);
 
 console.log(
-  `Generated ${imageCount} images, ${sheetCount} spritesheets, ${animationCount} animations, and 1 bitmap font.`,
+  `Generated ${imageCount} images, ${sheetCount} spritesheets, ${animationCount} animations, ` +
+    '1 bitmap font, and the audio pack.',
 );

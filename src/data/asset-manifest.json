@@ -1053,5 +1053,252 @@
       "textureUrl": "assets/fonts/pixel-5x7.png",
       "dataUrl": "assets/fonts/pixel-5x7.xml"
     }
+  ],
+  "audio": [
+    {
+      "key": "jump",
+      "url": "audio/sfx/jump.wav",
+      "category": "sfx",
+      "seconds": 0.13,
+      "volume": 1
+    },
+    {
+      "key": "land",
+      "url": "audio/sfx/land.wav",
+      "category": "sfx",
+      "seconds": 0.14,
+      "volume": 1
+    },
+    {
+      "key": "throw",
+      "url": "audio/sfx/throw.wav",
+      "category": "sfx",
+      "seconds": 0.12,
+      "volume": 1
+    },
+    {
+      "key": "bounce",
+      "url": "audio/sfx/bounce.wav",
+      "category": "sfx",
+      "seconds": 0.1,
+      "volume": 1
+    },
+    {
+      "key": "hit",
+      "url": "audio/sfx/hit.wav",
+      "category": "sfx",
+      "seconds": 0.12,
+      "volume": 1
+    },
+    {
+      "key": "enemy-down",
+      "url": "audio/sfx/enemy-down.wav",
+      "category": "sfx",
+      "seconds": 0.34,
+      "volume": 1
+    },
+    {
+      "key": "hurt",
+      "url": "audio/sfx/hurt.wav",
+      "category": "sfx",
+      "seconds": 0.3,
+      "volume": 1
+    },
+    {
+      "key": "death",
+      "url": "audio/sfx/death.wav",
+      "category": "sfx",
+      "seconds": 0.85,
+      "volume": 1
+    },
+    {
+      "key": "bone-throw",
+      "url": "audio/sfx/bone-throw.wav",
+      "category": "sfx",
+      "seconds": 0.14,
+      "volume": 1
+    },
+    {
+      "key": "deflect",
+      "url": "audio/sfx/deflect.wav",
+      "category": "sfx",
+      "seconds": 0.12,
+      "volume": 1
+    },
+    {
+      "key": "rumble",
+      "url": "audio/sfx/rumble.wav",
+      "category": "sfx",
+      "seconds": 0.5,
+      "volume": 1
+    },
+    {
+      "key": "boulder",
+      "url": "audio/sfx/boulder.wav",
+      "category": "sfx",
+      "seconds": 0.24,
+      "volume": 1
+    },
+    {
+      "key": "knife",
+      "url": "audio/sfx/knife.wav",
+      "category": "sfx",
+      "seconds": 0.09,
+      "volume": 1
+    },
+    {
+      "key": "gunshot",
+      "url": "audio/sfx/gunshot.wav",
+      "category": "sfx",
+      "seconds": 0.2,
+      "volume": 1
+    },
+    {
+      "key": "magic",
+      "url": "audio/sfx/magic.wav",
+      "category": "sfx",
+      "seconds": 0.26,
+      "volume": 1
+    },
+    {
+      "key": "rune-blast",
+      "url": "audio/sfx/rune-blast.wav",
+      "category": "sfx",
+      "seconds": 0.38,
+      "volume": 1
+    },
+    {
+      "key": "crate-break",
+      "url": "audio/sfx/crate-break.wav",
+      "category": "sfx",
+      "seconds": 0.2,
+      "volume": 1
+    },
+    {
+      "key": "pickup",
+      "url": "audio/sfx/pickup.wav",
+      "category": "sfx",
+      "seconds": 0.2,
+      "volume": 1
+    },
+    {
+      "key": "heal",
+      "url": "audio/sfx/heal.wav",
+      "category": "sfx",
+      "seconds": 0.42,
+      "volume": 1
+    },
+    {
+      "key": "ore",
+      "url": "audio/sfx/ore.wav",
+      "category": "sfx",
+      "seconds": 0.22,
+      "volume": 1
+    },
+    {
+      "key": "elevator",
+      "url": "audio/sfx/elevator.wav",
+      "category": "sfx",
+      "seconds": 0.6,
+      "volume": 1
+    },
+    {
+      "key": "empty",
+      "url": "audio/sfx/empty.wav",
+      "category": "sfx",
+      "seconds": 0.07,
+      "volume": 1
+    },
+    {
+      "key": "boss-roar",
+      "url": "audio/sfx/boss-roar.wav",
+      "category": "sfx",
+      "seconds": 0.95,
+      "volume": 1
+    },
+    {
+      "key": "boss-hurt",
+      "url": "audio/sfx/boss-hurt.wav",
+      "category": "sfx",
+      "seconds": 0.22,
+      "volume": 1
+    },
+    {
+      "key": "boss-spit",
+      "url": "audio/sfx/boss-spit.wav",
+      "category": "sfx",
+      "seconds": 0.22,
+      "volume": 1
+    },
+    {
+      "key": "boss-burrow",
+      "url": "audio/sfx/boss-burrow.wav",
+      "category": "sfx",
+      "seconds": 0.6,
+      "volume": 1
+    },
+    {
+      "key": "boss-quake",
+      "url": "audio/sfx/boss-quake.wav",
+      "category": "sfx",
+      "seconds": 0.9,
+      "volume": 1
+    },
+    {
+      "key": "boss-charge",
+      "url": "audio/sfx/boss-charge.wav",
+      "category": "sfx",
+      "seconds": 0.7,
+      "volume": 1
+    },
+    {
+      "key": "boss-summon",
+      "url": "audio/sfx/boss-summon.wav",
+      "category": "sfx",
+      "seconds": 0.55,
+      "volume": 1
+    },
+    {
+      "key": "boss-phase",
+      "url": "audio/sfx/boss-phase.wav",
+      "category": "sfx",
+      "seconds": 1.05,
+      "volume": 1
+    },
+    {
+      "key": "boss-defeat",
+      "url": "audio/sfx/boss-defeat.wav",
+      "category": "sfx",
+      "seconds": 1.7,
+      "volume": 1
+    },
+    {
+      "key": "boss-victory",
+      "url": "audio/sfx/boss-victory.wav",
+      "category": "sfx",
+      "seconds": 1.5,
+      "volume": 1
+    },
+    {
+      "key": "music-title",
+      "url": "audio/music/music-title.wav",
+      "category": "music",
+      "seconds": 11.428571428571429,
+      "volume": 0.45
+    },
+    {
+      "key": "music-mines",
+      "url": "audio/music/music-mines.wav",
+      "category": "music",
+      "seconds": 7.2727272727272725,
+      "volume": 0.5
+    },
+    {
+      "key": "music-boss",
+      "url": "audio/music/music-boss.wav",
+      "category": "music",
+      "seconds": 6.315789473684211,
+      "volume": 0.55
+    }
   ]
 }

@@ -191,6 +191,7 @@ export class LevelScene extends Phaser.Scene {
 
     this.inputService = new InputService(this);
     this.audio = this.registry.get('audioService') as AudioService;
+    this.audio.playMusic('music-mines');
     this.createBackground();
     this.createPlatforms();
     this.createProps();
@@ -1796,6 +1797,7 @@ export class LevelScene extends Phaser.Scene {
       ready: true,
       scene: 'Level',
       levelId: this.level.id,
+      music: this.audio.currentMusic ?? 'none',
       levelNumber: this.levelIndex + 1,
       levelCount: LEVEL_COUNT,
       exit: {

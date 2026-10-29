@@ -27,8 +27,8 @@ export class BootScene extends Phaser.Scene {
 
     const saveService = new SaveService();
     const achievementService = new AchievementService(saveService);
-    const audioService = new AudioService();
-    audioService.setVolume(saveService.settings.masterVolume);
+    const audioService = new AudioService(this.sound);
+    audioService.applySettings(saveService.settings);
 
     this.registry.set('saveService', saveService);
     this.registry.set('achievementService', achievementService);

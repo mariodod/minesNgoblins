@@ -2,7 +2,7 @@
 
 **A retro mine-crawling action platformer. One rock. Many problems.**
 
-> **Status:** M6 in progress at `v0.5.0` — the generated pixel-art pack and crisp bitmap text layer are in. Final audio, UI/accessibility polish, content checks, and release documentation are next.
+> **Status:** M6 in progress at `v0.5.0` — the generated pixel-art pack, crisp bitmap text layer, and generated audio pack are in. Final UI/accessibility polish, content checks, and release documentation are next.
 >
 > The repository was empty when work began, so the documents below define the direction for a new game.
 
@@ -48,7 +48,7 @@ The game is built around short, replayable runs. Players dodge or defeat enemies
 | Build tool   | Vite                                                               |
 | Level editor | Tiled (JSON maps)                                                  |
 | Art          | Generated pixel-art pack, 16×16 tiles, 480×270 internal resolution |
-| Audio        | Phaser Web Audio + original/CC0 assets                             |
+| Audio        | Generated WAV pack + Phaser Web Audio                              |
 | Tests        | Vitest + Playwright                                                |
 | CI / hosting | GitHub Actions + GitHub Pages                                      |
 | Persistence  | Versioned `localStorage` save                                      |

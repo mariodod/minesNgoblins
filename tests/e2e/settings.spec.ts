@@ -13,7 +13,19 @@ async function openOptions(page: Page): Promise<void> {
   await settleInput(page);
 }
 
-test('title options change and persist volume and screen shake', async ({ page }) => {
+async function selectRow(page: Page, row: string): Promise<void> {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    if ((await readHook<string>(page, 'settingsSelection')) === row) {
+      return;
+    }
+
+    await pressKey(page, 'ArrowDown');
+  }
+
+  await expect.poll(() => readHook<string>(page, 'settingsSelection')).toBe(row);
+}
+
+test('options change and persist every audio setting', async ({ page }) => {
   await bootToTitle(page);
   await openOptions(page);
 
@@ -22,8 +34,19 @@ test('title options change and persist volume and screen shake', async ({ page }
   await pressKey(page, 'ArrowRight');
   await expect.poll(() => readHook<number>(page, 'masterVolume')).toBe(1);
 
-  await pressKey(page, 'ArrowDown');
-  await expect.poll(() => readHook<string>(page, 'settingsSelection')).toBe('Screen Shake');
+  await selectRow(page, 'Music Volume');
+  await pressKey(page, 'ArrowLeft');
+  await expect.poll(() => readHook<number>(page, 'musicVolume')).toBe(0.5);
+
+  await selectRow(page, 'Sfx Volume');
+  await pressKey(page, 'ArrowLeft');
+  await expect.poll(() => readHook<number>(page, 'sfxVolume')).toBe(0.7);
+
+  await selectRow(page, 'Mute');
+  await pressKey(page, 'ArrowRight');
+  await expect.poll(() => readHook<boolean>(page, 'muted')).toBe(true);
+
+  await selectRow(page, 'Screen Shake');
   await pressKey(page, 'ArrowRight');
   await expect.poll(() => readHook<string>(page, 'screenShake')).toBe('reduced');
 
@@ -38,5 +61,21 @@ test('title options change and persist volume and screen shake', async ({ page }
   await openOptions(page);
 
   await expect.poll(() => readHook<number>(page, 'masterVolume')).toBe(1);
+  await expect.poll(() => readHook<number>(page, 'musicVolume')).toBe(0.5);
+  await expect.poll(() => readHook<number>(page, 'sfxVolume')).toBe(0.7);
+  await expect.poll(() => readHook<boolean>(page, 'muted')).toBe(true);
   await expect.poll(() => readHook<string>(page, 'screenShake')).toBe('reduced');
+});
+
+test('unmute brings the audio back without losing the other settings', async ({ page }) => {
+  await bootToTitle(page);
+  await openOptions(page);
+
+  await selectRow(page, 'Mute');
+  await pressKey(page, 'ArrowRight');
+  await expect.poll(() => readHook<boolean>(page, 'muted')).toBe(true);
+  await pressKey(page, 'ArrowLeft');
+  await expect.poll(() => readHook<boolean>(page, 'muted')).toBe(false);
+
+  await expect.poll(() => readHook<string>(page, 'message')).toBe('Audio on.');
 });

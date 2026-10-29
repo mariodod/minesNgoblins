@@ -200,6 +200,7 @@ export class BossScene extends Phaser.Scene {
 
     this.inputService = new InputService(this);
     this.audio = this.registry.get('audioService') as AudioService;
+    this.audio.playMusic('music-boss');
 
     this.createGroups();
     this.createArena();
@@ -2679,6 +2680,7 @@ export class BossScene extends Phaser.Scene {
       ready: true,
       scene: 'Boss',
       levelId: BOSS_DEFINITION.id,
+      music: this.audio.currentMusic ?? 'none',
       levelNumber: 5,
       levelCount: 5,
       playerBody: true,

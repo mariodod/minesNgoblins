@@ -5,6 +5,7 @@ import { getDifficulty } from '../data/difficulties';
 import { LEVEL_COUNT } from '../data/level-registry';
 import { SKINS, type SkinId } from '../data/skins';
 import type { AchievementService, AchievementUnlock } from '../services/achievement-service';
+import type { AudioService } from '../services/audio-service';
 import type { SaveService } from '../services/save-service';
 import { evaluateChallenges, type ChallengeResult } from '../systems/challenges';
 import { runService, type RunSnapshot } from '../systems/run-service';
@@ -50,6 +51,8 @@ export class ResultsScene extends Phaser.Scene {
 
   create(): void {
     this.leaving = false;
+    const audio = this.registry.get('audioService') as AudioService | undefined;
+    audio?.playMusic('music-title');
     const run = runService.snapshot;
     const difficulty = getDifficulty(run.difficultyId);
     const saveService = this.registry.get('saveService') as SaveService;

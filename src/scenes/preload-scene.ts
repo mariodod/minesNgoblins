@@ -49,9 +49,15 @@ export class PreloadScene extends Phaser.Scene {
         frameHeight: asset.frameHeight,
       });
     }
+
+    for (const asset of ASSET_MANIFEST.audio) {
+      this.load.audio(asset.key, assetUrl(asset.url));
+    }
   }
 
   create(): void {
+    setTestHook({ audioAssets: this.cache.audio.entries.size });
+
     for (const asset of ASSET_MANIFEST.spritesheets) {
       for (const animation of asset.animations) {
         if (this.anims.exists(animation.key)) {

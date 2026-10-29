@@ -4,6 +4,7 @@ import { animationKey } from '../data/assets';
 import { resolveDifficultyId } from '../data/difficulties';
 import { getLevelAsset, resolveLevelId } from '../data/level-registry';
 import { DEFAULT_SKIN_ID, resolveSkinId, skinTextureKey } from '../data/skins';
+import type { AudioService } from '../services/audio-service';
 import type { SaveService } from '../services/save-service';
 import { runService } from '../systems/run-service';
 import { setTestHook } from '../utils/test-hooks';
@@ -67,6 +68,8 @@ export class TitleScene extends Phaser.Scene {
 
   create(): void {
     this.startingRun = false;
+    const audio = this.registry.get('audioService') as AudioService | undefined;
+    audio?.playMusic('music-title');
     this.drawBackground();
     this.drawTitle();
     this.createMenu();
@@ -246,11 +249,14 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private publishHook(): void {
+    const audio = this.registry.get('audioService') as AudioService | undefined;
+
     setTestHook({
       ready: true,
       scene: 'Title',
       titleSelection: MENU_ITEMS[this.selectedIndex]?.label ?? '',
       runActive: runService.isActive,
+      music: audio?.currentMusic ?? 'none',
       ...(this.saveNotice ? { saveNotice: this.saveNotice } : {}),
     });
   }
