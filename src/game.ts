@@ -5,6 +5,7 @@ import { AchievementsScene } from './scenes/achievements-scene';
 import { BootScene } from './scenes/boot-scene';
 import { BossScene } from './scenes/boss-scene';
 import { ControlsScene } from './scenes/controls-scene';
+import { CreditsScene } from './scenes/credits-scene';
 import { HudScene } from './scenes/hud-scene';
 import { LevelScene } from './scenes/level-scene';
 import { PauseScene } from './scenes/pause-scene';
@@ -59,6 +60,7 @@ export function createGame(): Phaser.Game {
       PauseScene,
       SettingsScene,
       ControlsScene,
+      CreditsScene,
       ToastScene,
     ],
   };

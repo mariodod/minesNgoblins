@@ -38,6 +38,7 @@ The game is built around short, replayable runs. Players dodge or defeat enemies
 - [M3 Playtest Notes](docs/m3-playtest.md) — route, pause, settings, and full-run checks.
 - [M4 Playtest Notes](docs/m4-playtest.md) — boss pacing, visual QA, retry checks, and test coverage.
 - [M5 Test Matrix](docs/m5-test-matrix.md) — difficulty × challenge coverage, Results rules, achievements, skins, and save recovery.
+- [Asset and Dependency Licenses](docs/asset-licenses.md) — original-asset inventory and third-party tool licenses.
 
 ## Technology at a glance
 
@@ -133,9 +134,12 @@ The production base path defaults to `/minesNgoblins/`. If the site moves to a c
 
 - All documentation, source code, comments, commit messages, and project discussion are in **English**.
 - Game UI text is English for v1, with the text layer kept ready for localization.
-- Assets must be original, commissioned, or clearly licensed. The generated pack is original work; its inventory and license statement live in [`public/assets/README.md`](public/assets/README.md).
+- Assets must be original, commissioned, or clearly licensed. The generated art and audio packs are original work; the full inventory is in [`docs/asset-licenses.md`](docs/asset-licenses.md).
 - Manual QA notes live in `docs/m1-playtest.md`, `docs/m2-playtest.md`, `docs/m3-playtest.md`, `docs/m4-playtest.md`, and `docs/m5-test-matrix.md`.
 
 ## License
 
-TBD. The code and asset licenses will be decided before the first public release.
+The repository is currently `UNLICENSED` (all rights reserved) until a public
+license is chosen. All bundled art, audio, and font files are original works;
+see [`docs/asset-licenses.md`](docs/asset-licenses.md) for the inventory and
+third-party tool licenses.

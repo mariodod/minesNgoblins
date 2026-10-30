@@ -12,9 +12,9 @@ export type SkinId =
   | 'legend';
 
 /**
- * Placeholder palette art: every skin uses the same 16x24 miner silhouette and
- * only swaps colors. Final sprite art can replace these keys without changing
- * save data or unlock rules.
+ * Final palette art: every skin uses the same authored 16x24 miner silhouette
+ * and only swaps colors. Keeping the frames identical means skins stay
+ * cosmetic and unlock rules never touch gameplay data.
  */
 export interface SkinPalette {
   helmet: number;

@@ -12,7 +12,7 @@ import { setTestHook } from '../utils/test-hooks';
 interface MenuItem {
   label: string;
   message: string;
-  action?: 'start-run' | 'achievements' | 'skins' | 'settings';
+  action?: 'start-run' | 'achievements' | 'skins' | 'settings' | 'credits';
 }
 
 interface TitleSceneData {
@@ -20,7 +20,7 @@ interface TitleSceneData {
 }
 
 const DEFAULT_TITLE_MESSAGE =
-  'M5 challenge update: pick a difficulty, chase badges, and unlock skins.';
+  'M6 polish update: final art, generated audio, and full control rebinding.';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
 
@@ -42,8 +42,13 @@ const MENU_ITEMS: readonly MenuItem[] = [
   },
   {
     label: 'Options',
-    message: 'Tune master volume and screen shake. Changes save automatically.',
+    message: 'Audio, screen effects, fullscreen, and control bindings. Changes save automatically.',
     action: 'settings',
+  },
+  {
+    label: 'Credits',
+    message: 'Original art, audio, and code. Third-party tools are credited inside.',
+    action: 'credits',
   },
 ];
 
@@ -217,7 +222,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(8, 260, `v${APP_VERSION} / M5`, {
+      .text(8, 260, `v${APP_VERSION} / M6`, {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',
@@ -225,7 +230,7 @@ export class TitleScene extends Phaser.Scene {
       .setOrigin(0, 0.5);
 
     this.add
-      .text(GAME_WIDTH - 8, 260, 'M5 META BUILD', {
+      .text(GAME_WIDTH - 8, 260, 'M6 META BUILD', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',
@@ -334,6 +339,11 @@ export class TitleScene extends Phaser.Scene {
       return;
     }
 
+    if (item.action === 'credits') {
+      this.openOverlay('Credits');
+      return;
+    }
+
     this.showMessage(item.message);
   }
 
@@ -342,7 +352,7 @@ export class TitleScene extends Phaser.Scene {
     this.scene.pause();
   }
 
-  private openOverlay(sceneKey: 'Achievements' | 'Skins'): void {
+  private openOverlay(sceneKey: 'Achievements' | 'Skins' | 'Credits'): void {
     this.scene.launch(sceneKey, { returnScene: 'Title' });
     this.scene.pause();
   }

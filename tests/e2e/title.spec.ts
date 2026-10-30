@@ -28,3 +28,27 @@ test('boots to the title screen and opens the achievements screen', async ({ pag
 
   expect(errors).toEqual([]);
 });
+
+test('the credits screen lists the license inventory and returns to the title', async ({
+  page,
+}) => {
+  const errors = collectPageErrors(page);
+  await bootToTitle(page);
+
+  for (let step = 0; step < 4; step += 1) {
+    await pressKey(page, 'ArrowDown');
+  }
+
+  await expect
+    .poll(() => page.evaluate(() => window.__MINES_TEST__?.titleSelection))
+    .toBe('Credits');
+  await pressKey(page, 'Enter');
+  await expect.poll(() => page.evaluate(() => window.__MINES_TEST__?.scene)).toBe('Credits');
+  await expect
+    .poll(() => page.evaluate(() => window.__MINES_TEST__?.message))
+    .toContain('original generated works');
+
+  await pressKey(page, 'Escape');
+  await expect.poll(() => page.evaluate(() => window.__MINES_TEST__?.scene)).toBe('Title');
+  expect(errors).toEqual([]);
+});

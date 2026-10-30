@@ -575,13 +575,14 @@ The HUD is minimal, readable at 480×270, and uses a pixel font. Important state
 
 ### 12.3 Menus
 
-- **Title:** Start Run, Achievements, Skins, Options.
+- **Title:** Start Run, Achievements, Skins, Options, Credits.
 - **Difficulty select:** cards with player HP, enemy modifiers, and special rules; warning if Pacifist is incompatible with Crazy.
 - **Pause:** Resume, Restart Level, Options, Quit Run.
 - **Options:** master/music/SFX volume, mute, screen shake, flash intensity, fullscreen, and key remapping.
 - **Controls:** rebind Move Left, Move Right, Jump, Throw Stone, Use Item, Interact, and Pause; reset to defaults.
 - **Achievements:** grid with locked/unlocked state and descriptions.
 - **Skins:** preview and equip.
+- **Credits:** engine and tool credits plus the original-asset license inventory.
 - **Results:** clear time, deaths, kills, damage taken, items used, ore, badges, achievements unlocked, skins unlocked.
 
 ### 12.4 Accessibility
