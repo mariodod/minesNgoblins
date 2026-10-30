@@ -16,7 +16,7 @@ describe('save data', () => {
 
     expect(first.version).toBe(1);
     expect(first.settings.masterVolume).toBe(0.8);
-    expect(first.settings.keybinds.jump).toBe('SPACE');
+    expect(first.settings.keybinds.jump).toBe('Space');
     expect(first.stats.bestRunTimeMs).toBeNull();
     expect(first).not.toBe(second);
     expect(first.settings.keybinds).not.toBe(second.settings.keybinds);
@@ -50,6 +50,41 @@ describe('save data', () => {
     expect(result.data.settings.keybinds.jump).toBe(DEFAULT_KEYBINDS.jump);
     expect(result.data.stats.runsStarted).toBe(3);
     expect(result.data.stats.runsCompleted).toBe(0);
+  });
+
+  it('upgrades legacy key names and keeps flash off', () => {
+    const result = parseSaveData(
+      JSON.stringify({
+        version: 1,
+        settings: {
+          flashIntensity: 'off',
+          keybinds: { moveLeft: 'A', jump: 'SPACE', pause: 'ESC' },
+        },
+      }),
+    );
+
+    expect(result.data.settings.flashIntensity).toBe('off');
+    expect(result.data.settings.keybinds.moveLeft).toBe('KeyA');
+    expect(result.data.settings.keybinds.jump).toBe('Space');
+    expect(result.data.settings.keybinds.pause).toBe('Escape');
+    expect(result.data.settings.keybinds.interact).toBe(DEFAULT_KEYBINDS.interact);
+  });
+
+  it('resolves duplicate bindings from a hand-edited save', () => {
+    const result = parseSaveData(
+      JSON.stringify({
+        version: 1,
+        settings: {
+          keybinds: { moveLeft: 'KeyQ', moveRight: 'KeyQ', jump: 'KeyQ' },
+        },
+      }),
+    );
+
+    const { keybinds } = result.data.settings;
+    expect(keybinds.moveLeft).toBe('KeyQ');
+    expect(keybinds.moveRight).toBe(DEFAULT_KEYBINDS.moveRight);
+    expect(keybinds.jump).toBe(DEFAULT_KEYBINDS.jump);
+    expect(new Set(Object.values(keybinds)).size).toBe(7);
   });
 
   it('rejects malformed JSON', () => {

@@ -1,7 +1,10 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
+import { flashCamera } from '../utils/camera-flash';
 import { SECONDARY_ITEMS } from '../data/items';
 import type { Player, PlayerDamageEvent } from '../entities/player';
+import { keybindLabel } from '../services/keybinds';
+import type { SaveService } from '../services/save-service';
 import type { InventorySnapshot } from '../systems/inventory';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
@@ -133,17 +136,21 @@ export class HudScene extends Phaser.Scene {
       .setOrigin(1, 0.5)
       .setDepth(101);
 
+    const keybinds = (this.registry.get('saveService') as SaveService | undefined)?.settings
+      .keybinds;
+    const hintLabel = keybinds
+      ? `${keybindLabel(keybinds.moveLeft)}/${keybindLabel(keybinds.moveRight)} MOVE  ` +
+        `${keybindLabel(keybinds.jump)} JUMP  ${keybindLabel(keybinds.throwStone)} THROW  ` +
+        `${keybindLabel(keybinds.useItem)} ITEM  ${keybindLabel(keybinds.interact)} USE  ` +
+        `${keybindLabel(keybinds.pause)} PAUSE`
+      : 'A/D MOVE  SPACE JUMP  X THROW  C ITEM  E USE  ESC PAUSE';
+
     const hint = this.add
-      .text(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT - 10,
-        'A/D MOVE   SPACE JUMP   X THROW   C ITEM   E INTERACT   ESC PAUSE   DOWN+SPACE DROP',
-        {
-          fontFamily: FONT_FAMILY,
-          fontSize: '7px',
-          color: '#7f8c8d',
-        },
-      )
+      .text(GAME_WIDTH / 2, GAME_HEIGHT - 10, hintLabel, {
+        fontFamily: FONT_FAMILY,
+        fontSize: '7px',
+        color: '#7f8c8d',
+      })
       .setOrigin(0.5)
       .setDepth(101)
       .setAlpha(0.85);
@@ -180,12 +187,12 @@ export class HudScene extends Phaser.Scene {
 
   private handleDamaged(event: PlayerDamageEvent): void {
     this.updateHearts(event.hp);
-    this.cameras.main.flash(110, 140, 20, 20);
+    flashCamera(this, 110, 140, 20, 20);
   }
 
   private handleHealed(hp: number): void {
     this.updateHearts(hp);
-    this.cameras.main.flash(110, 30, 120, 60);
+    flashCamera(this, 110, 30, 120, 60);
   }
 
   private handleInventoryChanged(snapshot: InventorySnapshot): void {

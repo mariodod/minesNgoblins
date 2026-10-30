@@ -1,5 +1,15 @@
 import { DEFAULT_SKIN_ID, isSkinId } from '../data/skins';
 import { isSecondaryItemId, type SecondaryItemId } from '../data/items';
+import { DEFAULT_KEYBINDS, parseKeybinds, type KeybindSettings } from './keybinds';
+
+export {
+  DEFAULT_KEYBINDS,
+  KEYBIND_ROWS,
+  keybindLabel,
+  normalizeKeybind,
+  type KeybindAction,
+  type KeybindSettings,
+} from './keybinds';
 
 export const SAVE_KEY = 'minesNgoblins.save.v1';
 export const SAVE_VERSION = 1;
@@ -9,17 +19,7 @@ const SAVE_BACKUP_PREFIX = 'minesNgoblins.save.backup.';
 
 export type SaveLoadStatus = 'empty' | 'ok' | 'corrupt' | 'unsupported';
 export type ScreenShakeSetting = 'full' | 'reduced' | 'off';
-export type FlashIntensitySetting = 'full' | 'reduced';
-
-export interface KeybindSettings {
-  moveLeft: string;
-  moveRight: string;
-  jump: string;
-  throwStone: string;
-  useItem: string;
-  interact: string;
-  pause: string;
-}
+export type FlashIntensitySetting = 'full' | 'reduced' | 'off';
 
 export interface SaveSettings {
   masterVolume: number;
@@ -67,16 +67,6 @@ export interface StorageLike {
   setItem(key: string, value: string): void;
   removeItem(key: string): void;
 }
-
-export const DEFAULT_KEYBINDS: KeybindSettings = {
-  moveLeft: 'A',
-  moveRight: 'D',
-  jump: 'SPACE',
-  throwStone: 'X',
-  useItem: 'C',
-  interact: 'E',
-  pause: 'ESC',
-};
 
 export const DEFAULT_SETTINGS: SaveSettings = {
   masterVolume: 0.8,
@@ -363,25 +353,11 @@ function parseSettings(value: unknown): SaveSettings {
     ),
     flashIntensity: readEnum(
       record['flashIntensity'],
-      ['full', 'reduced'] as const,
+      ['full', 'reduced', 'off'] as const,
       DEFAULT_SETTINGS.flashIntensity,
     ),
     equippedSkin: readString(record['equippedSkin'], DEFAULT_SETTINGS.equippedSkin),
     keybinds: parseKeybinds(record['keybinds']),
-  };
-}
-
-function parseKeybinds(value: unknown): KeybindSettings {
-  const record = isRecord(value) ? value : {};
-
-  return {
-    moveLeft: readString(record['moveLeft'], DEFAULT_KEYBINDS.moveLeft),
-    moveRight: readString(record['moveRight'], DEFAULT_KEYBINDS.moveRight),
-    jump: readString(record['jump'], DEFAULT_KEYBINDS.jump),
-    throwStone: readString(record['throwStone'], DEFAULT_KEYBINDS.throwStone),
-    useItem: readString(record['useItem'], DEFAULT_KEYBINDS.useItem),
-    interact: readString(record['interact'], DEFAULT_KEYBINDS.interact),
-    pause: readString(record['pause'], DEFAULT_KEYBINDS.pause),
   };
 }
 

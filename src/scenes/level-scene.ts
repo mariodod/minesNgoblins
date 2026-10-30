@@ -189,7 +189,7 @@ export class LevelScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, this.level.worldWidth, this.level.worldHeight);
     this.cameras.main.setBackgroundColor('#0b0c10');
 
-    this.inputService = new InputService(this);
+    this.inputService = new InputService(this, this.saveService.settings.keybinds);
     this.audio = this.registry.get('audioService') as AudioService;
     this.audio.playMusic('music-mines');
     this.createBackground();
@@ -1647,14 +1647,18 @@ export class LevelScene extends Phaser.Scene {
       return;
     }
 
-    keyboard.on('keydown-ESC', this.openPause, this);
-    keyboard.on('keydown-P', this.openPause, this);
+    keyboard.on('keydown', this.handlePauseKeyDown);
 
     this.events.once('shutdown', () => {
-      keyboard.off('keydown-ESC', this.openPause, this);
-      keyboard.off('keydown-P', this.openPause, this);
+      keyboard.off('keydown', this.handlePauseKeyDown);
     });
   }
+
+  private readonly handlePauseKeyDown = (event: KeyboardEvent): void => {
+    if (event.code === this.saveService.settings.keybinds.pause) {
+      this.openPause();
+    }
+  };
 
   private openPause(): void {
     if (this.pauseOpen || this.leavingLevel || this.restarting || this.player.isDead) {

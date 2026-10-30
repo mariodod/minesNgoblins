@@ -54,6 +54,7 @@ import type { AudioService } from '../services/audio-service';
 import { InputService } from '../services/input-service';
 import type { SaveService } from '../services/save-service';
 import type { DamageEvent, DamageSource } from '../systems/damage';
+import { flashCamera } from '../utils/camera-flash';
 import { runService, type RunCarryState } from '../systems/run-service';
 import { showAchievementToast } from '../ui/toast';
 import { setTestHook } from '../utils/test-hooks';
@@ -198,7 +199,7 @@ export class BossScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#08090d');
     this.cameras.main.scrollY = 0;
 
-    this.inputService = new InputService(this);
+    this.inputService = new InputService(this, this.saveService.settings.keybinds);
     this.audio = this.registry.get('audioService') as AudioService;
     this.audio.playMusic('music-boss');
 
@@ -1228,7 +1229,7 @@ export class BossScene extends Phaser.Scene {
     this.audio.play('boss-phase');
     this.audio.play('boss-roar');
     this.shakeScreen(650, 0.011);
-    this.cameras.main.flash(220, 120, 30, 30);
+    flashCamera(this, 220, 120, 30, 30);
     this.showPhaseBanner(nextPhase);
 
     this.schedule(1850, () => {
@@ -1595,7 +1596,7 @@ export class BossScene extends Phaser.Scene {
     this.saveService.recordRunCompleted(runService.snapshot.runDurationMs);
     this.audio.play('boss-defeat');
     this.shakeScreen(900, 0.014);
-    this.cameras.main.flash(320, 120, 25, 20);
+    flashCamera(this, 320, 120, 25, 20);
     this.physics.world.timeScale = 2.2;
     this.announce('THE GREAT WORM FALLS', '#ffcf5a');
     this.showVictoryBanner();
@@ -2304,14 +2305,18 @@ export class BossScene extends Phaser.Scene {
       return;
     }
 
-    keyboard.on('keydown-ESC', this.openPause, this);
-    keyboard.on('keydown-P', this.openPause, this);
+    keyboard.on('keydown', this.handlePauseKeyDown);
 
     this.events.once('shutdown', () => {
-      keyboard.off('keydown-ESC', this.openPause, this);
-      keyboard.off('keydown-P', this.openPause, this);
+      keyboard.off('keydown', this.handlePauseKeyDown);
     });
   }
+
+  private readonly handlePauseKeyDown = (event: KeyboardEvent): void => {
+    if (event.code === this.saveService.settings.keybinds.pause) {
+      this.openPause();
+    }
+  };
 
   private openPause(): void {
     if (this.pauseOpen || this.leaving || this.restarting || this.player.isDead || this.victory) {

@@ -4,6 +4,7 @@ import { PLAYER_TUNING } from './config/tuning';
 import { AchievementsScene } from './scenes/achievements-scene';
 import { BootScene } from './scenes/boot-scene';
 import { BossScene } from './scenes/boss-scene';
+import { ControlsScene } from './scenes/controls-scene';
 import { HudScene } from './scenes/hud-scene';
 import { LevelScene } from './scenes/level-scene';
 import { PauseScene } from './scenes/pause-scene';
@@ -29,6 +30,7 @@ export function createGame(): Phaser.Game {
     version: APP_VERSION,
     pixelArt: true,
     roundPixels: true,
+    fullscreenTarget: 'game',
     scale: {
       // The canvas is sized by hand to whole device-pixel multiples so text and
       // tiles never land on fractional screen pixels.
@@ -56,6 +58,7 @@ export function createGame(): Phaser.Game {
       HudScene,
       PauseScene,
       SettingsScene,
+      ControlsScene,
       ToastScene,
     ],
   };

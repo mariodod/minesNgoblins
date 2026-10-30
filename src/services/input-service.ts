@@ -1,105 +1,65 @@
 import Phaser from 'phaser';
+import { DEFAULT_KEYBINDS, type KeybindSettings } from './keybinds';
 import { isPhysicalKeyDown } from './keyboard-state';
+
+const MOVEMENT_FALLBACKS = {
+  left: ['ArrowLeft'],
+  right: ['ArrowRight'],
+} as const;
 
 /**
  * Scene-scoped keyboard input with buffered action queries.
- * Gamepad support can be added behind the same interface later.
+ *
+ * Held movement reads the browser-level key state so a key that is still down
+ * during a scene transition keeps moving the player. One-shot actions are
+ * buffered from Phaser's keyboard event so a press between frames is not lost.
  */
 export class InputService {
   private readonly scene: Phaser.Scene;
-  private readonly left: Phaser.Input.Keyboard.Key;
-  private readonly leftA: Phaser.Input.Keyboard.Key;
-  private readonly right: Phaser.Input.Keyboard.Key;
-  private readonly rightD: Phaser.Input.Keyboard.Key;
-  private readonly up: Phaser.Input.Keyboard.Key;
-  private readonly upW: Phaser.Input.Keyboard.Key;
-  private readonly down: Phaser.Input.Keyboard.Key;
-  private readonly downS: Phaser.Input.Keyboard.Key;
-  private readonly jumpSpace: Phaser.Input.Keyboard.Key;
-  private readonly jumpZ: Phaser.Input.Keyboard.Key;
-  private readonly throwX: Phaser.Input.Keyboard.Key;
-  private readonly throwJ: Phaser.Input.Keyboard.Key;
-  private readonly itemC: Phaser.Input.Keyboard.Key;
-  private readonly itemK: Phaser.Input.Keyboard.Key;
-  private readonly interactE: Phaser.Input.Keyboard.Key;
-  private readonly createdKeys: Phaser.Input.Keyboard.Key[];
+  private readonly keybinds: KeybindSettings;
   private jumpQueued = false;
   private throwQueued = false;
   private itemQueued = false;
   private interactQueued = false;
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, keybinds: KeybindSettings = DEFAULT_KEYBINDS) {
     const keyboard = scene.input.keyboard;
     if (!keyboard) {
       throw new Error('Keyboard input is unavailable.');
     }
 
     this.scene = scene;
-    const keyCodes = Phaser.Input.Keyboard.KeyCodes;
-
-    this.left = keyboard.addKey(keyCodes.LEFT);
-    this.leftA = keyboard.addKey(keyCodes.A);
-    this.right = keyboard.addKey(keyCodes.RIGHT);
-    this.rightD = keyboard.addKey(keyCodes.D);
-    this.up = keyboard.addKey(keyCodes.UP);
-    this.upW = keyboard.addKey(keyCodes.W);
-    this.down = keyboard.addKey(keyCodes.DOWN);
-    this.downS = keyboard.addKey(keyCodes.S);
-    this.jumpSpace = keyboard.addKey(keyCodes.SPACE);
-    this.jumpZ = keyboard.addKey(keyCodes.Z);
-    this.throwX = keyboard.addKey(keyCodes.X);
-    this.throwJ = keyboard.addKey(keyCodes.J);
-    this.itemC = keyboard.addKey(keyCodes.C);
-    this.itemK = keyboard.addKey(keyCodes.K);
-    this.interactE = keyboard.addKey(keyCodes.E);
-
-    this.createdKeys = [
-      this.left,
-      this.leftA,
-      this.right,
-      this.rightD,
-      this.up,
-      this.upW,
-      this.down,
-      this.downS,
-      this.jumpSpace,
-      this.jumpZ,
-      this.throwX,
-      this.throwJ,
-      this.itemC,
-      this.itemK,
-      this.interactE,
-    ];
+    this.keybinds = keybinds;
 
     keyboard.addCapture([
-      keyCodes.LEFT,
-      keyCodes.RIGHT,
-      keyCodes.UP,
-      keyCodes.DOWN,
-      keyCodes.SPACE,
+      Phaser.Input.Keyboard.KeyCodes.LEFT,
+      Phaser.Input.Keyboard.KeyCodes.RIGHT,
+      Phaser.Input.Keyboard.KeyCodes.UP,
+      Phaser.Input.Keyboard.KeyCodes.DOWN,
+      Phaser.Input.Keyboard.KeyCodes.SPACE,
     ]);
 
     keyboard.on('keydown', this.handleKeyDown);
   }
 
   isLeftDown(): boolean {
-    return this.left.isDown || this.leftA.isDown || isPhysicalKeyDown('ArrowLeft', 'KeyA');
+    return isPhysicalKeyDown(this.keybinds.moveLeft, ...MOVEMENT_FALLBACKS.left);
   }
 
   isRightDown(): boolean {
-    return this.right.isDown || this.rightD.isDown || isPhysicalKeyDown('ArrowRight', 'KeyD');
+    return isPhysicalKeyDown(this.keybinds.moveRight, ...MOVEMENT_FALLBACKS.right);
   }
 
   isAimUpDown(): boolean {
-    return this.up.isDown || this.upW.isDown || isPhysicalKeyDown('ArrowUp', 'KeyW');
+    return isPhysicalKeyDown('ArrowUp');
   }
 
   isAimDownDown(): boolean {
-    return this.down.isDown || this.downS.isDown || isPhysicalKeyDown('ArrowDown', 'KeyS');
+    return isPhysicalKeyDown('ArrowDown');
   }
 
   isJumpDown(): boolean {
-    return this.jumpSpace.isDown || this.jumpZ.isDown || isPhysicalKeyDown('Space', 'KeyZ');
+    return isPhysicalKeyDown(this.keybinds.jump);
   }
 
   isJumpJustPressed(): boolean {
@@ -139,16 +99,7 @@ export class InputService {
   }
 
   destroy(): void {
-    const keyboard = this.scene.input.keyboard;
-    if (!keyboard) {
-      return;
-    }
-
-    keyboard.off('keydown', this.handleKeyDown);
-
-    for (const key of this.createdKeys) {
-      keyboard.removeKey(key);
-    }
+    this.scene.input.keyboard?.off('keydown', this.handleKeyDown);
   }
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
@@ -156,19 +107,19 @@ export class InputService {
       return;
     }
 
-    if (event.code === 'Space' || event.code === 'KeyZ') {
+    if (event.code === this.keybinds.jump) {
       this.jumpQueued = true;
     }
 
-    if (event.code === 'KeyX' || event.code === 'KeyJ') {
+    if (event.code === this.keybinds.throwStone) {
       this.throwQueued = true;
     }
 
-    if (event.code === 'KeyC' || event.code === 'KeyK') {
+    if (event.code === this.keybinds.useItem) {
       this.itemQueued = true;
     }
 
-    if (event.code === 'KeyE') {
+    if (event.code === this.keybinds.interact) {
       this.interactQueued = true;
     }
   };

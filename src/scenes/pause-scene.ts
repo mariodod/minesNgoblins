@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../config/constants';
+import type { SaveService } from '../services/save-service';
 import { getChallengeProgress } from '../systems/challenges';
 import { runService } from '../systems/run-service';
 import { setTestHook } from '../utils/test-hooks';
@@ -35,6 +36,7 @@ function formatTime(ms: number): string {
 export class PauseScene extends Phaser.Scene {
   private sceneKey: PauseSceneKey = 'Level';
   private pauseItems: readonly string[] = LEVEL_PAUSE_ITEMS;
+  private pauseKey = 'Escape';
   private levelName = '';
   private levelNumber = 1;
   private levelCount = 4;
@@ -65,6 +67,9 @@ export class PauseScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.pauseKey =
+      (this.registry.get('saveService') as SaveService | undefined)?.settings.keybinds.pause ??
+      'Escape';
     this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x020304, 0.74).setOrigin(0).setDepth(0);
     this.add
       .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 6, 280, 202, 0x10151b, 0.97)
@@ -182,11 +187,17 @@ export class PauseScene extends Phaser.Scene {
       if (event.code === 'Enter' || event.code === 'Space') {
         event.preventDefault();
         this.quitRun();
-      } else if (event.code === 'Escape' || event.code === 'KeyP') {
+      } else if (event.code === 'Escape' || event.code === 'KeyP' || event.code === this.pauseKey) {
         event.preventDefault();
         this.mode = 'menu';
         this.refresh();
       }
+      return;
+    }
+
+    if (event.code === this.pauseKey && event.code !== 'Escape' && event.code !== 'KeyP') {
+      event.preventDefault();
+      this.resumeLevel();
       return;
     }
 

@@ -102,6 +102,11 @@ export interface MinesTestHook {
   music?: string;
   audioAssets?: number;
   screenShake?: string;
+  flashIntensity?: string;
+  fullscreen?: boolean;
+  controlsSelection?: string;
+  awaitingKey?: string | null;
+  keybinds?: Record<string, string>;
   difficultySelection?: string;
   selectedDifficulty?: string;
   difficultyWarning?: string;

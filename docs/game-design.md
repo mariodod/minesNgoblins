@@ -578,7 +578,8 @@ The HUD is minimal, readable at 480×270, and uses a pixel font. Important state
 - **Title:** Start Run, Achievements, Skins, Options.
 - **Difficulty select:** cards with player HP, enemy modifiers, and special rules; warning if Pacifist is incompatible with Crazy.
 - **Pause:** Resume, Restart Level, Options, Quit Run.
-- **Options:** master/music/SFX volume, screen shake, flashing intensity, fullscreen, key remapping, reset save.
+- **Options:** master/music/SFX volume, mute, screen shake, flash intensity, fullscreen, and key remapping.
+- **Controls:** rebind Move Left, Move Right, Jump, Throw Stone, Use Item, Interact, and Pause; reset to defaults.
 - **Achievements:** grid with locked/unlocked state and descriptions.
 - **Skins:** preview and equip.
 - **Results:** clear time, deaths, kills, damage taken, items used, ore, badges, achievements unlocked, skins unlocked.
@@ -587,7 +588,7 @@ The HUD is minimal, readable at 480×270, and uses a pixel font. Important state
 
 - Remappable keyboard controls.
 - Screen shake intensity: full, reduced, off.
-- Flash intensity: full, reduced.
+- Flash intensity: full, reduced, off.
 - Volume sliders.
 - Pause at any time.
 - No flashing above 3 Hz.
@@ -608,7 +609,7 @@ interface SaveDataV1 {
     musicVolume: number;
     sfxVolume: number;
     screenShake: 'full' | 'reduced' | 'off';
-    flashIntensity: 'full' | 'reduced';
+    flashIntensity: 'full' | 'reduced' | 'off';
     equippedSkin: string;
     keybinds: Record<string, string>;
   };
@@ -626,6 +627,7 @@ interface SaveDataV1 {
 ```
 
 - The save key is `minesNgoblins.save.v1`.
+- `keybinds` stores physical `KeyboardEvent.code` values (`KeyA`, `Space`, `Escape`), so bindings keep their key positions across layouts. Older short names such as `SPACE` are upgraded on load.
 - A corrupt or outdated save is backed up under `minesNgoblins.save.backup.<timestamp>` and replaced with defaults after a user-visible notice.
 - There is no account, cloud sync, or online leaderboard.
 - A "Reset Save" action requires confirmation.
