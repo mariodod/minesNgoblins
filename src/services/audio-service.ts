@@ -55,6 +55,23 @@ const FADE_STEP_MS = 30;
 const MUSIC_FADE_MS = 320;
 
 /**
+ * Phaser falls back to HTML5 audio when Web Audio is missing, but the WAV pack
+ * then never finishes loading in some embedded browsers (notably Playwright's
+ * WebKit build). Callers use this to skip the pack and run silent.
+ */
+export function hasAudioBackend(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const scope = window as unknown as {
+    AudioContext?: typeof AudioContext;
+    webkitAudioContext?: typeof AudioContext;
+  };
+  return typeof (scope.AudioContext ?? scope.webkitAudioContext) === 'function';
+}
+
+/**
  * `BaseSound` does not declare volume in the Phaser typings, but every concrete
  * sound class implements it. Keep the one cast here instead of at each call.
  */
@@ -132,6 +149,14 @@ export class AudioService {
     this.manager.mute = muted;
   }
 
+  /**
+   * The pack is skipped in browsers without Web Audio, so every playback path
+   * checks the cache rather than assuming the manifest was loaded.
+   */
+  private hasAsset(key: string): boolean {
+    return this.manager.game.cache.audio.exists(key);
+  }
+
   play(name: SfxName): void {
     if (this.settings.muted || this.settings.sfxVolume <= 0) {
       return;
@@ -139,7 +164,7 @@ export class AudioService {
 
     const asset = findAsset(name);
 
-    if (!asset) {
+    if (!asset || !this.hasAsset(name)) {
       return;
     }
 
@@ -156,11 +181,16 @@ export class AudioService {
 
     const asset = findAsset(key);
 
-    if (!asset || asset.category !== 'music') {
+    if (!asset || asset.category !== 'music' || !this.hasAsset(key)) {
       return;
     }
 
-    const sound = this.manager.add(key, { loop: true, volume: 0 }) as ManagedSound;
+    const sound = this.manager.add(key, { loop: true, volume: 0 }) as ManagedSound | false;
+
+    if (!sound) {
+      return;
+    }
+
     this.music = sound;
     this.musicKey = key;
     sound.play();

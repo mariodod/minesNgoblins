@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type Phaser from 'phaser';
-import { AudioService } from '../../src/services/audio-service';
+import { AudioService, hasAudioBackend } from '../../src/services/audio-service';
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 class FakeSound {
   volume: number;
@@ -36,6 +40,11 @@ class FakeSoundManager {
   mute = false;
   played: Array<{ key: string; volume: number }> = [];
   added: Array<{ key: string; sound: FakeSound }> = [];
+  /** Keys present in the Phaser audio cache. */
+  available = new Set(['jump', 'music-title', 'music-mines', 'music-boss']);
+  readonly game = {
+    cache: { audio: { exists: (key: string) => this.available.has(key) } },
+  };
 
   play(key: string, config?: { volume?: number }): boolean {
     this.played.push({ key, volume: config?.volume ?? 1 });
@@ -54,6 +63,21 @@ function createService(): { audio: AudioService; manager: FakeSoundManager } {
   const audio = new AudioService(manager as unknown as Phaser.Sound.BaseSoundManager);
   return { audio, manager };
 }
+
+describe('hasAudioBackend', () => {
+  it('detects Web Audio and its older webkit alias', () => {
+    class FakeAudioContext {}
+
+    vi.stubGlobal('window', {});
+    expect(hasAudioBackend()).toBe(false);
+
+    vi.stubGlobal('window', { AudioContext: FakeAudioContext });
+    expect(hasAudioBackend()).toBe(true);
+
+    vi.stubGlobal('window', { webkitAudioContext: FakeAudioContext });
+    expect(hasAudioBackend()).toBe(true);
+  });
+});
 
 describe('AudioService', () => {
   it('clamps master volume and ignores non-finite values', () => {
@@ -109,6 +133,18 @@ describe('AudioService', () => {
 
     audio.stopMusic(0);
     expect(manager.added[1]!.sound.destroyed).toBe(true);
+    expect(audio.currentMusic).toBeUndefined();
+  });
+
+  it('stays silent when the audio pack was skipped', () => {
+    const { audio, manager } = createService();
+    manager.available.clear();
+
+    audio.play('jump');
+    audio.playMusic('music-title', 0);
+
+    expect(manager.played).toHaveLength(0);
+    expect(manager.added).toHaveLength(0);
     expect(audio.currentMusic).toBeUndefined();
   });
 

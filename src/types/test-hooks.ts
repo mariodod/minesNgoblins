@@ -101,6 +101,7 @@ export interface MinesTestHook {
   muted?: boolean;
   music?: string;
   audioAssets?: number;
+  audioAvailable?: boolean;
   screenShake?: string;
   flashIntensity?: string;
   fullscreen?: boolean;

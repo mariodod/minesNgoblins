@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_WIDTH } from '../config/constants';
 import { ASSET_MANIFEST, assetUrl } from '../data/assets';
 import { LEVEL_ASSETS, levelCacheKey } from '../data/level-registry';
+import { hasAudioBackend } from '../services/audio-service';
 import { setTestHook } from '../utils/test-hooks';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
@@ -50,9 +51,19 @@ export class PreloadScene extends Phaser.Scene {
       });
     }
 
-    for (const asset of ASSET_MANIFEST.audio) {
-      this.load.audio(asset.key, assetUrl(asset.url));
+    // Without Web Audio there is no reliable way to decode the WAV pack. Some
+    // embedded browsers and Playwright's WebKit build fall back to an HTML5
+    // audio element that never fires canplaythrough, which would hang preload,
+    // so the game boots silently instead of never booting at all.
+    const audioAvailable = hasAudioBackend();
+
+    if (audioAvailable) {
+      for (const asset of ASSET_MANIFEST.audio) {
+        this.load.audio(asset.key, assetUrl(asset.url));
+      }
     }
+
+    setTestHook({ audioAvailable });
   }
 
   create(): void {
