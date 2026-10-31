@@ -2,7 +2,7 @@
 
 **A retro mine-crawling action platformer. One rock. Many problems.**
 
-> **Status:** M6 in progress at `v0.5.0` — the generated pixel-art pack, crisp bitmap text layer, and generated audio pack are in. Final UI/accessibility polish, content checks, and release documentation are next.
+> **Status:** M6 complete at `v0.6.0` - final generated art, audio, pixel text, accessibility settings, credits, and QA notes are in. M7 balance, external playtests, and release-candidate work are next.
 >
 > The repository was empty when work began, so the documents below define the direction for a new game.
 
@@ -38,6 +38,7 @@ The game is built around short, replayable runs. Players dodge or defeat enemies
 - [M3 Playtest Notes](docs/m3-playtest.md) — route, pause, settings, and full-run checks.
 - [M4 Playtest Notes](docs/m4-playtest.md) — boss pacing, visual QA, retry checks, and test coverage.
 - [M5 Test Matrix](docs/m5-test-matrix.md) — difficulty × challenge coverage, Results rules, achievements, skins, and save recovery.
+- [M6 QA Notes](docs/m6-qa.md) — asset/audio inventory, text and accessibility checks, browser matrix, performance, and the manual release checklist.
 - [Asset and Dependency Licenses](docs/asset-licenses.md) — original-asset inventory and third-party tool licenses.
 
 ## Technology at a glance
@@ -66,7 +67,7 @@ See [docs/technical-plan.md](docs/technical-plan.md) for the rationale and alter
 | M3 ✅     | Four levels, transitions, pause/options, boss placeholder           |
 | M4 ✅     | Giant worm boss with phases, supplies, victory, and results screen  |
 | M5 ✅     | Difficulties, challenge runs, achievements, skins, Results, save v1 |
-| M6        | Final art, audio, UI, accessibility, and content polish             |
+| M6 ✅     | Final art, audio, UI, accessibility, credits, and QA notes          |
 | M7        | Balance, external playtests, QA, performance, release candidate     |
 | M8        | v1.0 release and deployment                                         |
 
@@ -135,7 +136,7 @@ The production base path defaults to `/minesNgoblins/`. If the site moves to a c
 - All documentation, source code, comments, commit messages, and project discussion are in **English**.
 - Game UI text is English for v1, with the text layer kept ready for localization.
 - Assets must be original, commissioned, or clearly licensed. The generated art and audio packs are original work; the full inventory is in [`docs/asset-licenses.md`](docs/asset-licenses.md).
-- Manual QA notes live in `docs/m1-playtest.md`, `docs/m2-playtest.md`, `docs/m3-playtest.md`, `docs/m4-playtest.md`, and `docs/m5-test-matrix.md`.
+- Manual QA notes live in `docs/m1-playtest.md`, `docs/m2-playtest.md`, `docs/m3-playtest.md`, `docs/m4-playtest.md`, `docs/m5-test-matrix.md`, and `docs/m6-qa.md`.
 
 ## License
 

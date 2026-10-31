@@ -2,7 +2,7 @@
 
 **Version:** 0.6  
 **Date:** 2026-10-24  
-**Status:** M5 complete at `v0.5.0`; M6 final art, audio, UI, accessibility, and content polish is next
+**Status:** M6 complete at `v0.6.0`; final generated art, audio, bitmap text, accessibility, credits, and QA notes shipped. M7 balance, external playtests, and release-candidate work are next
 
 ---
 
@@ -330,6 +330,8 @@ now lives at `docs/media/m3-run.gif`.
 **Dependencies:** M1–M5; art/audio work should begin during M2–M3.  
 **Risks:** Asset production time; style consistency; audio integration.
 
+**Completion notes:** M6 shipped as `v0.6.0` on 2026-10-30. Every runtime asset now comes from the committed generators in `tools/assets/` and `tools/audio/`: 56 images, 17 spritesheets, 63 animations, an original 5×7 bitmap font, 32 SFX, and three music loops (about 1.2 MB of audio). Canvas text was replaced by the bitmap font and integer-only display scaling, which removed the blurry UI reported after M5. Options gained flash intensity, fullscreen, and full key rebinding; a Credits screen and `docs/asset-licenses.md` document every asset and tool. Texture packs were rechecked for reachability and the quit→new-run flow has a permanent regression test. The browser matrix, frame-rate samples, bundle scan, and manual checklist are recorded in [M6 QA Notes](m6-qa.md). Four music tracks were planned and three shipped; the ambient fourth track stays on the M7 stretch list.
+
 ---
 
 ### M7 — Balance and QA
@@ -516,13 +518,13 @@ Do **not** cut:
 
 ## 10. Immediate next actions
 
-1. Continue resolving the remaining release decisions:
-   - English-only UI for v1.
-   - Art/audio sourcing and repository license.
-2. M5 is complete: all difficulties, challenge badges, achievements, skins, and save v1 are implemented.
-3. Start M6 by replacing placeholder art/audio and finalizing the title, Results, achievement, and skin screens.
+1. Resolve the remaining release decisions:
+   - Repository license (code and original assets are currently `UNLICENSED`).
+   - Release packaging and storefront order for M8.
+2. M6 is complete: final generated art/audio/font packs, accessibility settings, credits, and QA notes shipped at `v0.6.0`.
+3. Start M7 with human playtests on the M5 matrix and the M6 manual checklist, focusing on route pacing, Crazy balance, and boss fairness.
 4. Record a boss-fight media capture for the README or release notes.
-5. Schedule the first external playtest for M7 and use the M5 matrix as its starting checklist.
+5. Schedule the first external playtest and fold its findings into the release candidate.
 
 ---
 
@@ -530,6 +532,7 @@ Do **not** cut:
 
 | Version | Date       | Notes                                                                                |
 | ------- | ---------- | ------------------------------------------------------------------------------------ |
+| 0.7     | 2026-10-30 | M6 final generated art/audio/font, accessibility, credits, and QA complete at v0.6.0 |
 | 0.6     | 2026-10-24 | M5 difficulties, challenge runs, achievements, skins, and save v1 complete at v0.5.0 |
 | 0.5     | 2026-10-22 | M4 Great Worm, supplies, victory, and results placeholder complete at v0.4.0         |
 | 0.4     | 2026-10-22 | M3 levels and progression complete at v0.3.0; M4 boss next                           |

@@ -1,8 +1,8 @@
 # Mines & Goblins — Technical Plan
 
-**Version:** 0.5  
-**Date:** 2026-10-24  
-**Status:** M5 complete at `v0.5.0`; difficulty select, challenge rules, achievements, skins, Results reporting, and save v1 shipped
+**Version:** 0.6  
+**Date:** 2026-10-30  
+**Status:** M6 complete at `v0.6.0`; final generated art, audio, and bitmap font packs, accessibility settings, credits, and release documentation shipped
 
 ---
 
@@ -123,7 +123,8 @@ Godot is the strongest alternative and would be a good choice for a desktop-firs
 - Internal resolution: **480×270**.
 - Tile size: **16×16**.
 - `pixelArt: true`, `roundPixels: true`, nearest-neighbor filtering.
-- `Scale.FIT` with auto-centering; evaluate integer-only scaling in M1 if fractional scaling causes shimmer.
+- `Scale.NONE` plus a computed integer zoom: the 480×270 canvas is only ever shown at whole multiples, so sprite edges and bitmap glyphs stay on the physical pixel grid.
+- Every label renders through the original 5×7 bitmap font (`src/ui/pixel-text.ts`), which patches `GameObjectFactory.text`. Canvas text and fractional font sizes are gone, which is what previously made the UI blurry.
 - All gameplay and UI rendered at the internal resolution; no CSS-scaled DOM UI inside the canvas.
 - Test at 1920×1080 (exact 4×), 2560×1440, 1366×768, and browser zoom levels.
 - The canvas background uses letterboxing instead of stretching.
@@ -131,10 +132,10 @@ Godot is the strongest alternative and would be a good choice for a desktop-firs
 ### 4.3 Audio
 
 - Phaser's Web Audio backend; unlock audio on the first click/key press.
-- Separate master, music, and SFX gains.
-- Music: OGG (primary) with an MP3 fallback only if a target browser requires it.
-- SFX: short WAV files for low latency, or OGG for longer stingers.
-- Sound asset names follow `sfx_<category>_<name>` and `music_<scene>`.
+- Separate master, music, and SFX gains, all routed through Phaser's sound manager so mute and volume cover effects and music.
+- Music: three 16 kHz mono WAV loops (`music-title`, `music-mines`, `music-boss`), authored by the committed generator in `tools/audio/`.
+- SFX: 32 short mono WAV effects at 16 kHz for low latency and a small download.
+- Asset keys match the `SfxName`/`MusicName` unions (`jump`, `music-title`, and so on) and come from the merged `asset-manifest.json`.
 
 ---
 
@@ -406,6 +407,7 @@ Target: high coverage of pure systems (80%+ lines for `systems/`, `data/`, and r
 - Pause/resume works.
 - Options persist after reload.
 - A smoke test runs on each PR and before deploy.
+- `BROWSER_MATRIX=1` adds Edge, Firefox, and WebKit projects for the M6 browser matrix; the default project stays Chromium so the timing-sensitive boss checks keep one renderer.
 
 ### 7.4 Manual QA
 
@@ -444,6 +446,8 @@ Per milestone, run a written checklist covering:
 | Initial total load | Under 3 seconds on broadband  |
 | Memory             | Under 200 MB                  |
 | Save size          | Under 100 KB                  |
+
+M6 measured results (1920×1080, 5-second sample): 60.2 FPS headless with software rendering, 60.1 FPS headed, about 19–20 MB JS heap, 1.73 MB total load, and a 407 kB gzipped JavaScript bundle. See [M6 QA Notes](m6-qa.md).
 
 Techniques:
 
@@ -503,13 +507,27 @@ minesNgoblins/
     game-design.md
     technical-plan.md
     roadmap.md
+    m6-qa.md
+    asset-licenses.md
   public/
     assets/
       sprites/
       tiles/
-      audio/
+      items/
+      props/
+      fx/
+      ui/
+      title/
       fonts/
+      README.md
+    audio/
+      sfx/
+      music/
+      README.md
     maps/
+  tools/
+    assets/            (art + bitmap font generators)
+    audio/             (WAV synthesis generators)
   src/
     main.ts
     game.ts
@@ -612,6 +630,7 @@ Then:
 | 2026-10-22 | M3 four-level run, pause/options, settings, and boss placeholder at `v0.3.0`                              | Done           |
 | 2026-10-22 | M4 Great Worm, supply drops, boss retry, victory, and results at `v0.4.0`                                 | Done           |
 | 2026-10-24 | M5 difficulty select, challenge rules, achievements, skins, and save v1 at `v0.5.0`                       | Done           |
+| 2026-10-30 | M6 generated art/audio/font packs, integer-scaled bitmap text, accessibility, credits, and QA at `v0.6.0` | Done           |
 | 2026-10-24 | Challenge evaluation returns complete/failed/unavailable with reasons; Crazy disables Pacifist and Legend | Done           |
 | 2026-10-22 | Browser-level held-key state restores movement across scene recreation                                    | Done           |
 | 2026-10-22 | Pause and Settings use dedicated overlay scenes above Level and HUD                                       | Done           |

@@ -662,11 +662,11 @@ interface SaveDataV1 {
 ### 13.3 Audio
 
 - Chiptune-adjacent music with a dark, adventurous tone.
-- Tracks: title, mine levels (one looping track with light variation), boss, results. Four tracks is the v1 target.
+- Tracks: title, mine levels (one looping track), boss. Title, Options, Credits, and Results share the title theme. Three loops ship in v1; a separate results track is a stretch goal.
 - SFX: jump, land, throw, rock bounce, knife throw, gunshot, magic cast, hit, enemy hurt, enemy death, player hurt, pickup, crate break, elevator, boss roar, rumble, phase transition, victory.
-- Audio buses: master, music, SFX.
+- Audio buses: master, music, SFX, routed through Phaser's sound manager.
 - Browser audio must unlock on the first user interaction (title click/key press).
-- Placeholder assets during development must be CC0 or original. Final assets require a license inventory.
+- All music and SFX are original works synthesized by the committed generators in `tools/audio/`; the inventory lives in `docs/asset-licenses.md`.
 - No copyrighted music, sprites, or sound effects. The referenced games are inspiration only.
 
 ### 13.4 Narrative presentation
@@ -767,8 +767,8 @@ The balance pass in M7 prioritizes feel over exact numbers. The values in this d
 2. **Scope.** Four standard levels plus one boss is the v1 target. Confirm this is enough content.
 3. **Boss HP scaling.** Resolved in M4: the boss has 48 base HP and a separate 1/1.5/2/2.5 difficulty curve, producing 48/72/96/120. Normal pacing was checked at 2:01 with a scripted rock-only bot; Crazy still needs a separate timing pass in M7.
 4. **Game language.** Game UI is English for v1, while docs/code are English. Spanish UI can be added later. Confirm.
-5. **Art and audio sourcing.** Custom, commissioned, or licensed placeholder assets? This affects the M6 estimate significantly.
-6. **License.** The repository license and asset licenses are undecided. Choose before public release.
+5. **Art and audio sourcing.** Resolved in M6: original generated art, audio, and bitmap font from the committed scripts in `tools/`; no third-party assets.
+6. **License.** The repository is `UNLICENSED` for now; the original asset inventory is documented in `docs/asset-licenses.md`. Choose a public license before release.
 7. **Difficulty unlocks.** Resolved in M5: all modes are available from the start for accessibility and challenge, with a recommended Normal pick and warnings for Impossible and Crazy.
 8. **Mid-run save.** Not planned for v1. A browser refresh ends the run. Confirm this is acceptable.
 
@@ -778,5 +778,6 @@ The balance pass in M7 prioritizes feel over exact numbers. The values in this d
 
 | Version | Date       | Notes                                                                                        |
 | ------- | ---------- | -------------------------------------------------------------------------------------------- |
+| 0.3     | 2026-10-30 | M6: final generated art/audio/font, bitmap text, accessibility settings, credits, licenses   |
 | 0.2     | 2026-10-24 | M5: difficulty select, challenge badges, achievements, skins, Results reporting, and save v1 |
 | 0.1     | 2026-10-19 | Initial design document based on the project brief                                           |

@@ -4,6 +4,37 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses semantic versioning once public releases begin.
 
+## [0.6.0] - 2026-10-30
+
+### Added
+
+- M6: generated pixel-art pack — 56 images, 17 spritesheets, and 63 animations across five level themes, nine player skins, six enemies, the Great Worm, UI pieces, effects, props, and the title backdrop — built by the committed scripts in `tools/assets/`.
+- M6: original 5×7 bitmap font with 95 glyphs, nine-row cells with descender rows, and a `PixelText` factory patch that upgrades every `this.add.text` call.
+- M6: generated audio pack — 32 SFX and three music loops at 16 kHz 16-bit mono WAV — synthesized by `tools/audio/` and merged into `src/data/asset-manifest.json`.
+- M6: `AudioService` rewrite with master, music, and SFX buses routed through Phaser's sound manager.
+- M6: Options rows for mute, music/SFX volumes, flash intensity, and fullscreen, plus a Controls screen that rebinds Move Left, Move Right, Jump, Throw Stone, Use Item, Interact, and Pause.
+- M6: Credits screen and `docs/asset-licenses.md` inventory covering every original asset and third-party tool.
+- M6: an original SVG favicon in the project palette.
+- M6: platform reachability unit test that walks the real discrete jump arc, plus a permanent quit→new-run regression test.
+- M6: [M6 QA Notes](docs/m6-qa.md) with the browser matrix, performance samples, production bundle scan, and the manual release checklist.
+
+### Changed
+
+- M6: the canvas uses `Phaser.Scale.NONE` with a computed integer zoom, and all text renders through the bitmap font at 7/14/21/28 px, so glyph edges stay on physical pixels at 480×270 and 1920×1080.
+- M6: the title menu is re-laid out for five entries; the title status line and the HUD control hint gained backing plates for contrast.
+- M6: save v1 stores keybinds as `KeyboardEvent.code` values, upgrades legacy short names, and resolves duplicate bindings on load.
+- M6: the pause menu, input service, and HUD hint read the active keybinds.
+- M6: Playwright gains opt-in Edge, Firefox, and WebKit projects behind `BROWSER_MATRIX=1`; the default suite stays Chromium.
+- M6: the development shortcut query block is wrapped in `import.meta.env.DEV`, so Rollup removes `?boss=`, `?spawn=`, `?level=`, and `?difficulty=` handling from production builds.
+
+### Fixed
+
+- M6: blurry text caused by canvas text rendered at fractional scales.
+- M6: unreachable platforms; jump velocity rose from 300 to 320 to clear the authored 48 px steps.
+- M6: the hang when starting a new run after quitting.
+- M6: lowercase `g`, `j`, `p`, `q`, and `y` rendering as capitals after the bitmap font change.
+- M6: preload hanging forever in browsers without Web Audio (Playwright's WebKit build and some embedded browsers); the pack is skipped and the game boots silently, and missing sounds no longer reach Phaser's sound manager.
+
 ## [0.5.0] - 2026-10-24
 
 ### Added
