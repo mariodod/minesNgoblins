@@ -122,8 +122,8 @@ export class ResultsScene extends Phaser.Scene {
     graphics.fillStyle(0x10151b, 1);
     graphics.fillTriangle(0, GAME_HEIGHT, 70, 34, 170, GAME_HEIGHT);
     graphics.fillTriangle(320, GAME_HEIGHT, 410, 28, 480, GAME_HEIGHT);
-    graphics.fillStyle(0x18120e, 1).fillRect(0, 247, GAME_WIDTH, 23);
-    graphics.lineStyle(1, 0x2e343b, 1).lineBetween(0, 247, GAME_WIDTH, 247);
+    graphics.fillStyle(0x18120e, 1).fillRect(0, 252, GAME_WIDTH, 18);
+    graphics.lineStyle(1, 0x2e343b, 1).lineBetween(0, 252, GAME_WIDTH, 252);
   }
 
   private drawStats(kills: number, damageTaken: number, deaths: number, run: RunSnapshot): void {
@@ -219,7 +219,7 @@ export class ResultsScene extends Phaser.Scene {
       this.unlocks.forEach((unlock, index) => {
         const column = Math.floor(index / 4);
         const row = index % 4;
-        this.add.text(20 + column * 138, 213 + row * 8, `+ ${unlock.name}`, {
+        this.add.text(20 + column * 138, 213 + row * 10, `+ ${unlock.name}`, {
           fontFamily: FONT_FAMILY,
           fontSize: '6px',
           color: '#f4d35e',
@@ -247,7 +247,7 @@ export class ResultsScene extends Phaser.Scene {
       skins.forEach((skinId, index) => {
         const column = Math.floor(index / 4);
         const row = index % 4;
-        this.add.text(318 + column * 76, 213 + row * 8, SKINS[skinId].name, {
+        this.add.text(318 + column * 76, 213 + row * 10, SKINS[skinId].name, {
           fontFamily: FONT_FAMILY,
           fontSize: '6px',
           color: '#6fe3c4',
@@ -256,7 +256,7 @@ export class ResultsScene extends Phaser.Scene {
     }
 
     this.add
-      .text(GAME_WIDTH / 2, 258, 'ENTER / ESC  RETURN TO TITLE', {
+      .text(GAME_WIDTH / 2, 261, 'ENTER / ESC  RETURN TO TITLE', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',

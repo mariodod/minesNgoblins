@@ -60,7 +60,7 @@ export class AchievementsScene extends Phaser.Scene {
       const unlocked = Boolean(saveService.data.achievements[achievement.id]);
 
       this.add
-        .rectangle(x, y, 218, 28, unlocked ? 0x252d36 : 0x11161b, 0.9)
+        .rectangle(x, y, 218, 30, unlocked ? 0x252d36 : 0x11161b, 0.9)
         .setOrigin(0)
         .setStrokeStyle(1, unlocked ? 0x9fd8cb : 0x3d454f, 0.9);
       this.add.text(x + 6, y + 2, achievement.name, {

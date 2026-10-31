@@ -25,7 +25,9 @@ hardcoded asset list.
 - `items/`, `props/`, `fx/`, `ui/`, and `title/` — pickups, crates and props,
   combat effects, interface pieces, and the title backdrop.
 - `fonts/pixel-5x7.png` and `fonts/pixel-5x7.xml` — the original 5×7 bitmap
-  font used by `PixelText`.
+  font used by `PixelText`. Each glyph cell is nine rows tall: seven cap rows
+  plus two descender rows, so `g`, `j`, `p`, `q`, and `y` sit below the
+  baseline instead of reading as capitals.
 
 The current pack contains 56 images, 17 spritesheets, 63 animations, and one
 bitmap font with 95 glyphs.

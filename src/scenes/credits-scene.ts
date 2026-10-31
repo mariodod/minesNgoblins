@@ -103,7 +103,7 @@ export class CreditsScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(GAME_WIDTH / 2, 258, 'ESC / ENTER  RETURN TO TITLE', {
+      .text(GAME_WIDTH / 2, 262, 'ESC / ENTER  RETURN TO TITLE', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#5f6b73',

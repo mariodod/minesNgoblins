@@ -185,7 +185,7 @@ export class TitleScene extends Phaser.Scene {
 
     this.menuTexts = MENU_ITEMS.map((item, index) => {
       const text = this.add
-        .text(GAME_WIDTH / 2, 108 + index * 24, item.label, style)
+        .text(GAME_WIDTH / 2, 104 + index * 20, item.label, style)
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true });
 
@@ -202,8 +202,11 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private createFooter(): void {
+    // Dark strip so the status line stays readable over the floor tiles.
+    this.add.rectangle(0, 252, GAME_WIDTH, 18, 0x03060a, 0.94).setOrigin(0).setDepth(2);
+
     this.messageText = this.add
-      .text(GAME_WIDTH / 2, 220, '', {
+      .text(GAME_WIDTH / 2, 218, '', {
         fontFamily: FONT_FAMILY,
         fontSize: '8px',
         color: '#9fd8cb',
@@ -217,25 +220,28 @@ export class TitleScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 242, 'UP / DOWN TO SELECT   ENTER TO CONFIRM', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#5f6b73',
+        color: '#8b959d',
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(2);
 
     this.add
-      .text(8, 260, `v${APP_VERSION} / M6`, {
+      .text(8, 261, `v${APP_VERSION} / M6`, {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#5f6b73',
+        color: '#8b959d',
       })
-      .setOrigin(0, 0.5);
+      .setOrigin(0, 0.5)
+      .setDepth(3);
 
     this.add
-      .text(GAME_WIDTH - 8, 260, 'M6 META BUILD', {
+      .text(GAME_WIDTH - 8, 261, 'M6 META BUILD', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#5f6b73',
+        color: '#8b959d',
       })
-      .setOrigin(1, 0.5);
+      .setOrigin(1, 0.5)
+      .setDepth(3);
   }
 
   private installInput(): void {
@@ -362,9 +368,15 @@ export class TitleScene extends Phaser.Scene {
       return;
     }
 
-    const params = new URLSearchParams(window.location.search);
-    const debugBoss = import.meta.env.DEV && params.get('boss') === '1';
-    const spawnAtExit = import.meta.env.DEV && params.get('spawn') === 'exit';
+    // Development shortcuts. The whole block is compiled out of production.
+    let debugBoss = false;
+    let spawnAtExit = false;
+
+    if (import.meta.env.DEV) {
+      const params = new URLSearchParams(window.location.search);
+      debugBoss = params.get('boss') === '1';
+      spawnAtExit = params.get('spawn') === 'exit';
+    }
 
     if (!debugBoss && !spawnAtExit) {
       this.scene.launch('RunSetup');

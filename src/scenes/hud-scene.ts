@@ -149,18 +149,26 @@ export class HudScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, GAME_HEIGHT - 10, hintLabel, {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#7f8c8d',
+        color: '#cfd2d6',
       })
       .setOrigin(0.5)
       .setDepth(101)
-      .setAlpha(0.85);
+      .setAlpha(0.9);
+
+    // The hint sits over the floor row, so give it a backing plate to keep it
+    // readable against any level palette.
+    const hintPlate = this.add
+      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 10, hint.width + 12, 12, 0x03060a, 0.82)
+      .setDepth(100)
+      .setAlpha(0.9);
 
     this.time.delayedCall(7000, () => {
       this.tweens.add({
-        targets: hint,
+        targets: [hintPlate, hint],
         alpha: 0,
         duration: 800,
         onComplete: () => {
+          hintPlate.destroy();
           hint.destroy();
         },
       });
