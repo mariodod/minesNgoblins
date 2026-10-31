@@ -38,10 +38,13 @@ test('restarting from pause resets the current level', async ({ page }) => {
 
   await startRun(page);
 
+  // Keep the key held until the player actually moves. WebKit's software
+  // renderer runs fewer physics steps per second, so a fixed wait is flaky.
   await page.keyboard.down('ArrowRight');
-  await page.waitForTimeout(700);
+  await expect
+    .poll(() => readHook<number>(page, 'playerX'), { timeout: 8000 })
+    .toBeGreaterThan(100);
   await page.keyboard.up('ArrowRight');
-  await expect.poll(() => readHook<number>(page, 'playerX')).toBeGreaterThan(100);
 
   await pressKey(page, 'Escape');
   await expect.poll(() => readHook<string>(page, 'scene')).toBe('Pause');
@@ -114,9 +117,10 @@ test('starts a fresh run after quitting, twice in a row', async ({ page }) => {
     expect(after).toBeGreaterThan(before);
 
     await page.keyboard.down('ArrowRight');
-    await page.waitForTimeout(400);
+    await expect
+      .poll(() => readHook<number>(page, 'playerX'), { timeout: 8000 })
+      .toBeGreaterThan(56);
     await page.keyboard.up('ArrowRight');
-    await expect.poll(() => readHook<number>(page, 'playerX')).toBeGreaterThan(56);
   };
 
   await startRun(page);

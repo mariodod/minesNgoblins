@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { collectPageErrors, readHook, startRun } from './helpers';
+import { collectPageErrors, readHook, settleInput, startRun } from './helpers';
 
 test('starts a run, drops through a platform, moves, and jumps', async ({ page }) => {
   const errors = collectPageErrors(page);
@@ -11,15 +11,16 @@ test('starts a run, drops through a platform, moves, and jumps', async ({ page }
   const platformY = (await readHook<number>(page, 'playerY')) ?? 0;
   expect(platformY).toBeLessThan(268);
 
+  // Aim down for a frame before jumping, so the drop-through sees both inputs
+  // in the same physics step regardless of how the engine queues key events.
   await page.keyboard.down('ArrowDown');
+  await settleInput(page);
   await page.keyboard.down('Space');
-  await page.waitForTimeout(140);
-  await page.keyboard.up('Space');
-  await page.keyboard.up('ArrowDown');
-
   await expect
     .poll(() => readHook<number>(page, 'playerY'), { timeout: 8000 })
     .toBeGreaterThan(platformY + 8);
+  await page.keyboard.up('Space');
+  await page.keyboard.up('ArrowDown');
   await expect.poll(() => readHook<boolean>(page, 'grounded')).toBe(true);
 
   // Run right along the floor.
