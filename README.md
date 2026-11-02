@@ -2,7 +2,7 @@
 
 **A retro mine-crawling action platformer. One rock. Many problems.**
 
-> **Status:** M6 complete at `v0.6.0` - final generated art, audio, pixel text, accessibility settings, credits, and QA notes are in. M7 balance, external playtests, and release-candidate work are next.
+> **Status:** M7 complete at `v0.7.0` — balance pass, Crazy tuning, hardening, accessibility review, performance profile, browser matrix, and release-candidate notes are in. M8 (v1.0 release) is next.
 >
 > The repository was empty when work began, so the documents below define the direction for a new game.
 
@@ -39,6 +39,7 @@ The game is built around short, replayable runs. Players dodge or defeat enemies
 - [M4 Playtest Notes](docs/m4-playtest.md) — boss pacing, visual QA, retry checks, and test coverage.
 - [M5 Test Matrix](docs/m5-test-matrix.md) — difficulty × challenge coverage, Results rules, achievements, skins, and save recovery.
 - [M6 QA Notes](docs/m6-qa.md) — asset/audio inventory, text and accessibility checks, browser matrix, performance, and the manual release checklist.
+- [M7 QA Notes](docs/m7-qa.md) — balance budget, Crazy tuning, scripted complete runs, hardening, accessibility contrast, performance, and known issues.
 - [Asset and Dependency Licenses](docs/asset-licenses.md) — original-asset inventory and third-party tool licenses.
 
 ## Technology at a glance
@@ -68,7 +69,7 @@ See [docs/technical-plan.md](docs/technical-plan.md) for the rationale and alter
 | M4 ✅     | Giant worm boss with phases, supplies, victory, and results screen  |
 | M5 ✅     | Difficulties, challenge runs, achievements, skins, Results, save v1 |
 | M6 ✅     | Final art, audio, UI, accessibility, credits, and QA notes          |
-| M7        | Balance, external playtests, QA, performance, release candidate     |
+| M7 ✅     | Balance, QA, performance, accessibility review, release candidate    |
 | M8        | v1.0 release and deployment                                         |
 
 Full details and acceptance criteria are in [docs/roadmap.md](docs/roadmap.md).
@@ -103,7 +104,7 @@ The dev server runs at `http://127.0.0.1:5173/`. Choose **Start Run**, pick a di
 
 Rocks are unlimited and deal 1 damage. The one-slot secondary item holds a limited-use Knife, Flintlock, or Rune Scroll; picking up the same item adds ammo up to its cap, while a different item replaces it. Crates contain authored ore, salves, or items, and pedestals hold items that require `E` to collect. Falling into a gap or losing all hearts restarts the level after a short death overlay.
 
-Development builds accept `?difficulty=normal|hard|impossible|crazy` to preselect a difficulty. `?level=<id>` preselects the starting level, while `?spawn=exit` and `?boss=1` bypass the difficulty screen for direct QA. Production builds ignore these queries. The boss test API exposes `hitBoss`, `skipBossPhase`, `defeatBoss`, `defeatPlayer`, `damagePlayer`, and `healPlayer` on `window.__MINES_DEBUG__`.
+Development builds accept `?difficulty=normal|hard|impossible|crazy` to preselect a difficulty. `?level=<id>` preselects the starting level, while `?spawn=exit` and `?boss=1` bypass the difficulty screen for direct QA. Production builds ignore these queries. The boss test API exposes `hitBoss`, `skipBossPhase`, `defeatBoss`, `defeatPlayer`, `damagePlayer`, and `healPlayer` on `window.__MINES_DEBUG__`; level scenes expose `defeatAllEnemies` on `window.__MINES_LEVEL_DEBUG__` so the Crazy exit gate can be verified.
 
 ### Scripts
 
@@ -118,6 +119,19 @@ Development builds accept `?difficulty=normal|hard|impossible|crazy` to preselec
 | `npm run typecheck` | Run TypeScript without emitting files                 |
 | `npm run test`      | Run Vitest unit tests                                 |
 | `npm run test:e2e`  | Run Playwright browser tests                          |
+
+Repeatable QA helpers:
+
+```bash
+# Frame-rate and load sample for a scene, headed hardware or headless software
+node tools/qa/profile.mjs --url http://127.0.0.1:4173/minesNgoblins/ --viewport 1920x1080 --headed
+
+# Visual checklist capture at 1366x768, 1920x1080, and 2560x1440
+node tools/qa/screenshots.mjs --url http://127.0.0.1:5173/
+
+# Production smoke test: errors, load budget, and absent debug hooks
+node tools/qa/smoke.mjs --url https://mariodod.github.io/minesNgoblins/
+```
 
 Install the Playwright browser once before running E2E tests locally:
 
@@ -136,7 +150,7 @@ The production base path defaults to `/minesNgoblins/`. If the site moves to a c
 - All documentation, source code, comments, commit messages, and project discussion are in **English**.
 - Game UI text is English for v1, with the text layer kept ready for localization.
 - Assets must be original, commissioned, or clearly licensed. The generated art and audio packs are original work; the full inventory is in [`docs/asset-licenses.md`](docs/asset-licenses.md).
-- Manual QA notes live in `docs/m1-playtest.md`, `docs/m2-playtest.md`, `docs/m3-playtest.md`, `docs/m4-playtest.md`, `docs/m5-test-matrix.md`, and `docs/m6-qa.md`.
+- Manual QA notes live in `docs/m1-playtest.md`, `docs/m2-playtest.md`, `docs/m3-playtest.md`, `docs/m4-playtest.md`, `docs/m5-test-matrix.md`, `docs/m6-qa.md`, and `docs/m7-qa.md`.
 
 ## License
 

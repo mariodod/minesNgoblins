@@ -286,7 +286,7 @@ Example (Normal):
 | Mine Ghost       |       — |       — |       3 |       4 |
 | Wormling         |       — |       — |       — |       5 |
 
-Difficulty multipliers are applied after the level bonus. On Crazy (×5), a Level 4 Goblin has 20 HP, so players are expected to use scavenged weapons and careful positioning. This is intentionally extreme; final numbers are subject to the balance pass in M7.
+Difficulty multipliers are applied after the level bonus. M7 set the Crazy multiplier to ×3, so a Level 4 Goblin has 12 HP instead of the ×5 value of 20 HP that shipped through M6. A full Crazy clear costs about 309 rock hits (≈2 minutes of pure throwing at the 400 ms cooldown) instead of 515, and the heaviest single enemy takes 15 hits (≈6 seconds of perfect aim) instead of 25. Crazy is still defined by one-hit death and the mandatory all-kill gate; the damage multiplier stays ×5 so any contact is lethal.
 
 ### 7.4 Enemy damage
 
@@ -445,7 +445,7 @@ All difficulties are selectable from the start. The UI shows recommended order a
 | **Normal**     |         5 |       ×1 |            ×1 | Reach the exit                    | The intended first experience; five hearts      |
 | **Hard**       |         5 |       ×2 |            ×2 | Reach the exit                    | Enemies are tougher and hit harder              |
 | **Impossible** |         4 |       ×3 |            ×2 | Reach the exit                    | Two enemy hits kill; every mistake is expensive |
-| **Crazy**      |         1 |       ×5 | Any hit kills | **Kill every enemy in the level** | Masochistic mode; full clear required           |
+| **Crazy**      |         1 |       ×3 | Any hit kills | **Kill every enemy in the level** | Masochistic mode; full clear required           |
 
 Rules and edge cases:
 
@@ -765,7 +765,7 @@ The balance pass in M7 prioritizes feel over exact numbers. The values in this d
 
 1. **"Five lives" meaning.** Resolved in M3: five means 5 HP/hearts, not 5 retries. Death restarts the current level with full HP.
 2. **Scope.** Four standard levels plus one boss is the v1 target. Confirm this is enough content.
-3. **Boss HP scaling.** Resolved in M4: the boss has 48 base HP and a separate 1/1.5/2/2.5 difficulty curve, producing 48/72/96/120. Normal pacing was checked at 2:01 with a scripted rock-only bot; Crazy still needs a separate timing pass in M7.
+3. **Boss HP scaling.** Resolved in M4: the boss has 48 base HP and a separate 1/1.5/2/2.5 difficulty curve, producing 48/72/96/120. Normal pacing was checked at 2:01 with a scripted rock-only bot; M7 kept 120 HP for Crazy after confirming the fight sits inside the 5–8 minute target band with imperfect aim.
 4. **Game language.** Game UI is English for v1, while docs/code are English. Spanish UI can be added later. Confirm.
 5. **Art and audio sourcing.** Resolved in M6: original generated art, audio, and bitmap font from the committed scripts in `tools/`; no third-party assets.
 6. **License.** The repository is `UNLICENSED` for now; the original asset inventory is documented in `docs/asset-licenses.md`. Choose a public license before release.

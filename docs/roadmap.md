@@ -1,8 +1,8 @@
 # Mines & Goblins — Roadmap
 
-**Version:** 0.6  
-**Date:** 2026-10-24  
-**Status:** M6 complete at `v0.6.0`; final generated art, audio, bitmap text, accessibility, credits, and QA notes shipped. M7 balance, external playtests, and release-candidate work are next
+**Version:** 0.7  
+**Date:** 2026-11-02  
+**Status:** M7 complete at `v0.7.0`: balance tuned, hardening and save tests added, performance and browser matrix verified, release-candidate notes written. External human playtests were descoped and recorded as a P2 risk. M8 release work is next.
 
 ---
 
@@ -369,6 +369,8 @@ now lives at `docs/media/m3-run.gif`.
 **Dependencies:** M6.  
 **Risks:** Balance regressions; late bugs; external feedback requiring scope changes.
 
+**Completion notes:** M7 shipped as `v0.7.0` on 2026-11-02. The Crazy enemy HP multiplier moved from ×5 to ×3 after measuring the shipped maps: the heaviest enemy dropped from 25 to 15 hits and a full clear from 515 to 309 rock hits, while damage stayed lethal and the boss stayed at 120 HP. A new balance test locks the 103/206/309/309 totals and the per-enemy ceilings. Save handling now has migration, corruption, clamping, and blocked-storage tests; the authored quit → new-run hang was root-caused to a destroyed `Text` object in `RunSetupScene` and fixed with a regression test. Production profiling held 60 FPS at 1080p and 1440p on hardware, the canvas appeared in under 1.83 s, and the full matrix (Chromium, Edge, Firefox, WebKit) passed 110 tests with 3 WebKit audio skips. The speedrun timer was descoped in favor of the Results `BEST TIME` row. External playtests were descoped because no testers were available; the gap is recorded as P2 in [M7 QA Notes](m7-qa.md).
+
 ---
 
 ### M8 — Release v1.0
@@ -521,10 +523,10 @@ Do **not** cut:
 1. Resolve the remaining release decisions:
    - Repository license (code and original assets are currently `UNLICENSED`).
    - Release packaging and storefront order for M8.
-2. M6 is complete: final generated art/audio/font packs, accessibility settings, credits, and QA notes shipped at `v0.6.0`.
-3. Start M7 with human playtests on the M5 matrix and the M6 manual checklist, focusing on route pacing, Crazy balance, and boss fairness.
+2. M7 is complete: balance, hardening, performance, browser matrix, and release-candidate notes shipped at `v0.7.0`.
+3. Start M8 with a live-deployment smoke test, the `v1.0.0` version bump, release notes, and the final credits/license pass.
 4. Record a boss-fight media capture for the README or release notes.
-5. Schedule the first external playtest and fold its findings into the release candidate.
+5. Schedule the first external playtest and fold its findings into a patch after v1.0.
 
 ---
 
@@ -532,6 +534,7 @@ Do **not** cut:
 
 | Version | Date       | Notes                                                                                |
 | ------- | ---------- | ------------------------------------------------------------------------------------ |
+| 0.8     | 2026-11-02 | M7 balance, hardening, performance, browser matrix, and release candidate at v0.7.0 |
 | 0.7     | 2026-10-30 | M6 final generated art/audio/font, accessibility, credits, and QA complete at v0.6.0 |
 | 0.6     | 2026-10-24 | M5 difficulties, challenge runs, achievements, skins, and save v1 complete at v0.5.0 |
 | 0.5     | 2026-10-22 | M4 Great Worm, supplies, victory, and results placeholder complete at v0.4.0         |

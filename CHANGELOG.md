@@ -4,6 +4,34 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses semantic versioning once public releases begin.
 
+## [0.7.0] - 2026-11-02
+
+### Added
+
+- M7: [M7 QA Notes](docs/m7-qa.md) with the balance budget, scripted complete-run evidence, accessibility review, performance profile, browser matrix, manual checklist results, and the known-issues list.
+- M7: `tools/qa/profile.mjs` for repeatable FPS and load sampling at any viewport, in headed or headless mode, against the dev or preview server.
+- M7: `tools/qa/screenshots.mjs` for repeatable visual checklist capture at 1366×768, 1920×1080, and 2560×1440.
+- M7: `tools/qa/smoke.mjs` for production smoke checks: console/page errors, the 3-second canvas budget, absent debug hooks, and inert debug query shortcuts.
+- M7: `BEST TIME` row in Results, read from the best-run stat the save already tracks.
+- M7: development-only `window.__MINES_LEVEL_DEBUG__` with `defeatAllEnemies`, kept separate from the boss debug API, so the Crazy exit gate can be verified on all four levels.
+- M7: `tests/unit/balance.test.ts` locking the enemy-HP totals, the heaviest enemy, and the full-clear rock budget.
+- M7: `tests/e2e/full-run.spec.ts` scripted Normal and Crazy complete runs that exercise the real badge, achievement, and Results rules.
+- M7: unit coverage for save round-tripping, unsupported versions, non-object payloads, malformed fields, and rejected storage writes.
+- M7: Playwright coverage for the screen-shake setting and its persistence.
+
+### Changed
+
+- M7: Crazy enemy HP multiplier reduced from ×5 to ×3. A Deep Vein goblin drops from 20 HP to 12 HP, the heaviest Crazy enemy from 25 hits to 15, and a full clear from 515 rock hits to 309. Crazy still means 1 HP and a mandatory full clear.
+- M7: the Crazy card in Run Setup now builds its summary from the difficulty data instead of a hardcoded `ENEMY x5` string that could drift from the tuning.
+- M7: muted and locked UI text lightened from `#5f6b73` to `#8b959d`, and danger text from `#c85c5c` to `#d16262`, so every sampled text/background pair meets WCAG AA at 4.5:1.
+- M7: the QA profiler and screenshot scripts get browser globals in the ESLint config; they run callbacks through `page.evaluate`.
+
+### Fixed
+
+- M7: locked achievements, locked skins, and greyed-out hints sat at 3.3–3.8:1 contrast and were hard to read at 6–7 px.
+- M7: the Crazy difficulty card advertised a ×5 enemy multiplier after the balance change.
+- M7: quitting a run after visiting a Run Setup screen that showed a warning (Crazy or Impossible) could freeze the game on the next start. The scene reused a destroyed `warningText` object, so `create()` threw inside `setText` and never finished booting. `RunSetupScene.create()` now resets those fields and builds the warning text before the first card render.
+
 ## [0.6.0] - 2026-10-30
 
 ### Added

@@ -309,7 +309,7 @@ interface DifficultyConfig {
 }
 ```
 
-Enemy spawns compute effective HP at spawn time from base HP, level bonus, and the active difficulty. The boss uses a separate `bossHpMultiplier` so its authored 48 HP becomes 48/72/96/120 across Normal/Hard/Impossible/Crazy without forcing the standard 1/2/3/5 enemy curve onto the fight. Boss max HP is computed once when `BossScene` starts, not on each hit.
+Enemy spawns compute effective HP at spawn time from base HP, level bonus, and the active difficulty. The boss uses a separate `bossHpMultiplier` so its authored 48 HP becomes 48/72/96/120 across Normal/Hard/Impossible/Crazy without forcing the standard 1/2/3/3 enemy curve onto the fight. Boss max HP is computed once when `BossScene` starts, not on each hit.
 
 ### 5.8 Level pipeline
 
@@ -396,7 +396,7 @@ Target: high coverage of pure systems (80%+ lines for `systems/`, `data/`, and r
 - Scene boot with a mocked Phaser context where practical.
 - Event attribution: simulate a rock kill, a magic kill, and a hazard kill, then assert run state.
 - Level load: map → spawned entities → exit lock state.
-- Crazy mode: an enemy remains → exit stays locked; zero-enemy unlock is checked in manual QA.
+- Crazy mode: an enemy remains → exit stays locked; zero enemies → the exit opens and advances. Covered on all four levels by `tests/e2e/levels.spec.ts` through the DEV `__MINES_LEVEL_DEBUG__` helper.
 - Achievement persistence across a save/load round trip.
 
 ### 7.3 Browser tests (Playwright)
@@ -429,7 +429,7 @@ Per milestone, run a written checklist covering:
 
 - Challenge-run tests use fixed event sequences.
 - No random loot in v1; any future randomness must be seeded and recorded.
-- Playwright tests expose a narrow `window.__MINES_TEST__` hook only in development/test builds, never production.
+- Playwright tests expose a narrow `window.__MINES_TEST__` hook only in development/test builds, never production. `window.__MINES_DEBUG__` carries the boss-arena helpers, and `window.__MINES_LEVEL_DEBUG__` carries the level-only `defeatAllEnemies` helper used to verify the Crazy exit gate.
 
 ---
 

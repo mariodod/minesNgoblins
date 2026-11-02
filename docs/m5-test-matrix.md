@@ -15,6 +15,8 @@ This matrix records the M5 verification. Available combinations are exercised th
 | Impossible |         4 |       ×3 |            ×2 | Reach the exit                |      96 |
 | Crazy      |         1 |       ×5 | Any hit kills | Every standard enemy must die |     120 |
 
+> Historical note: M7 lowered the Crazy enemy HP multiplier from ×5 to ×3. The M5 matrix above records the values that shipped with that milestone; current numbers live in [M7 QA Notes](m7-qa.md#balance).
+
 Evidence:
 
 - `tests/unit/difficulties.test.ts` checks the configured HP, HP multipliers, damage multipliers, boss multipliers, and Pacifist availability.
