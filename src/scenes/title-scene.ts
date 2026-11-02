@@ -20,7 +20,7 @@ interface TitleSceneData {
 }
 
 const DEFAULT_TITLE_MESSAGE =
-  'M6 polish update: final art, generated audio, and full control rebinding.';
+  'M7 balance update: tuned enemies, smarter saves, and a full QA pass.';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
 
@@ -226,7 +226,7 @@ export class TitleScene extends Phaser.Scene {
       .setDepth(2);
 
     this.add
-      .text(8, 261, `v${APP_VERSION} / M6`, {
+      .text(8, 261, `v${APP_VERSION} / M7`, {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#8b959d',
@@ -235,7 +235,7 @@ export class TitleScene extends Phaser.Scene {
       .setDepth(3);
 
     this.add
-      .text(GAME_WIDTH - 8, 261, 'M6 META BUILD', {
+      .text(GAME_WIDTH - 8, 261, 'M7 RELEASE CANDIDATE', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#8b959d',

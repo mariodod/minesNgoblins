@@ -88,7 +88,7 @@ export class ResultsScene extends Phaser.Scene {
       )
       .setOrigin(0.5);
 
-    this.drawStats(run.kills, run.damageTaken, run.deaths, run);
+    this.drawStats(run.kills, run.damageTaken, run.deaths, run, saveService.data.stats.bestRunTimeMs);
     this.drawChallenges();
     this.drawRewards();
     this.installInput();
@@ -113,6 +113,7 @@ export class ResultsScene extends Phaser.Scene {
         .map((unlock) => unlock.skinId)
         .filter((skinId): skinId is SkinId => skinId !== undefined),
       runBossDamageTaken: run.bossDamageTaken,
+      runBestTimeMs: saveService.data.stats.bestRunTimeMs,
       message: `${completed}/4 challenge badges completed.`,
     });
   }
@@ -126,7 +127,13 @@ export class ResultsScene extends Phaser.Scene {
     graphics.lineStyle(1, 0x2e343b, 1).lineBetween(0, 252, GAME_WIDTH, 252);
   }
 
-  private drawStats(kills: number, damageTaken: number, deaths: number, run: RunSnapshot): void {
+  private drawStats(
+    kills: number,
+    damageTaken: number,
+    deaths: number,
+    run: RunSnapshot,
+    bestRunTimeMs: number | null,
+  ): void {
     this.add
       .rectangle(18, 50, 224, 152, 0x11161b, 0.92)
       .setOrigin(0)
@@ -146,6 +153,7 @@ export class ResultsScene extends Phaser.Scene {
       ['LEVELS CLEARED', `${run.levelsCompleted}/${LEVEL_COUNT}`],
       ['BOSS ATTEMPTS', String(run.bossAttempts)],
       ['BOSS DAMAGE', String(run.bossDamageTaken)],
+      ['BEST TIME', bestRunTimeMs === null ? '--:--' : formatTime(bestRunTimeMs)],
     ] as const;
 
     stats.forEach(([label, value], index) => {
@@ -213,7 +221,7 @@ export class ResultsScene extends Phaser.Scene {
       this.add.text(20, 213, 'NONE THIS RUN', {
         fontFamily: FONT_FAMILY,
         fontSize: '6px',
-        color: '#5f6b73',
+        color: '#8b959d',
       });
     } else {
       this.unlocks.forEach((unlock, index) => {
@@ -241,7 +249,7 @@ export class ResultsScene extends Phaser.Scene {
       this.add.text(318, 213, 'NONE THIS RUN', {
         fontFamily: FONT_FAMILY,
         fontSize: '6px',
-        color: '#5f6b73',
+        color: '#8b959d',
       });
     } else {
       skins.forEach((skinId, index) => {
@@ -259,7 +267,7 @@ export class ResultsScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 261, 'ENTER / ESC  RETURN TO TITLE', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#5f6b73',
+        color: '#8b959d',
       })
       .setOrigin(0.5);
   }
