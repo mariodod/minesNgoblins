@@ -72,13 +72,13 @@ export class AchievementsScene extends Phaser.Scene {
         .text(x + 212, y + 3, unlocked ? 'UNLOCKED' : 'LOCKED', {
           fontFamily: FONT_FAMILY,
           fontSize: '6px',
-          color: unlocked ? '#6fe3c4' : '#5f6b73',
+          color: unlocked ? '#6fe3c4' : '#8b959d',
         })
         .setOrigin(1, 0);
       this.add.text(x + 6, y + 11, achievement.description, {
         fontFamily: FONT_FAMILY,
         fontSize: '6px',
-        color: unlocked ? '#c9d1d9' : '#5f6b73',
+        color: unlocked ? '#c9d1d9' : '#8b959d',
         wordWrap: { width: 202 },
       });
     });
@@ -87,7 +87,7 @@ export class AchievementsScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 250, 'ESC / ENTER  BACK', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#5f6b73',
+        color: '#8b959d',
       })
       .setOrigin(0.5);
 

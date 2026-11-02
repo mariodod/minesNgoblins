@@ -78,7 +78,7 @@ export class SettingsScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 50, 'CHANGES SAVE AUTOMATICALLY', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#7f8c8d',
+        color: '#8b959d',
       })
       .setOrigin(0.5)
       .setDepth(2);
@@ -109,7 +109,7 @@ export class SettingsScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 259, 'UP/DOWN SELECT   LEFT/RIGHT CHANGE   ESC BACK', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#5f6b73',
+        color: '#8b959d',
       })
       .setOrigin(0.5)
       .setDepth(2);

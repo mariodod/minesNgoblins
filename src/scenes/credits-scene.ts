@@ -87,7 +87,7 @@ export class CreditsScene extends Phaser.Scene {
         {
           fontFamily: FONT_FAMILY,
           fontSize: '7px',
-          color: '#7f8c8d',
+          color: '#8b959d',
           align: 'center',
           lineSpacing: 4,
         },
@@ -98,7 +98,7 @@ export class CreditsScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 246, `v${APP_VERSION}`, {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#5f6b73',
+        color: '#8b959d',
       })
       .setOrigin(0.5);
 
@@ -106,7 +106,7 @@ export class CreditsScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 262, 'ESC / ENTER  RETURN TO TITLE', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#5f6b73',
+        color: '#8b959d',
       })
       .setOrigin(0.5);
 

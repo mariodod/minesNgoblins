@@ -47,6 +47,28 @@ test('flash intensity cycles, persists, and always leaves a readable frame', asy
   await expect.poll(() => readHook<string>(page, 'flashIntensity')).toBe('reduced');
 });
 
+test('screen shake cycles, persists, and reaches off', async ({ page }) => {
+  await bootToTitle(page);
+  await openOptions(page);
+  await selectRow(page, 'Screen Shake');
+
+  await pressKey(page, 'ArrowRight');
+  await expect.poll(() => readHook<string>(page, 'screenShake')).toBe('reduced');
+  await pressKey(page, 'ArrowRight');
+  await expect.poll(() => readHook<string>(page, 'screenShake')).toBe('off');
+  await pressKey(page, 'ArrowLeft');
+  await expect.poll(() => readHook<string>(page, 'screenShake')).toBe('reduced');
+
+  await page.reload();
+  await page.waitForFunction(
+    () => window.__MINES_TEST__?.ready === true && window.__MINES_TEST__?.scene === 'Title',
+  );
+  await settleInput(page);
+  await openOptions(page);
+
+  await expect.poll(() => readHook<string>(page, 'screenShake')).toBe('reduced');
+});
+
 test('rebinding jump and pause applies in the level and survives a reload', async ({ page }) => {
   await bootToTitle(page);
   await openOptions(page);

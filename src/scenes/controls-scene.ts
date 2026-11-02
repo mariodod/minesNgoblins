@@ -64,7 +64,7 @@ export class ControlsScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 50, 'ENTER TO REBIND   ESC CANCELS', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#7f8c8d',
+        color: '#8b959d',
       })
       .setOrigin(0.5)
       .setDepth(2);
@@ -95,7 +95,7 @@ export class ControlsScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 259, 'UP/DOWN SELECT   ENTER REBIND   ESC BACK', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#5f6b73',
+        color: '#8b959d',
       })
       .setOrigin(0.5)
       .setDepth(2);

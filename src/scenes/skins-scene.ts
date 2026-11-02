@@ -55,7 +55,7 @@ export class SkinsScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 250, 'UP / DOWN SELECT   ENTER EQUIP   ESC BACK', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#5f6b73',
+        color: '#8b959d',
       })
       .setOrigin(0.5);
 
@@ -90,13 +90,13 @@ export class SkinsScene extends Phaser.Scene {
       const label = this.add.text(22, y + 4, skin.name, {
         fontFamily: FONT_FAMILY,
         fontSize: '8px',
-        color: unlocked ? (selected ? '#f4d35e' : '#cfd2d6') : '#5f6b73',
+        color: unlocked ? (selected ? '#f4d35e' : '#cfd2d6') : '#8b959d',
       });
       const status = this.add
         .text(214, y + 5, equipped ? 'EQUIPPED' : unlocked ? 'READY' : 'LOCKED', {
           fontFamily: FONT_FAMILY,
           fontSize: '6px',
-          color: equipped ? '#6fe3c4' : unlocked ? '#9fd8cb' : '#5f6b73',
+          color: equipped ? '#6fe3c4' : unlocked ? '#9fd8cb' : '#8b959d',
         })
         .setOrigin(1, 0);
 

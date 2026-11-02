@@ -104,7 +104,7 @@ export class PauseScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 85, `RUN TIME ${formatTime(this.runTimeMs)}`, {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#7f8c8d',
+        color: '#8b959d',
       })
       .setOrigin(0.5)
       .setDepth(2);
@@ -163,7 +163,7 @@ export class PauseScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 218, 'UP/DOWN SELECT   ENTER CONFIRM   ESC RESUME', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#5f6b73',
+        color: '#8b959d',
       })
       .setOrigin(0.5)
       .setDepth(2);

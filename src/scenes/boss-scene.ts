@@ -476,7 +476,7 @@ export class BossScene extends Phaser.Scene {
       .text(centerX, exit.y - 9, 'SEALED', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#c85c5c',
+        color: '#d16262',
         backgroundColor: '#11161b',
         padding: { x: 2, y: 1 },
       })
@@ -769,7 +769,7 @@ export class BossScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 86, 'BOSS ENCOUNTER', {
         fontFamily: FONT_FAMILY,
         fontSize: '8px',
-        color: '#c85c5c',
+        color: '#d16262',
       })
       .setOrigin(0.5);
     const title = this.add
@@ -1122,7 +1122,7 @@ export class BossScene extends Phaser.Scene {
     const hole = this.surfaceAtAttackHole('summon-wormlings');
     this.audio.play('boss-summon');
     this.shakeScreen(260, 0.004);
-    this.announce('SUMMON WORMLINGS', '#c85c5c');
+    this.announce('SUMMON WORMLINGS', '#d16262');
 
     const token = this.fightToken;
     this.schedule(this.telegraphMs('summon-wormlings'), () => {
@@ -1263,7 +1263,7 @@ export class BossScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 152, phase === 3 ? 'NO MORE HIDING.' : 'THE WORM IS ENRAGED.', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#c85c5c',
+        color: '#d16262',
       })
       .setOrigin(0.5);
 
