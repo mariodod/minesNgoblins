@@ -128,12 +128,14 @@ export interface MinesTestHook {
   saveNotice?: string;
   crazyEnemiesRemaining?: number;
   runBossDamageTaken?: number;
+  runBestTimeMs?: number | null;
 }
 
 declare global {
   interface Window {
     __MINES_TEST__?: MinesTestHook;
     __MINES_DEBUG__?: MinesDebugApi;
+    __MINES_LEVEL_DEBUG__?: MinesLevelDebugApi;
   }
 }
 
@@ -144,6 +146,11 @@ export interface MinesDebugApi {
   defeatPlayer: () => void;
   damagePlayer: (amount?: number) => void;
   healPlayer: () => void;
+}
+
+/** Development-only level hooks, kept separate from the boss arena API. */
+export interface MinesLevelDebugApi {
+  defeatAllEnemies: () => void;
 }
 
 export {};

@@ -614,7 +614,7 @@ export class LevelScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 86, `LEVEL ${levelNumber} / ${LEVEL_COUNT}`, {
         fontFamily: FONT_FAMILY,
         fontSize: '8px',
-        color: '#c85c5c',
+        color: '#d16262',
       })
       .setOrigin(0.5);
     const title = this.add
@@ -1710,11 +1710,54 @@ export class LevelScene extends Phaser.Scene {
     keyboard.addCapture([Phaser.Input.Keyboard.KeyCodes.F3, Phaser.Input.Keyboard.KeyCodes.F4]);
     keyboard.on('keydown-F3', this.toggleDebug, this);
     keyboard.on('keydown-F4', this.debugCompleteLevel, this);
+    this.installDebugApi();
 
     this.events.once('shutdown', () => {
       keyboard.off('keydown-F3', this.toggleDebug, this);
       keyboard.off('keydown-F4', this.debugCompleteLevel, this);
     });
+  }
+
+  /**
+   * Development-only hooks for Playwright. The Crazy all-kill gate is the one
+   * rule that cannot be exercised by walking to the exit, so QA needs a way to
+   * remove the remaining enemies without a ten-minute combat bot.
+   */
+  private installDebugApi(): void {
+    if (!import.meta.env.DEV) {
+      return;
+    }
+
+    window.__MINES_LEVEL_DEBUG__ = {
+      defeatAllEnemies: () => this.debugDefeatAllEnemies(),
+    };
+
+    this.events.once('shutdown', () => {
+      delete window.__MINES_LEVEL_DEBUG__;
+    });
+  }
+
+  private debugDefeatAllEnemies(): void {
+    if (!import.meta.env.DEV || this.restarting) {
+      return;
+    }
+
+    for (const enemy of this.enemies) {
+      if (!enemy.active || enemy.isDead) {
+        continue;
+      }
+
+      const result = enemy.takeDamage({
+        amount: Number.MAX_SAFE_INTEGER,
+        source: 'environment',
+        sourceX: enemy.x,
+        sourceY: enemy.y,
+      });
+
+      if (result.killed) {
+        this.recordEnemyKill(enemy, 'environment');
+      }
+    }
   }
 
   private debugCompleteLevel(): void {
