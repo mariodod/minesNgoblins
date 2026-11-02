@@ -32,6 +32,13 @@ export class RunSetupScene extends Phaser.Scene {
   }
 
   create(): void {
+    // A scene can be started again after a run is quit. Phaser destroys the old
+    // display list but keeps the scene instance, so a stale Text/Container
+    // reference here would point at a destroyed object: updateWarning() would
+    // then throw inside setText and leave the scene stuck in CREATING, which
+    // reads as a hang on the title screen.
+    this.cardsContainer = undefined;
+    this.warningText = undefined;
     this.starting = false;
     this.selectedIndex = Math.max(0, DIFFICULTY_ORDER.indexOf(resolveDifficultyId()));
 
@@ -55,6 +62,16 @@ export class RunSetupScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.cardsContainer = this.add.container(0, 0);
+    this.warningText = this.add
+      .text(GAME_WIDTH / 2, 239, '', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '7px',
+        color: '#ff9a8a',
+        align: 'center',
+      })
+      .setOrigin(0.5);
+    // renderCards() refreshes the warning for the restored selection, so the
+    // text object has to exist before the cards are built.
     this.renderCards();
 
     this.add
@@ -73,13 +90,12 @@ export class RunSetupScene extends Phaser.Scene {
         align: 'center',
       })
       .setOrigin(0.5);
-    this.updateWarning();
 
     this.add
       .text(GAME_WIDTH / 2, 254, 'UP / DOWN SELECT   ENTER DESCEND   ESC BACK', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
-        color: '#5f6b73',
+        color: '#8b959d',
       })
       .setOrigin(0.5);
 
@@ -152,11 +168,13 @@ export class RunSetupScene extends Phaser.Scene {
   }
 
   private difficultyStats(difficulty: DifficultyConfig): string {
+    const core = `${difficulty.playerMaxHp} HP   ENEMY x${difficulty.enemyHpMultiplier}`;
+
     if (difficulty.requiresAllEnemiesDead) {
-      return '1 HP   ENEMY x5   ANY HIT KILLS   FULL CLEAR';
+      return `${core}   ANY HIT KILLS   FULL CLEAR`;
     }
 
-    return `${difficulty.playerMaxHp} HP   ENEMY x${difficulty.enemyHpMultiplier}   DAMAGE x${difficulty.enemyDamageMultiplier}`;
+    return `${core}   DAMAGE x${difficulty.enemyDamageMultiplier}`;
   }
 
   private updateWarning(): void {

@@ -131,3 +131,43 @@ test('starts a fresh run after quitting, twice in a row', async ({ page }) => {
 
   expect(errors).toEqual([]);
 });
+
+test('reopens the difficulty selector after quitting a run that showed a warning', async ({
+  page,
+}) => {
+  const errors = collectPageErrors(page);
+
+  await startRun(page, '/', 'crazy');
+  await expect.poll(() => readHook<string>(page, 'difficulty')).toBe('crazy');
+
+  await pressKey(page, 'Escape');
+  await expect.poll(() => readHook<string>(page, 'scene')).toBe('Pause');
+  for (let step = 0; step < 3; step += 1) {
+    await pressKey(page, 'ArrowDown');
+  }
+  await pressKey(page, 'Enter');
+  await expect.poll(() => readHook<string>(page, 'pauseSelection')).toBe('Confirm Quit');
+  await pressKey(page, 'Enter');
+  await expect.poll(() => readHook<string>(page, 'scene')).toBe('Title');
+
+  // Regression: the previous RunSetup showed a Crazy warning. Reopening it used
+  // to throw inside updateWarning() on a destroyed Text object, which left the
+  // scene stuck in CREATING and looked like a hang on the title screen.
+  await pressKey(page, 'Enter');
+  await expect.poll(() => readHook<string>(page, 'scene')).toBe('RunSetup');
+  await expect.poll(() => readHook<string>(page, 'selectedDifficulty')).toBe('normal');
+  await expect.poll(() => readHook<string>(page, 'difficultyWarning')).toBe('');
+
+  await pressKey(page, 'ArrowUp');
+  await expect.poll(() => readHook<string>(page, 'selectedDifficulty')).toBe('crazy');
+  await expect
+    .poll(() => readHook<string>(page, 'difficultyWarning'))
+    .toContain('Pacifist and Legend are unavailable on Crazy');
+
+  await pressKey(page, 'Enter');
+  await expect.poll(() => readHook<string>(page, 'scene'), { timeout: 8000 }).toBe('Level');
+  await expect.poll(() => readHook<string>(page, 'difficulty')).toBe('crazy');
+  await expect.poll(() => readHook<boolean>(page, 'runActive')).toBe(true);
+
+  expect(errors).toEqual([]);
+});
