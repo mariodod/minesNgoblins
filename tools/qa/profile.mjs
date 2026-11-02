@@ -40,11 +40,9 @@ const canvasReadyMs = Date.now() - navigationStart;
 
 const wait = (ms) => page.waitForTimeout(ms);
 const waitForScene = async (scene) => {
-  await page.waitForFunction(
-    (expected) => window.__MINES_TEST__?.scene === expected,
-    scene,
-    { timeout: 15_000 },
-  );
+  await page.waitForFunction((expected) => window.__MINES_TEST__?.scene === expected, scene, {
+    timeout: 15_000,
+  });
 };
 
 await wait(settleMs);
@@ -92,7 +90,8 @@ const sample = await page.evaluate(
         }
 
         const sorted = [...frames].sort((a, b) => a - b);
-        const percentile = (p) => sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * p))];
+        const percentile = (p) =>
+          sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * p))];
         const memory = performance.memory;
 
         resolve({

@@ -34,13 +34,10 @@ for (const viewport of viewports) {
   await mkdir(dir, { recursive: true });
 
   const waitForScene = (scene) =>
-    page.waitForFunction(
-      (expected) => window.__MINES_TEST__?.scene === expected,
-      scene,
-      { timeout: 15_000 },
-    );
-  const waitForHook = (predicate, arg) =>
-    page.waitForFunction(predicate, arg, { timeout: 15_000 });
+    page.waitForFunction((expected) => window.__MINES_TEST__?.scene === expected, scene, {
+      timeout: 15_000,
+    });
+  const waitForHook = (predicate, arg) => page.waitForFunction(predicate, arg, { timeout: 15_000 });
   // A restarted title scene publishes `scene: 'Title'` before its input and
   // menu are ready, so give the scene a couple of frames before pressing keys.
   // The menu selection is not reset on return (it keeps the last item), so it

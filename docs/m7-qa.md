@@ -10,11 +10,11 @@ This file records what was verified, how it was verified, and what remains a kno
 
 ### Difficulty curve
 
-| Difficulty | Player HP | Enemy HP | Enemy damage | Boss HP | Exit rule                          |
-| ---------- | --------: | -------: | -----------: | ------: | ---------------------------------- |
-| Normal     |         5 |       ×1 |           ×1 |      48 | Reach the elevator                 |
-| Hard       |         5 |       ×2 |           ×2 |      72 | Reach the elevator                 |
-| Impossible |         4 |       ×3 |           ×2 |      96 | Reach the elevator                 |
+| Difficulty | Player HP | Enemy HP |  Enemy damage | Boss HP | Exit rule                           |
+| ---------- | --------: | -------: | ------------: | ------: | ----------------------------------- |
+| Normal     |         5 |       ×1 |            ×1 |      48 | Reach the elevator                  |
+| Hard       |         5 |       ×2 |            ×2 |      72 | Reach the elevator                  |
+| Impossible |         4 |       ×3 |            ×2 |      96 | Reach the elevator                  |
 | Crazy      |         1 |       ×3 | Any hit kills |     120 | Kill every enemy, then the elevator |
 
 Enemy HP is `ceil((base HP + level bonus) × difficulty multiplier)`. Enemy damage scales with difficulty; hazard damage and pits do not. Boss HP uses its own multiplier so the Crazy fight keeps its designed 120 HP.
@@ -23,13 +23,13 @@ Enemy HP is `ceil((base HP + level bonus) × difficulty multiplier)`. Enemy dama
 
 Totals below are the sum of effective HP for every spawned enemy in the level, per difficulty, computed from the shipped maps by `tests/unit/balance.test.ts`.
 
-| Level            | Enemies | Composition                                                        | Normal | Hard | Impossible | Crazy |
-| ---------------- | ------: | ------------------------------------------------------------------ | -----: | ---: | ---------: | ----: |
-| Shaft Entrance   |       5 | dummy, bat, goblin, skeleton, beetle                               |     11 |   22 |         33 |    33 |
-| Goblin Tunnels   |       7 | 3 goblins, 2 skeletons, 2 beetles                                  |     23 |   46 |         69 |    69 |
-| Crystal Caverns  |       9 | 5 bats, 4 beetles                                                  |     26 |   52 |         78 |    78 |
-| Deep Vein        |      11 | 3 goblins, 3 bats, 3 skeletons, 2 beetles                          |     43 |   86 |        129 |   129 |
-| **Full run**     |  **32** |                                                                    |**103** |**206** |    **309** |**309**|
+| Level           | Enemies | Composition                               |  Normal |    Hard | Impossible |   Crazy |
+| --------------- | ------: | ----------------------------------------- | ------: | ------: | ---------: | ------: |
+| Shaft Entrance  |       5 | dummy, bat, goblin, skeleton, beetle      |      11 |      22 |         33 |      33 |
+| Goblin Tunnels  |       7 | 3 goblins, 2 skeletons, 2 beetles         |      23 |      46 |         69 |      69 |
+| Crystal Caverns |       9 | 5 bats, 4 beetles                         |      26 |      52 |         78 |      78 |
+| Deep Vein       |      11 | 3 goblins, 3 bats, 3 skeletons, 2 beetles |      43 |      86 |        129 |     129 |
+| **Full run**    |  **32** |                                           | **103** | **206** |    **309** | **309** |
 
 Enemy base HP: bat 1, goblin 2, skeleton 2, beetle 3, wormling 3, practice dummy 3.
 
@@ -37,12 +37,12 @@ Enemy base HP: bat 1, goblin 2, skeleton 2, beetle 3, wormling 3, practice dummy
 
 Crazy shipped through M6 with a ×5 enemy HP multiplier. Measured against the actual maps, that produced:
 
-| Case                          | ×5 (through M6) | ×3 (v0.7.0) |
-| ----------------------------- | --------------: | ----------: |
-| Deep Vein goblin              |           20 HP |       12 HP |
-| Heaviest single enemy         |           25 HP |       15 HP |
-| Rock hits for a full clear    |             515 |         309 |
-| Time on the heaviest enemy    |       ~10.0 s   |     ~6.0 s  |
+| Case                       | ×5 (through M6) | ×3 (v0.7.0) |
+| -------------------------- | --------------: | ----------: |
+| Deep Vein goblin           |           20 HP |       12 HP |
+| Heaviest single enemy      |           25 HP |       15 HP |
+| Rock hits for a full clear |             515 |         309 |
+| Time on the heaviest enemy |         ~10.0 s |      ~6.0 s |
 
 Rocks deal 1 damage on a 400 ms cooldown, so 25 hits is ten seconds of uninterrupted perfect aim on one enemy while dodging everything else. Combined with one-hit death, that turned Crazy into a war of attrition against single enemies rather than a precision challenge. ×3 makes Crazy enemies exactly as durable as Impossible enemies, which is the intended reading of the mode: the danger comes from 1 player HP and the mandatory all-kill gate, not from inflated health bars.
 
@@ -54,13 +54,13 @@ The ×5 enemy damage multiplier is unchanged, so any contact is still lethal. Th
 
 Supply is authored per map, not per difficulty: every level contains one Knife, one Flintlock, one Rune Scroll, one Healing Salve, and one ore node (two in Deep Vein). Because the secondary slot holds only one item, that is a choice, not a stockpile.
 
-| Item        | Damage | Uses on pickup | Max uses | Cooldown | Notes                        |
-| ----------- | -----: | -------------: | -------: | -------: | ---------------------------- |
-| Rock        |      1 |      unlimited |        — |   400 ms | Arcing throw, bounces        |
-| Knife       |      3 |              5 |        8 |   260 ms | Flat trajectory, fast        |
-| Flintlock   |      2 |              6 |       12 |   320 ms | Fastest projectile           |
-| Rune Scroll |      4 |              2 |        3 |   700 ms | Arc, 28 px blast, 1 s stun   |
-| Healing Salve |   —  |       +2 HP    |        — |        — | Consumed on pickup           |
+| Item          | Damage | Uses on pickup | Max uses | Cooldown | Notes                      |
+| ------------- | -----: | -------------: | -------: | -------: | -------------------------- |
+| Rock          |      1 |      unlimited |        — |   400 ms | Arcing throw, bounces      |
+| Knife         |      3 |              5 |        8 |   260 ms | Flat trajectory, fast      |
+| Flintlock     |      2 |              6 |       12 |   320 ms | Fastest projectile         |
+| Rune Scroll   |      4 |              2 |        3 |   700 ms | Arc, 28 px blast, 1 s stun |
+| Healing Salve |      — |          +2 HP |        — |        — | Consumed on pickup         |
 
 All three weapons kill the heaviest Normal enemy in one or two hits and the heaviest Crazy enemy in four to six. Ammo is scarce enough that weapons read as burst damage, not a replacement for rocks, which keeps Primitive (rocks only) a real restriction.
 
@@ -74,10 +74,10 @@ All three weapons kill the heaviest Normal enemy in one or two hits and the heav
 
 `tests/e2e/full-run.spec.ts` plays two complete runs end to end and reads the real Results state.
 
-| Run    | Path                                              | Result                                                                 |
-| ------ | ------------------------------------------------- | ---------------------------------------------------------------------- |
-| Normal | Start → four levels → boss → Results              | Pacifist, Primitive, Untouchable, and Legend complete; `pacifist`, `primitive`, and `untouchable` achievements unlock; best time recorded |
-| Crazy  | Start → four levels → boss → Results              | Pacifist and Legend unavailable; Primitive and Untouchable complete; `crazy_clear` unlocks; boss max HP 120 |
+| Run    | Path                                 | Result                                                                                                                                    |
+| ------ | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Normal | Start → four levels → boss → Results | Pacifist, Primitive, Untouchable, and Legend complete; `pacifist`, `primitive`, and `untouchable` achievements unlock; best time recorded |
+| Crazy  | Start → four levels → boss → Results | Pacifist and Legend unavailable; Primitive and Untouchable complete; `crazy_clear` unlocks; boss max HP 120                               |
 
 Separately, `tests/e2e/levels.spec.ts` verifies the Crazy all-kill gate on all four levels: the elevator refuses to advance with enemies alive, and advances once the level is empty. On Deep Vein, clearing the level moves the run into the boss arena with `runLevelsCompleted` at 4 and 120 boss HP.
 
@@ -105,13 +105,13 @@ Consequences carried into the release-candidate notes and [Known issues](#known-
 
 `tests/unit/save-service.test.ts` now covers:
 
-| Case                                     | Expected behavior                                                        |
-| ---------------------------------------- | ------------------------------------------------------------------------ |
-| Complete v1 save round trip              | Every settings, achievement, skin, and stat field survives unchanged      |
-| Unsupported future version               | Original payload copied to `minesNgoblins.save.backup.<timestamp>`, defaults installed |
-| Non-object JSON payload (`["not","a"]`)  | Treated as corrupt, original kept in the backup, defaults installed       |
-| Malformed field types and ranges         | Volumes clamp to 0–1, enums fall back, keybinds restore defaults, negative/NaN stats fall back |
-| `localStorage.setItem` throwing          | The service keeps working in memory; no exception reaches the caller       |
+| Case                                    | Expected behavior                                                                              |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Complete v1 save round trip             | Every settings, achievement, skin, and stat field survives unchanged                           |
+| Unsupported future version              | Original payload copied to `minesNgoblins.save.backup.<timestamp>`, defaults installed         |
+| Non-object JSON payload (`["not","a"]`) | Treated as corrupt, original kept in the backup, defaults installed                            |
+| Malformed field types and ranges        | Volumes clamp to 0–1, enums fall back, keybinds restore defaults, negative/NaN stats fall back |
+| `localStorage.setItem` throwing         | The service keeps working in memory; no exception reaches the caller                           |
 
 The clamp behavior matters for hand-edited saves: `masterVolume: 4` becomes 1, `musicVolume: -2` becomes 0, `sfxVolume: "loud"` falls back to 0.8, and an unknown `screenShake` value falls back to `full` rather than leaving the game with no shake policy.
 
@@ -158,17 +158,17 @@ Text is rendered by the 5×7 bitmap font at whole multiples only, so glyphs land
 
 Relative luminance ratios were computed for every text color against the surfaces it actually renders on. AA for normal text needs 4.5:1; AA for large text needs 3:1.
 
-| Foreground | On `#0b0c10` | On `#11161b` | On `#252d36` (selected row) | Use                      |
-| ---------- | -----------: | -----------: | --------------------------: | ------------------------ |
-| `#f4f1de`  |        17.21 |        16.01 |                       12.26 | Primary text             |
-| `#f4d35e`  |        13.34 |        12.41 |                        9.50 | Headings, selection      |
-| `#cfd2d6`  |        12.89 |        11.99 |                        9.18 | Body text                |
-| `#9fd8cb`  |        12.25 |        11.40 |                        8.73 | Positive accent          |
-| `#6fe3c4`  |        12.53 |        11.66 |                        8.93 | Unlocked accent          |
-| `#ff9a8a`  |         9.53 |         8.87 |                        6.79 | Warning                  |
-| `#9aa0a6`  |         7.40 |         6.89 |                        5.28 | Secondary text           |
-| `#8b959d`  |         6.41 |         5.96 |                        4.57 | Muted/locked text        |
-| `#d16262`  |         5.24 |         4.88 |                        3.74 | Danger text              |
+| Foreground | On `#0b0c10` | On `#11161b` | On `#252d36` (selected row) | Use                 |
+| ---------- | -----------: | -----------: | --------------------------: | ------------------- |
+| `#f4f1de`  |        17.21 |        16.01 |                       12.26 | Primary text        |
+| `#f4d35e`  |        13.34 |        12.41 |                        9.50 | Headings, selection |
+| `#cfd2d6`  |        12.89 |        11.99 |                        9.18 | Body text           |
+| `#9fd8cb`  |        12.25 |        11.40 |                        8.73 | Positive accent     |
+| `#6fe3c4`  |        12.53 |        11.66 |                        8.93 | Unlocked accent     |
+| `#ff9a8a`  |         9.53 |         8.87 |                        6.79 | Warning             |
+| `#9aa0a6`  |         7.40 |         6.89 |                        5.28 | Secondary text      |
+| `#8b959d`  |         6.41 |         5.96 |                        4.57 | Muted/locked text   |
+| `#d16262`  |         5.24 |         4.88 |                        3.74 | Danger text         |
 
 Two colors changed in M7 because they failed AA:
 
@@ -187,17 +187,17 @@ Danger text on a selected row (`3.74:1`) is the one remaining sub-4.5 pair. That
 
 Production bundle, 1920×1080 and 2560×1440:
 
-| Target      | Mode             | Viewport  | FPS   | p50    | p95    | Heap   | Canvas ready | Load  |
-| ----------- | ---------------- | --------- | ----: | -----: | -----: | -----: | -----------: | ----: |
-| Level 1     | Headless, software | 1920×1080 | 59.95 | 16.7 ms | 16.7 ms | 18.4 MB | 1096 ms | 683 ms |
-| Level 1     | Headed, hardware   | 1920×1080 | 60.19 | 16.7 ms | 16.8 ms | 18.4 MB | 1827 ms | 1586 ms |
-| Level 1     | Headless, software | 2560×1440 | 56.39 | 16.7 ms | 33.3 ms | 19.6 MB | 776 ms | 451 ms |
-| Level 1     | Headed, hardware   | 2560×1440 | 60.17 | 16.7 ms | 16.9 ms | 19.3 MB | 1665 ms | 1246 ms |
+| Target  | Mode               | Viewport  |   FPS |     p50 |     p95 |    Heap | Canvas ready |    Load |
+| ------- | ------------------ | --------- | ----: | ------: | ------: | ------: | -----------: | ------: |
+| Level 1 | Headless, software | 1920×1080 | 59.95 | 16.7 ms | 16.7 ms | 18.4 MB |      1096 ms |  683 ms |
+| Level 1 | Headed, hardware   | 1920×1080 | 60.19 | 16.7 ms | 16.8 ms | 18.4 MB |      1827 ms | 1586 ms |
+| Level 1 | Headless, software | 2560×1440 | 56.39 | 16.7 ms | 33.3 ms | 19.6 MB |       776 ms |  451 ms |
+| Level 1 | Headed, hardware   | 2560×1440 | 60.17 | 16.7 ms | 16.9 ms | 19.3 MB |      1665 ms | 1246 ms |
 
 Development server, heaviest level and the boss arena, headed hardware:
 
-| Target    | Viewport  | FPS   | p50    | p95    | Heap   |
-| --------- | --------- | ----: | -----: | -----: | -----: |
+| Target    | Viewport  |   FPS |     p50 |     p95 |    Heap |
+| --------- | --------- | ----: | ------: | ------: | ------: |
 | Deep Vein | 1920×1080 | 60.13 | 16.7 ms | 16.9 ms | 55.8 MB |
 | Deep Vein | 2560×1440 | 60.17 | 16.7 ms | 16.8 ms | 55.5 MB |
 | Boss      | 1920×1080 | 60.14 | 16.7 ms | 17.0 ms | 56.0 MB |
@@ -214,13 +214,13 @@ Development server, heaviest level and the boss arena, headed hardware:
 
 Playwright runs Chromium by default. `BROWSER_MATRIX=1` adds Edge, Firefox, and WebKit projects that run the six smoke specs (title, movement, pause, settings, audio, accessibility). The full matrix was run on 2026-11-02 against the release-candidate tree:
 
-| Browser            | Engine | Tests | Result               |
-| ------------------ | ------ | ----: | -------------------- |
-| Chromium (headless) | Blink  |    59 | 59 passed            |
-| Edge               | Blink  |    18 | 18 passed            |
-| Firefox            | Gecko  |    18 | 18 passed            |
-| WebKit             | WebKit |    18 | 15 passed, 3 skipped |
-| **Total**          |        |**113**| **110 passed, 3 skipped** |
+| Browser             | Engine |   Tests | Result                    |
+| ------------------- | ------ | ------: | ------------------------- |
+| Chromium (headless) | Blink  |      59 | 59 passed                 |
+| Edge                | Blink  |      18 | 18 passed                 |
+| Firefox             | Gecko  |      18 | 18 passed                 |
+| WebKit              | WebKit |      18 | 15 passed, 3 skipped      |
+| **Total**           |        | **113** | **110 passed, 3 skipped** |
 
 The three WebKit skips are the audio spec: Playwright's WebKit build ships without Web Audio, so Phaser's HTML5 fallback cannot decode the WAV pack and the game boots silent by design. Real Safari has Web Audio. WebKit also forces `deviceScaleFactor: 1` because headless software rendering at 2× DPR drops below real-time and breaks input-timing checks for reasons that do not occur on Safari with a GPU; DPR scaling stays covered by Chromium.
 
@@ -230,15 +230,15 @@ The three WebKit skips are the audio spec: Playwright's WebKit build ships witho
 
 `npm run build` on the release-candidate tree produced `dist/assets/index-CQoF9a2V.js` (1,563.90 kB, 407.52 kB gzip) plus the CSS and HTML assets. A byte scan of the bundle found:
 
-| Token                     | Occurrences |
-| ------------------------- | ----------: |
-| `__MINES_TEST__`          |           0 |
-| `__MINES_DEBUG__`         |           0 |
-| `__MINES_GAME__`          |           0 |
-| `__MINES_LEVEL_DEBUG__`   |           0 |
-| `?boss=1`                 |           0 |
-| `?spawn=exit`             |           0 |
-| `URLSearchParams`         |           0 |
+| Token                   | Occurrences |
+| ----------------------- | ----------: |
+| `__MINES_TEST__`        |           0 |
+| `__MINES_DEBUG__`       |           0 |
+| `__MINES_GAME__`        |           0 |
+| `__MINES_LEVEL_DEBUG__` |           0 |
+| `?boss=1`               |           0 |
+| `?spawn=exit`           |           0 |
+| `URLSearchParams`       |           0 |
 
 The only `difficulty=` matches are JavaScript class fields (`difficulty=...`), not query-string reads. Internal method names such as `debugDefeatBoss` and `debugDefeatAllEnemies` remain in the class method tables, but every call site and the global hook installation sit behind `import.meta.env.DEV`, so production cannot reach them.
 
@@ -248,13 +248,13 @@ The only `difficulty=` matches are JavaScript class fields (`difficulty=...`), n
 
 `tools/qa/smoke.mjs` was run against the live [mariodod.github.io/minesNgoblins](https://mariodod.github.io/minesNgoblins/) deployment:
 
-| Check                                | Result                              |
-| ------------------------------------ | ----------------------------------- |
-| Runtime errors                       | 0                                   |
-| Debug hooks exposed                  | none                                |
-| `?boss=1` / `?spawn=exit` inert      | pass                                |
-| Canvas ready, warm                   | 436–507 ms over three fresh-browser runs |
-| Canvas ready, first request after deploy | 3629 ms                        |
+| Check                                    | Result                                   |
+| ---------------------------------------- | ---------------------------------------- |
+| Runtime errors                           | 0                                        |
+| Debug hooks exposed                      | none                                     |
+| `?boss=1` / `?spawn=exit` inert          | pass                                     |
+| Canvas ready, warm                       | 436–507 ms over three fresh-browser runs |
+| Canvas ready, first request after deploy | 3629 ms                                  |
 
 The first request after deployment hit a cold GitHub Pages edge and took 3.63 s. The next three fresh-browser runs took 0.44–0.51 s. That outlier is CDN cache warm-up, not a bundle change: the same artifact measured 1.52 s on local preview. It is recorded here, and as a P3 known issue, so a later cold-start report is read correctly.
 
@@ -262,35 +262,35 @@ The first request after deployment hit a cold GitHub Pages edge and took 3.63 s.
 
 Items that need a human eye were run in a headed Chromium session against the production bundle and the dev server, with screenshots captured by `tools/qa/screenshots.mjs` at 1366×768, 1920×1080, and 2560×1440.
 
-| # | Check                                                                 | Evidence                                                              | Result |
-| - | --------------------------------------------------------------------- | --------------------------------------------------------------------- | ------ |
-| 1 | Walk every level from spawn to elevator; confirm platforms are reachable | `level-reachability.test.ts` walks the discrete jump arc; exit-transition E2E per level | Pass (automated) |
-| 2 | Pause mid-jump, mid-flash, and during boss telegraphs                  | `pause.spec.ts` plus headed session                                   | Pass |
-| 3 | Start a run, quit, start a new run; repeat twice                       | `pause.spec.ts` regression test; repeated in the screenshot pass      | Pass |
-| 4 | Complete a Normal run with only rocks and read every Results line      | Scripted run in `full-run.spec.ts`; Results captured at 3 sizes       | Pass (scripted) |
-| 5 | Win with each badge broken and confirm Results explains the reason     | `m5.spec.ts` badge-failure cases                                     | Pass |
-| 6 | Cycle flash and shake to off, take boss damage, confirm pause is readable | `accessibility.spec.ts` plus headed session                        | Pass |
-| 7 | Toggle fullscreen in and out, then reload                              | `accessibility.spec.ts`                                               | Pass |
-| 8 | Mute during the boss fight, reload, confirm the setting stuck          | `audio.spec.ts`, `settings.spec.ts`                                   | Pass |
-| 9 | Rebind jump, finish a level, confirm the HUD hint matches              | `accessibility.spec.ts`                                               | Pass |
-| 10 | Corrupt the save and confirm the backup and Title notice              | `save-service.test.ts`, corrupt-save E2E                              | Pass |
-| 11 | Check 1366×768, 1920×1080, 2560×1440 for letterboxing and readable text | Screenshot pass at all three sizes                                   | Pass |
-| 12 | Empty inventory, zero ammo, and item-swap prompts                        | `combat.spec.ts`, `items.test.ts`, `inventory.test.ts`                | Pass |
-| 13 | Crazy HUD counter and locked-elevator prompt                          | `m5.spec.ts`, `levels.spec.ts`                                        | Pass |
-| 14 | Results best-time row on a first run and on a later run               | `full-run.spec.ts` (`runBestTimeMs`), Results capture                 | Pass |
+| #   | Check                                                                     | Evidence                                                                                | Result           |
+| --- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ---------------- |
+| 1   | Walk every level from spawn to elevator; confirm platforms are reachable  | `level-reachability.test.ts` walks the discrete jump arc; exit-transition E2E per level | Pass (automated) |
+| 2   | Pause mid-jump, mid-flash, and during boss telegraphs                     | `pause.spec.ts` plus headed session                                                     | Pass             |
+| 3   | Start a run, quit, start a new run; repeat twice                          | `pause.spec.ts` regression test; repeated in the screenshot pass                        | Pass             |
+| 4   | Complete a Normal run with only rocks and read every Results line         | Scripted run in `full-run.spec.ts`; Results captured at 3 sizes                         | Pass (scripted)  |
+| 5   | Win with each badge broken and confirm Results explains the reason        | `m5.spec.ts` badge-failure cases                                                        | Pass             |
+| 6   | Cycle flash and shake to off, take boss damage, confirm pause is readable | `accessibility.spec.ts` plus headed session                                             | Pass             |
+| 7   | Toggle fullscreen in and out, then reload                                 | `accessibility.spec.ts`                                                                 | Pass             |
+| 8   | Mute during the boss fight, reload, confirm the setting stuck             | `audio.spec.ts`, `settings.spec.ts`                                                     | Pass             |
+| 9   | Rebind jump, finish a level, confirm the HUD hint matches                 | `accessibility.spec.ts`                                                                 | Pass             |
+| 10  | Corrupt the save and confirm the backup and Title notice                  | `save-service.test.ts`, corrupt-save E2E                                                | Pass             |
+| 11  | Check 1366×768, 1920×1080, 2560×1440 for letterboxing and readable text   | Screenshot pass at all three sizes                                                      | Pass             |
+| 12  | Empty inventory, zero ammo, and item-swap prompts                         | `combat.spec.ts`, `items.test.ts`, `inventory.test.ts`                                  | Pass             |
+| 13  | Crazy HUD counter and locked-elevator prompt                              | `m5.spec.ts`, `levels.spec.ts`                                                          | Pass             |
+| 14  | Results best-time row on a first run and on a later run                   | `full-run.spec.ts` (`runBestTimeMs`), Results capture                                   | Pass             |
 
 ## Known issues
 
-| Severity | Issue                                                                                   | Status |
-| -------- | --------------------------------------------------------------------------------------- | ------ |
-| P2 | No external human playtest. Route pacing and per-difficulty fairness are unvalidated by a real player. | Accepted for v0.7.0; needs a human pass before or shortly after v1.0. |
-| P2 | Newcomer onboarding for level 1 is unvalidated; the game explains controls on the title screen and in Options, but no first-time player has been observed. | Accepted; same human pass. |
-| P3 | Boss and level route timings come from scripted runs and arithmetic, not from watching a player. | Documented above. |
-| P3 | The four-track music target was cut to three; the boss shares the level track. | Carried from M6. |
-| P3 | UI copy is co-located with scenes; extracting a copy table waits for a second language. | Carried from M6. |
-| P3 | The repository has no public license yet. | Decision needed before v1.0. |
-| P3 | The first request to a newly deployed GitHub Pages build can exceed the 3 s load budget while the CDN edge warms: 3.63 s once, then 0.44–0.51 s on fresh-browser runs. | Infrastructure cache warm-up, not bundle size; recorded above. |
-| P4 | The reporter's exact quit → new-run steps were never captured. The root cause (a destroyed `warningText` in `RunSetupScene`) is fixed and covered by a regression test, but the original repro was not replayed verbatim. | Fixed in v0.7.0; keep the report open until the reporter confirms. |
+| Severity | Issue                                                                                                                                                                                                                     | Status                                                                |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| P2       | No external human playtest. Route pacing and per-difficulty fairness are unvalidated by a real player.                                                                                                                    | Accepted for v0.7.0; needs a human pass before or shortly after v1.0. |
+| P2       | Newcomer onboarding for level 1 is unvalidated; the game explains controls on the title screen and in Options, but no first-time player has been observed.                                                                | Accepted; same human pass.                                            |
+| P3       | Boss and level route timings come from scripted runs and arithmetic, not from watching a player.                                                                                                                          | Documented above.                                                     |
+| P3       | The four-track music target was cut to three; the boss shares the level track.                                                                                                                                            | Carried from M6.                                                      |
+| P3       | UI copy is co-located with scenes; extracting a copy table waits for a second language.                                                                                                                                   | Carried from M6.                                                      |
+| P3       | The repository has no public license yet.                                                                                                                                                                                 | Decision needed before v1.0.                                          |
+| P3       | The first request to a newly deployed GitHub Pages build can exceed the 3 s load budget while the CDN edge warms: 3.63 s once, then 0.44–0.51 s on fresh-browser runs.                                                    | Infrastructure cache warm-up, not bundle size; recorded above.        |
+| P4       | The reporter's exact quit → new-run steps were never captured. The root cause (a destroyed `warningText` in `RunSetupScene`) is fixed and covered by a regression test, but the original repro was not replayed verbatim. | Fixed in v0.7.0; keep the report open until the reporter confirms.    |
 
 No P0 or P1 issues are open.
 

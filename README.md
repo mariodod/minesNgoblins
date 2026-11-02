@@ -69,7 +69,7 @@ See [docs/technical-plan.md](docs/technical-plan.md) for the rationale and alter
 | M4 ✅     | Giant worm boss with phases, supplies, victory, and results screen  |
 | M5 ✅     | Difficulties, challenge runs, achievements, skins, Results, save v1 |
 | M6 ✅     | Final art, audio, UI, accessibility, credits, and QA notes          |
-| M7 ✅     | Balance, QA, performance, accessibility review, release candidate    |
+| M7 ✅     | Balance, QA, performance, accessibility review, release candidate   |
 | M8        | v1.0 release and deployment                                         |
 
 Full details and acceptance criteria are in [docs/roadmap.md](docs/roadmap.md).

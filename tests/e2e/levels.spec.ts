@@ -59,9 +59,7 @@ for (const level of LEVELS) {
       page,
       'exit',
     );
-    await expect
-      .poll(() => readHook<number>(page, 'playerX'))
-      .toBeGreaterThanOrEqual(exit?.x ?? 0);
+    await expect.poll(() => readHook<number>(page, 'playerX')).toBeGreaterThanOrEqual(exit?.x ?? 0);
 
     await pressKey(page, 'E');
     await page.waitForTimeout(500);

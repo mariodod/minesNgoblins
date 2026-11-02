@@ -534,7 +534,7 @@ Do **not** cut:
 
 | Version | Date       | Notes                                                                                |
 | ------- | ---------- | ------------------------------------------------------------------------------------ |
-| 0.8     | 2026-11-02 | M7 balance, hardening, performance, browser matrix, and release candidate at v0.7.0 |
+| 0.8     | 2026-11-02 | M7 balance, hardening, performance, browser matrix, and release candidate at v0.7.0  |
 | 0.7     | 2026-10-30 | M6 final generated art/audio/font, accessibility, credits, and QA complete at v0.6.0 |
 | 0.6     | 2026-10-24 | M5 difficulties, challenge runs, achievements, skins, and save v1 complete at v0.5.0 |
 | 0.5     | 2026-10-22 | M4 Great Worm, supplies, victory, and results placeholder complete at v0.4.0         |

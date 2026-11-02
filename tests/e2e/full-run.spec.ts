@@ -6,18 +6,17 @@ interface ChallengeHook {
   status: string;
 }
 
-const LEVEL_IDS = [
-  'shaft-entrance',
-  'goblin-tunnels',
-  'crystal-caverns',
-  'deep-vein',
-] as const;
+const LEVEL_IDS = ['shaft-entrance', 'goblin-tunnels', 'crystal-caverns', 'deep-vein'] as const;
 
 async function skipToBoss(page: Page): Promise<void> {
   for (let level = 1; level < LEVEL_IDS.length; level += 1) {
     await pressKey(page, 'F4');
-    await expect.poll(() => readHook<string>(page, 'levelId'), { timeout: 10_000 }).toBe(LEVEL_IDS[level]);
-    await expect.poll(() => readHook<number>(page, 'runLevelsCompleted'), { timeout: 8000 }).toBe(level);
+    await expect
+      .poll(() => readHook<string>(page, 'levelId'), { timeout: 10_000 })
+      .toBe(LEVEL_IDS[level]);
+    await expect
+      .poll(() => readHook<number>(page, 'runLevelsCompleted'), { timeout: 8000 })
+      .toBe(level);
   }
 
   await pressKey(page, 'F4');

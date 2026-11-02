@@ -8,10 +8,9 @@ import { ROCK_TUNING } from '../../src/config/tuning';
 
 const levels = LEVEL_ASSETS.map((asset) =>
   parseLevelDefinition(
-    JSON.parse(readFileSync(new URL(`../../public/${asset.path}`, import.meta.url), 'utf8')) as Record<
-      string,
-      unknown
-    >,
+    JSON.parse(
+      readFileSync(new URL(`../../public/${asset.path}`, import.meta.url), 'utf8'),
+    ) as Record<string, unknown>,
   ),
 );
 
@@ -20,7 +19,8 @@ function totalEnemyHp(multiplier: number): number {
     (total, level) =>
       total +
       level.enemies.reduce(
-        (sum, spawn) => sum + computeEnemyHp(ENEMIES[spawn.type].baseHp, level.enemyHpBonus, multiplier),
+        (sum, spawn) =>
+          sum + computeEnemyHp(ENEMIES[spawn.type].baseHp, level.enemyHpBonus, multiplier),
         0,
       ),
     0,

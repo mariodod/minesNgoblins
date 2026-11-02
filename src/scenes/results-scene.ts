@@ -88,7 +88,13 @@ export class ResultsScene extends Phaser.Scene {
       )
       .setOrigin(0.5);
 
-    this.drawStats(run.kills, run.damageTaken, run.deaths, run, saveService.data.stats.bestRunTimeMs);
+    this.drawStats(
+      run.kills,
+      run.damageTaken,
+      run.deaths,
+      run,
+      saveService.data.stats.bestRunTimeMs,
+    );
     this.drawChallenges();
     this.drawRewards();
     this.installInput();

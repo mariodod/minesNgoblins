@@ -60,7 +60,8 @@ const state = await page.evaluate(() => {
     debugHook: typeof window.__MINES_DEBUG__,
     levelDebugHook: typeof window.__MINES_LEVEL_DEBUG__,
     gameHook: typeof window.__MINES_GAME__,
-    firstContentfulPaint: performance.getEntriesByName('first-contentful-paint')[0]?.startTime ?? null,
+    firstContentfulPaint:
+      performance.getEntriesByName('first-contentful-paint')[0]?.startTime ?? null,
   };
 });
 
