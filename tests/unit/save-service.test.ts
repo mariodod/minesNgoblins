@@ -117,6 +117,143 @@ describe('save data', () => {
     expect(storage.getItem(backupKey)).toBe('{broken');
     expect(parseSaveData(storage.getItem(SAVE_KEY)).status).toBe('ok');
   });
+
+  it('round-trips a complete v1 save without losing fields', () => {
+    const original = createDefaultSaveData();
+    original.settings = {
+      masterVolume: 0.15,
+      musicVolume: 0.55,
+      sfxVolume: 0.95,
+      muted: true,
+      screenShake: 'reduced',
+      flashIntensity: 'off',
+      equippedSkin: 'obsidian',
+      keybinds: {
+        moveLeft: 'KeyJ',
+        moveRight: 'KeyL',
+        jump: 'KeyI',
+        throwStone: 'KeyU',
+        useItem: 'KeyO',
+        interact: 'KeyK',
+        pause: 'KeyP',
+      },
+    };
+    original.achievements = {
+      pacifist: { unlockedAt: '2026-10-01T10:00:00.000Z' },
+    };
+    original.skins = {
+      obsidian: { unlockedAt: '2026-10-02T11:00:00.000Z' },
+    };
+    original.stats = {
+      runsStarted: 12,
+      runsCompleted: 4,
+      bestRunTimeMs: 654_321,
+      totalDeaths: 9,
+      totalKills: 41,
+      usedItems: ['knife', 'flintlock', 'rune-scroll'],
+    };
+
+    const parsed = parseSaveData(JSON.stringify(original));
+
+    expect(parsed.status).toBe('ok');
+    expect(parsed.data).toEqual(original);
+  });
+
+  it('backs up and resets a save from an unsupported version', () => {
+    const storage = new MemoryStorage();
+    const future = JSON.stringify({ version: 2, settings: { masterVolume: 0.1 } });
+    storage.setItem(SAVE_KEY, future);
+
+    const result = loadSave(storage);
+
+    expect(result.status).toBe('unsupported');
+    expect(result.data).toEqual(createDefaultSaveData());
+    expect(result.backupKey).toBeDefined();
+    if (result.backupKey) {
+      expect(storage.getItem(result.backupKey)).toBe(future);
+    }
+    expect(parseSaveData(storage.getItem(SAVE_KEY))).toMatchObject({
+      status: 'ok',
+      data: { version: 1 },
+    });
+  });
+
+  it('treats a non-object payload as corrupt and keeps the original for recovery', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(SAVE_KEY, '["not", "a", "save"]');
+
+    const result = loadSave(storage);
+
+    expect(result.status).toBe('corrupt');
+    expect(result.backupKey).toBeDefined();
+    if (result.backupKey) {
+      expect(storage.getItem(result.backupKey)).toBe('["not", "a", "save"]');
+    }
+  });
+
+  it('clamps and replaces malformed fields instead of failing the load', () => {
+    const parsed = parseSaveData(
+      JSON.stringify({
+        version: 1,
+        settings: {
+          masterVolume: 4,
+          musicVolume: -2,
+          sfxVolume: 'loud',
+          muted: 'yes',
+          screenShake: 'violent',
+          flashIntensity: 'strobe',
+          equippedSkin: '',
+          keybinds: 'not-an-object',
+        },
+        achievements: [],
+        skins: { obsidian: { unlockedAt: 12 } },
+        stats: {
+          runsStarted: -1,
+          runsCompleted: 2.5,
+          bestRunTimeMs: -10,
+          totalDeaths: 'many',
+          totalKills: Number.MAX_SAFE_INTEGER,
+          usedItems: 'knife',
+        },
+      }),
+    );
+
+    expect(parsed.status).toBe('ok');
+    expect(parsed.data.settings.masterVolume).toBe(1);
+    expect(parsed.data.settings.musicVolume).toBe(0);
+    expect(parsed.data.settings.sfxVolume).toBe(0.8);
+    expect(parsed.data.settings.muted).toBe(false);
+    expect(parsed.data.settings.screenShake).toBe('full');
+    expect(parsed.data.settings.flashIntensity).toBe('full');
+    expect(parsed.data.settings.equippedSkin).toBe('delver');
+    expect(parsed.data.settings.keybinds).toEqual(DEFAULT_KEYBINDS);
+    expect(parsed.data.achievements).toEqual({});
+    expect(parsed.data.skins).toEqual({});
+    expect(parsed.data.stats).toEqual({
+      runsStarted: 0,
+      runsCompleted: 0,
+      bestRunTimeMs: 0,
+      totalDeaths: 0,
+      totalKills: Number.MAX_SAFE_INTEGER,
+      usedItems: [],
+    });
+  });
+
+  it('keeps working in memory when storage rejects every write', () => {
+    class ReadOnlyStorage extends MemoryStorage {
+      override setItem(): void {
+        throw new Error('QuotaExceededError');
+      }
+    }
+
+    const storage = new ReadOnlyStorage();
+
+    expect(() => loadSave(storage)).not.toThrow();
+
+    const service = new SaveService(storage);
+    expect(() => service.updateSettings({ masterVolume: 0.2 })).not.toThrow();
+    expect(service.settings.masterVolume).toBe(0.2);
+  });
 });
 
 describe('SaveService', () => {
