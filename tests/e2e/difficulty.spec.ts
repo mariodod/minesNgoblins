@@ -4,7 +4,7 @@ import { collectPageErrors, readHook, startRun } from './helpers';
 const CASES = [
   { id: 'hard', playerHp: 5, dummyHp: 6 },
   { id: 'impossible', playerHp: 4, dummyHp: 9 },
-  { id: 'crazy', playerHp: 1, dummyHp: 15 },
+  { id: 'crazy', playerHp: 1, dummyHp: 9 },
 ] as const;
 
 for (const difficulty of CASES) {

@@ -56,7 +56,7 @@ describe('computeEnemyHp', () => {
   it('applies difficulty multipliers after level bonuses', () => {
     expect(computeEnemyHp(2, 1, 2)).toBe(6);
     expect(computeEnemyHp(2, 1, 3)).toBe(9);
-    expect(computeEnemyHp(2, 2, 5)).toBe(20);
+    expect(computeEnemyHp(2, 2, 3)).toBe(12);
   });
 
   it('rounds up fractional results and keeps a minimum of one', () => {
@@ -68,7 +68,7 @@ describe('computeEnemyHp', () => {
     const goblin = ENEMIES['goblin-scavenger'];
 
     expect(computeEnemyHp(goblin.baseHp, 1, DIFFICULTIES.hard.enemyHpMultiplier)).toBe(6);
-    expect(computeEnemyHp(goblin.baseHp, 1, DIFFICULTIES.crazy.enemyHpMultiplier)).toBe(15);
+    expect(computeEnemyHp(goblin.baseHp, 1, DIFFICULTIES.crazy.enemyHpMultiplier)).toBe(9);
   });
 });
 

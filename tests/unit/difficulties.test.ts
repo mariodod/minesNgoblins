@@ -31,7 +31,7 @@ describe('difficulty data', () => {
     });
     expect(DIFFICULTIES.crazy).toMatchObject({
       playerMaxHp: 1,
-      enemyHpMultiplier: 5,
+      enemyHpMultiplier: 3,
       enemyDamageMultiplier: 5,
       bossHpMultiplier: 2.5,
       requiresAllEnemiesDead: true,

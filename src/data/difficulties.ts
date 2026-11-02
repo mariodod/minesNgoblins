@@ -50,7 +50,12 @@ export const DIFFICULTIES: Record<DifficultyId, DifficultyConfig> = {
     id: 'crazy',
     displayName: 'Crazy',
     playerMaxHp: 1,
-    enemyHpMultiplier: 5,
+    // Crazy used a x5 enemy HP multiplier through M6. A Deep Vein goblin then
+    // took 20 rock hits (about eight seconds of perfect aim while dodging),
+    // and a full clear needed 515 hits. M7 dropped it to x3: enemies stay as
+    // durable as Impossible, and the mode is still defined by one-hit death
+    // plus the mandatory all-kill gate.
+    enemyHpMultiplier: 3,
     enemyDamageMultiplier: 5,
     bossHpMultiplier: 2.5,
     requiresAllEnemiesDead: true,
