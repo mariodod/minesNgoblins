@@ -24,6 +24,17 @@ export default tseslint.config(
     },
   },
   {
+    // QA scripts drive the game through page.evaluate, so their callbacks use
+    // browser globals even though the file itself runs in Node.
+    files: ['tools/qa/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
+  },
+  {
     files: ['**/*.ts'],
     languageOptions: {
       globals: {
