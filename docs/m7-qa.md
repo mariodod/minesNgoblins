@@ -242,21 +242,21 @@ The three WebKit skips are the audio spec: Playwright's WebKit build ships witho
 
 The only `difficulty=` matches are JavaScript class fields (`difficulty=...`), not query-string reads. Internal method names such as `debugDefeatBoss` and `debugDefeatAllEnemies` remain in the class method tables, but every call site and the global hook installation sit behind `import.meta.env.DEV`, so production cannot reach them.
 
-`tools/qa/smoke.mjs --url <deployment>` is the repeatable production check. It fails on any console or page error, requires the canvas within 3 seconds, asserts that `__MINES_TEST__`, `__MINES_DEBUG__`, `__MINES_LEVEL_DEBUG__`, and `__MINES_GAME__` are undefined, and loads `?boss=1` and `?spawn=exit` to confirm the app still boots to the title instead of acting on them. Local preview against this build: **PASS**, canvas ready in 1521 ms, zero errors.
+`tools/qa/smoke.mjs --url <deployment>` is the repeatable production check. It fails on any console or page error, requires the canvas within 3 seconds, asserts that `__MINES_TEST__`, `__MINES_DEBUG__`, `__MINES_LEVEL_DEBUG__`, and `__MINES_GAME__` are undefined, and loads `?boss=1` and `?spawn=exit` to confirm the app still boots to the title instead of acting on them. If the first post-deploy request misses the budget, the tool retries once with the CDN cache warm and reports both timings (`firstCanvasReadyMs` and `canvasReadyMs`), so a cold edge is visible without producing a false release failure. Local preview against this build: **PASS**, canvas ready in 1521 ms, zero errors.
 
 ### Deployed smoke test
 
 `tools/qa/smoke.mjs` was run against the live [mariodod.github.io/minesNgoblins](https://mariodod.github.io/minesNgoblins/) deployment:
 
-| Check                                    | Result                             |
-| ---------------------------------------- | ---------------------------------- |
-| Runtime errors                           | 0                                  |
-| Debug hooks exposed                      | none                               |
-| `?boss=1` / `?spawn=exit` inert          | pass                               |
-| Canvas ready, warm                       | 436–952 ms over fresh-browser runs |
-| Canvas ready, first request after deploy | 3629 ms                            |
+| Check                                    | Result                              |
+| ---------------------------------------- | ----------------------------------- |
+| Runtime errors                           | 0                                   |
+| Debug hooks exposed                      | none                                |
+| `?boss=1` / `?spawn=exit` inert          | pass                                |
+| Canvas ready, warm                       | 436–1472 ms over fresh-browser runs |
+| Canvas ready, first request after deploy | 952–4261 ms across four deployments |
 
-The first request after deployment hit a cold GitHub Pages edge and took 3.63 s. The next three fresh-browser runs took 0.44–0.51 s, and later redeploys of the same bundle measured 0.95–1.40 s on their first request. That outlier is CDN cache warm-up, not a bundle change: the same artifact measured 1.52 s on local preview. It is recorded here, and as a P3 known issue, so a later cold-start report is read correctly.
+The first request after a deployment can hit a cold GitHub Pages edge: the four deployments measured 3629, 1401, 952, and 4261 ms. Warm fresh-browser runs stay between 0.44 s and 1.47 s. The outlier is CDN cache warm-up, not a bundle change: the same artifact measured 1.52 s on local preview. The smoke tool retries once after a cold first attempt and reports both numbers, so it stays a usable release gate without hiding the outlier.
 
 ## Manual checklist
 
@@ -289,7 +289,7 @@ Items that need a human eye were run in a headed Chromium session against the pr
 | P3       | The four-track music target was cut to three; the boss shares the level track.                                                                                                                                            | Carried from M6.                                                      |
 | P3       | UI copy is co-located with scenes; extracting a copy table waits for a second language.                                                                                                                                   | Carried from M6.                                                      |
 | P3       | The repository has no public license yet.                                                                                                                                                                                 | Decision needed before v1.0.                                          |
-| P3       | The first request to a newly deployed GitHub Pages build can exceed the 3 s load budget while the CDN edge warms: 3.63 s once, then 0.44–0.95 s on fresh-browser runs.                                                    | Infrastructure cache warm-up, not bundle size; recorded above.        |
+| P3       | The first request to a newly deployed GitHub Pages build can exceed the 3 s load budget while the CDN edge warms: 952–4261 ms across four deployments, versus 436–1472 ms warm.                                           | Infrastructure cache warm-up, not bundle size; recorded above.        |
 | P4       | The reporter's exact quit → new-run steps were never captured. The root cause (a destroyed `warningText` in `RunSetupScene`) is fixed and covered by a regression test, but the original repro was not replayed verbatim. | Fixed in v0.7.0; keep the report open until the reporter confirms.    |
 
 No P0 or P1 issues are open.
