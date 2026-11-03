@@ -2,13 +2,45 @@
 
 **A retro mine-crawling action platformer. One rock. Many problems.**
 
-> **Status:** M7 complete at `v0.7.0` — balance pass, Crazy tuning, hardening, accessibility review, performance profile, browser matrix, and release-candidate notes are in. M8 (v1.0 release) is next.
+> **Status:** `v1.0.0` released. Balance, hardening, accessibility, performance, browser matrix, licensing, and release packaging are complete. M8 is closed.
 >
-> The repository was empty when work began, so the documents below define the direction for a new game.
+> The repository was empty when work began, so the documents below define how the game was built.
 
 ![Animated preview of Shaft Entrance in Mines & Goblins](docs/media/m3-run.gif)
 
 _Shaft Entrance, the opening level of the four-level descent into the Great Worm's arena._
+
+## Play now
+
+**[mariodod.github.io/minesNgoblins](https://mariodod.github.io/minesNgoblins/)**
+
+Desktop browser, keyboard only. Start a run, pick a difficulty, and descend. The title screen lists the core controls, and **Options → Controls** rebinds every action.
+
+| Action       | Default input             |
+| ------------ | ------------------------- |
+| Move         | `A` / `D` or Left / Right |
+| Jump         | `Space` or `Z`            |
+| Throw rock   | `X` or `J`                |
+| Use item     | `C` or `K`                |
+| Interact     | `E`                       |
+| Aim up/down  | `W` / `S` or Up / Down    |
+| Drop through | `Down` + `Jump`           |
+| Pause        | `Esc` or `P`              |
+
+## Screenshots
+
+| Title screen                  | Shaft Entrance                    |
+| ----------------------------- | --------------------------------- |
+| ![Title screen][title-screen] | ![Shaft Entrance][shaft-entrance] |
+| **The Great Worm**            | **Run results**                   |
+| ![The Great Worm boss][boss]  | ![Run results screen][results]    |
+
+_Captured at 1920×1080 from an automated QA pass, so the Results stats come from a scripted run._
+
+[title-screen]: docs/media/release/title.png
+[shaft-entrance]: docs/media/release/level.png
+[boss]: docs/media/release/boss.png
+[results]: docs/media/release/results.png
 
 ## Concept
 
@@ -16,7 +48,7 @@ Mines & Goblins is a browser-first, retro action platformer inspired by the puni
 
 The game is built around short, replayable runs. Players dodge or defeat enemies, scrounge limited stronger items, and try to finish the mine under self-imposed challenge rules: never kill, use only rocks, or never take a hit.
 
-## Planned v1 features
+## Features
 
 - **Four handcrafted mine levels plus a boss arena.**
 - **Unlimited rocks** that deal 1 damage, with arcing throws and a cooldown.
@@ -40,6 +72,7 @@ The game is built around short, replayable runs. Players dodge or defeat enemies
 - [M5 Test Matrix](docs/m5-test-matrix.md) — difficulty × challenge coverage, Results rules, achievements, skins, and save recovery.
 - [M6 QA Notes](docs/m6-qa.md) — asset/audio inventory, text and accessibility checks, browser matrix, performance, and the manual release checklist.
 - [M7 QA Notes](docs/m7-qa.md) — balance budget, Crazy tuning, scripted complete runs, hardening, accessibility contrast, performance, and known issues.
+- [v1.0.0 Release Notes](docs/release-notes-v1.0.0.md) — features, controls, verification, credits, license, known issues, and rollback.
 - [Asset and Dependency Licenses](docs/asset-licenses.md) — original-asset inventory and third-party tool licenses.
 
 ## Technology at a glance
@@ -60,17 +93,17 @@ See [docs/technical-plan.md](docs/technical-plan.md) for the rationale and alter
 
 ## Roadmap at a glance
 
-| Milestone | Outcome                                                             |
-| --------- | ------------------------------------------------------------------- |
-| M0 ✅     | Repository scaffold, tooling, CI, deployable title screen           |
-| M1 ✅     | Responsive movement, jumping, rock throwing, damage, retry loop     |
-| M2 ✅     | Enemy roster, item arsenal, crates, HUD, combat feedback            |
-| M3 ✅     | Four levels, transitions, pause/options, boss placeholder           |
-| M4 ✅     | Giant worm boss with phases, supplies, victory, and results screen  |
-| M5 ✅     | Difficulties, challenge runs, achievements, skins, Results, save v1 |
-| M6 ✅     | Final art, audio, UI, accessibility, credits, and QA notes          |
-| M7 ✅     | Balance, QA, performance, accessibility review, release candidate   |
-| M8        | v1.0 release and deployment                                         |
+| Milestone | Outcome                                                              |
+| --------- | -------------------------------------------------------------------- |
+| M0 ✅     | Repository scaffold, tooling, CI, deployable title screen            |
+| M1 ✅     | Responsive movement, jumping, rock throwing, damage, retry loop      |
+| M2 ✅     | Enemy roster, item arsenal, crates, HUD, combat feedback             |
+| M3 ✅     | Four levels, transitions, pause/options, boss placeholder            |
+| M4 ✅     | Giant worm boss with phases, supplies, victory, and results screen   |
+| M5 ✅     | Difficulties, challenge runs, achievements, skins, Results, save v1  |
+| M6 ✅     | Final art, audio, UI, accessibility, credits, and QA notes           |
+| M7 ✅     | Balance, QA, performance, accessibility review, release candidate    |
+| M8 ✅     | MIT license, `v1.0.0` tag, GitHub Release, final deploy, smoke tests |
 
 Full details and acceptance criteria are in [docs/roadmap.md](docs/roadmap.md).
 
@@ -87,20 +120,7 @@ The dev server runs at `http://127.0.0.1:5173/`. Choose **Start Run**, pick a di
 
 ### Controls
 
-| Action          | Input                                 |
-| --------------- | ------------------------------------- |
-| Move            | `A` / `D` or Left / Right             |
-| Jump            | `Space` or `Z`                        |
-| Throw rock      | `X` or `J`                            |
-| Use item        | `C` or `K`                            |
-| Interact        | `E`                                   |
-| Aim up/down     | `W` / `S` or Up / Down                |
-| Drop through    | `Down` + `Jump`                       |
-| Pause           | `Esc` or `P`                          |
-| Debug overlay   | `F3` (development builds)             |
-| Skip level      | `F4` (development builds)             |
-| Skip boss phase | `F4` (development builds, boss arena) |
-| Defeat boss     | `F6` (development builds, boss arena) |
+The default bindings are listed in [Play now](#play-now). Every action can be rebound in **Options → Controls**.
 
 Rocks are unlimited and deal 1 damage. The one-slot secondary item holds a limited-use Knife, Flintlock, or Rune Scroll; picking up the same item adds ammo up to its cap, while a different item replaces it. Crates contain authored ore, salves, or items, and pedestals hold items that require `E` to collect. Falling into a gap or losing all hearts restarts the level after a short death overlay.
 
@@ -131,6 +151,9 @@ node tools/qa/screenshots.mjs --url http://127.0.0.1:5173/
 
 # Production smoke test: errors, load budget, and absent debug hooks
 node tools/qa/smoke.mjs --url https://mariodod.github.io/minesNgoblins/
+
+# Same check in Edge, Firefox, or WebKit
+node tools/qa/smoke.mjs --url https://mariodod.github.io/minesNgoblins/ --browser firefox
 ```
 
 Install the Playwright browser once before running E2E tests locally:
@@ -145,6 +168,8 @@ The `Deploy to GitHub Pages` workflow builds and publishes the game on every pus
 
 The production base path defaults to `/minesNgoblins/`. If the site moves to a custom domain or a different repository path, set `VITE_BASE_PATH` (for example, `/` or `/new-repo/`) for the build.
 
+Release `v1.0.0` is tagged from the deployed commit. To roll back, re-run the deploy workflow from an earlier tag or `git revert` the offending commit; GitHub Pages keeps the previous deployment in the Actions history.
+
 ## Project conventions
 
 - All documentation, source code, comments, commit messages, and project discussion are in **English**.
@@ -152,9 +177,25 @@ The production base path defaults to `/minesNgoblins/`. If the site moves to a c
 - Assets must be original, commissioned, or clearly licensed. The generated art and audio packs are original work; the full inventory is in [`docs/asset-licenses.md`](docs/asset-licenses.md).
 - Manual QA notes live in `docs/m1-playtest.md`, `docs/m2-playtest.md`, `docs/m3-playtest.md`, `docs/m4-playtest.md`, `docs/m5-test-matrix.md`, `docs/m6-qa.md`, and `docs/m7-qa.md`.
 
+## Credits
+
+Created by [mariodod](https://github.com/mariodod). All art, audio, the bitmap font, level data, and code are original work generated or authored for this project.
+
+- **Engine:** [Phaser](https://phaser.io/) 4.2 (MIT)
+- **Build:** [Vite](https://vite.dev/) (MIT)
+- **Maps:** [Tiled](https://www.mapeditor.org/) JSON (GPL, used as a tool only)
+- **Tests:** [Playwright](https://playwright.dev/) (Apache-2.0) and [Vitest](https://vitest.dev/) (MIT)
+
+The in-game **Credits** screen and [`docs/asset-licenses.md`](docs/asset-licenses.md) list every asset and third-party tool.
+
+## Known issues
+
+- **No external human playtest (P2).** Route pacing, per-difficulty fairness, and first-time onboarding are backed by scripted runs and automated checks, not by watching a new player.
+- **Cold CDN start (P3).** The first request after a fresh Pages deployment can exceed the 3-second budget while the GitHub Pages edge warms; warm loads are under 1.5 seconds.
+- **Quit → new-run report (P4).** The reported hang was root-caused and fixed in `v0.7.0`, with a regression test, but the reporter's exact steps were never captured.
+
+No P0 or P1 issues are open. The full list is in [M7 QA Notes](docs/m7-qa.md#known-issues).
+
 ## License
 
-The repository is currently `UNLICENSED` (all rights reserved) until a public
-license is chosen. All bundled art, audio, and font files are original works;
-see [`docs/asset-licenses.md`](docs/asset-licenses.md) for the inventory and
-third-party tool licenses.
+Released under the [MIT License](LICENSE). All bundled art, audio, and font files are original works and are covered by the same license; see [`docs/asset-licenses.md`](docs/asset-licenses.md) for the inventory and third-party tool licenses.

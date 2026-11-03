@@ -1,8 +1,8 @@
 # Mines & Goblins — Roadmap
 
-**Version:** 0.7  
-**Date:** 2026-11-02  
-**Status:** M7 complete at `v0.7.0`: balance tuned, hardening and save tests added, performance and browser matrix verified, release-candidate notes written. External human playtests were descoped and recorded as a P2 risk. M8 release work is next.
+**Version:** 1.0  
+**Date:** 2026-11-03  
+**Status:** M8 complete. `v1.0.0` is MIT-licensed, tagged from the deployed commit, published as a GitHub Release, and live at [mariodod.github.io/minesNgoblins](https://mariodod.github.io/minesNgoblins/). Post-v1 work is listed in section 7 and section 10.
 
 ---
 
@@ -401,6 +401,8 @@ now lives at `docs/media/m3-run.gif`.
 **Dependencies:** M7.  
 **Risks:** Deployment-only issues; missing credits/licensing; last-minute scope.
 
+**Completion notes:** M8 shipped as `v1.0.0` on 2026-11-03. The repository moved from `UNLICENSED` to MIT with a root `LICENSE`, matching `package.json` metadata, README terms, and the asset inventory. The version was bumped, the title screen now shows the core controls and a `v1.0 RELEASE` label, and the README was rewritten for players with a play link, features, controls, credits, known issues, and rollback steps. Release media at 1920×1080 covers the title, a level, the boss, and Results. CI and the Pages deploy are green; the live build was smoke-tested in Chromium, Edge, Firefox, and WebKit, and the production bundle exposes no debug hooks. `v1.0.0` is tagged from the deployed commit and published as a GitHub Release with the source tag and a `dist` archive. Optional storefront/custom-domain work was descoped. The one acceptance criterion that remains unvalidated is the fresh-player onboarding check, because no external tester was available; it is carried as a P2 known issue rather than claimed as passed.
+
 ---
 
 ## 4. Project-wide Definition of Done
@@ -520,13 +522,11 @@ Do **not** cut:
 
 ## 10. Immediate next actions
 
-1. Resolve the remaining release decisions:
-   - Repository license (code and original assets are currently `UNLICENSED`).
-   - Release packaging and storefront order for M8.
-2. M7 is complete: balance, hardening, performance, browser matrix, and release-candidate notes shipped at `v0.7.0`.
-3. Start M8 with a live-deployment smoke test, the `v1.0.0` version bump, release notes, and the final credits/license pass.
-4. Record a boss-fight media capture for the README or release notes.
-5. Schedule the first external playtest and fold its findings into a patch after v1.0.
+1. **v1.0 is released.** MIT license, `v1.0.0` tag, GitHub Release, and Pages deployment are complete.
+2. Schedule the first external playtest and fold onboarding/fairness findings into a `v1.0.x` patch.
+3. Keep the post-deploy smoke green: `node tools/qa/smoke.mjs --url https://mariodod.github.io/minesNgoblins/ --browser <engine>`.
+4. Record a longer boss-fight media capture for the README or storefront pages.
+5. Decide whether to pursue the optional post-v1 items: itch.io page, custom domain, desktop build, replay/ghost, assist mode, or localization.
 
 ---
 
@@ -534,6 +534,7 @@ Do **not** cut:
 
 | Version | Date       | Notes                                                                                |
 | ------- | ---------- | ------------------------------------------------------------------------------------ |
+| 1.0     | 2026-11-03 | M8 MIT license, v1.0.0 tag, GitHub Release, final deploy, and smoke tests            |
 | 0.8     | 2026-11-02 | M7 balance, hardening, performance, browser matrix, and release candidate at v0.7.0  |
 | 0.7     | 2026-10-30 | M6 final generated art/audio/font, accessibility, credits, and QA complete at v0.6.0 |
 | 0.6     | 2026-10-24 | M5 difficulties, challenge runs, achievements, skins, and save v1 complete at v0.5.0 |

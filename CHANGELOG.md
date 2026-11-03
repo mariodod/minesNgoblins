@@ -4,6 +4,25 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses semantic versioning once public releases begin.
 
+## [1.0.0] - 2026-11-03
+
+### Added
+
+- **v1.0 release.** The project is now MIT-licensed, tagged `v1.0.0`, and published as a GitHub Release with playable screenshots and a `dist` archive.
+- `LICENSE` (MIT) and MIT metadata in `package.json`; the README license section and asset inventory now state the same terms.
+- [v1.0.0 Release Notes](docs/release-notes-v1.0.0.md) with features, controls, verification results, credits, known issues, and the rollback path.
+- Release media in `docs/media/release/`: title, level, boss, and Results captures at 1920×1080.
+- The title screen now lists the core gameplay controls (`A/D`, `Space`, `X`, `Esc`) alongside the menu hint, and reports `v1.0 RELEASE`.
+- The in-game Credits screen gained a LICENSE section that names MIT and the copyright holder.
+- `tools/qa/screenshots.mjs` now captures the boss before it is defeated, the Results screen, and the Credits screen.
+- `tools/qa/smoke.mjs` accepts `--browser chromium|edge|firefox|webkit`, so the live deployment is smoke-tested in every supported engine.
+
+### Changed
+
+- README rewritten for players: a **Play now** link, feature list, controls, credits, known issues, and the MIT license replace the pre-release status notes.
+- Roadmap M8 closed; the M7/M8 completion notes, revision history, and next actions now point at post-v1 work.
+- Version bumped from `0.7.0` to `1.0.0`.
+
 ## [0.7.0] - 2026-11-02
 
 ### Added

@@ -24,8 +24,9 @@ No third-party sprites, tilesets, textures, fonts, recordings, samples, or
 music loops are included. No asset was downloaded from an asset store or a
 generative model.
 
-The repository license is currently `UNLICENSED` (all rights reserved). If a
-public license is chosen later, it applies to these original assets as well.
+The project is released under the [MIT License](../LICENSE), and that license
+covers these original assets as well as the code. Third-party dependencies keep
+their own licenses, listed below.
 
 Regeneration instructions:
 
