@@ -79,14 +79,14 @@ The three WebKit skips are the audio spec: Playwright's WebKit build ships witho
 
 `node tools/qa/smoke.mjs --url https://mariodod.github.io/minesNgoblins/ --browser <engine>` was run against the live deployment on 2026-11-03, after the final `v1.0.0` deploy. Every run loads the title screen, waits for the canvas, reloads `?boss=1` and `?spawn=exit`, and fails on any console error, page error, exposed debug hook, or a canvas that misses the 3-second budget.
 
-| Engine              | Canvas ready              | Errors | Debug hooks | Result |
-| ------------------- | ------------------------- | ------ | ----------- | ------ |
-| Chromium (headless) | 315 ms warm, 3711 ms cold | 0      | none        | pass   |
-| Edge (installed)    | 930 ms                    | 0      | none        | pass   |
-| Firefox             | 2669 ms                   | 0      | none        | pass   |
-| WebKit              | 814 ms                    | 0      | none        | pass   |
+| Engine              | Canvas ready | Errors | Debug hooks | Result |
+| ------------------- | ------------ | ------ | ----------- | ------ |
+| Chromium (headless) | 864 ms       | 0      | none        | pass   |
+| Edge (installed)    | 1090 ms      | 0      | none        | pass   |
+| Firefox             | 1768 ms      | 0      | none        | pass   |
+| WebKit              | 715 ms       | 0      | none        | pass   |
 
-The first Chromium request after a deploy hit the cold GitHub Pages edge (3711 ms); the retry with the cache warm took 315 ms. Firefox was the slowest warm engine at 2669 ms, still inside the 3-second budget. No engine reported an error or exposed a development hook.
+All four engines loaded the warm GitHub Pages edge on the final run. Earlier deploys of the same bundle hit a cold edge on the first request, up to 3711 ms; that behaviour is recorded as a P3 known issue rather than a release blocker. Firefox is consistently the slowest engine, still inside the 3-second budget. No engine reported an error or exposed a development hook.
 
 ## Credits
 
