@@ -71,13 +71,22 @@ _Captured at 1920×1080 from an automated QA pass, so the Results stats come fro
 | Debug hooks in bundle | 0 occurrences of all test/debug globals and query shortcuts             |
 | Performance           | 60.1–60.2 FPS at 1920×1080 and 2560×1440 on hardware                    |
 | Load                  | canvas ready 0.44–1.52 s warm; first post-deploy request may cold-start |
-| Live smoke            | see post-deploy table below                                             |
+| Live smoke            | pass in Chromium, Edge, Firefox, and WebKit (see below)                 |
 
 The three WebKit skips are the audio spec: Playwright's WebKit build ships without Web Audio, so the game boots silent there by design. Real Safari has Web Audio.
 
 ### Post-deploy smoke
 
-{{LIVE_MATRIX}}
+`node tools/qa/smoke.mjs --url https://mariodod.github.io/minesNgoblins/ --browser <engine>` was run against the live deployment on 2026-11-03, after the final `v1.0.0` deploy. Every run loads the title screen, waits for the canvas, reloads `?boss=1` and `?spawn=exit`, and fails on any console error, page error, exposed debug hook, or a canvas that misses the 3-second budget.
+
+| Engine              | Canvas ready              | Errors | Debug hooks | Result |
+| ------------------- | ------------------------- | ------ | ----------- | ------ |
+| Chromium (headless) | 315 ms warm, 3711 ms cold | 0      | none        | pass   |
+| Edge (installed)    | 930 ms                    | 0      | none        | pass   |
+| Firefox             | 2669 ms                   | 0      | none        | pass   |
+| WebKit              | 814 ms                    | 0      | none        | pass   |
+
+The first Chromium request after a deploy hit the cold GitHub Pages edge (3711 ms); the retry with the cache warm took 315 ms. Firefox was the slowest warm engine at 2669 ms, still inside the 3-second budget. No engine reported an error or exposed a development hook.
 
 ## Credits
 

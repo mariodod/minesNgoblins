@@ -24,7 +24,7 @@ const browserName = argument('browser', 'chromium');
 const outDir = 'artifacts/qa/smoke';
 const settleMs = 1500;
 
-const launchers = { chromium, firefox, webkit };
+const launchers = { chromium, edge: chromium, firefox, webkit };
 if (!(browserName in launchers)) {
   console.error(`Unknown browser "${browserName}". Use chromium, edge, firefox, or webkit.`);
   process.exit(2);
@@ -36,7 +36,7 @@ const launchOptions = { args: ['--enable-unsafe-swiftshader'] };
 if (browserName === 'edge') {
   launchOptions.channel = 'msedge';
 }
-const browser = await launchers[browserName === 'edge' ? 'chromium' : browserName].launch(
+const browser = await launchers[browserName].launch(
   browserName === 'firefox' || browserName === 'webkit' ? {} : launchOptions,
 );
 const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
