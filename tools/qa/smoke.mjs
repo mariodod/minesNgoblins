@@ -1,13 +1,13 @@
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { chromium } from 'playwright';
+import { chromium, firefox, webkit } from 'playwright';
 
 /**
  * Production smoke check for a built deployment.
  *
  * Usage:
  *   node tools/qa/smoke.mjs
- *   node tools/qa/smoke.mjs --url https://mariodod.github.io/minesNgoblins/
+ *   node tools/qa/smoke.mjs --url https://mariodod.github.io/minesNgoblins/ --browser firefox
  *
  * It fails on any page error or console error, verifies that the game boots
  * (canvas visible, boot note removed), and confirms that development hooks and
@@ -20,12 +20,25 @@ function argument(name, fallback) {
 }
 
 const url = argument('url', 'http://127.0.0.1:4173/minesNgoblins/');
+const browserName = argument('browser', 'chromium');
 const outDir = 'artifacts/qa/smoke';
 const settleMs = 1500;
 
+const launchers = { chromium, firefox, webkit };
+if (!(browserName in launchers)) {
+  console.error(`Unknown browser "${browserName}". Use chromium, edge, firefox, or webkit.`);
+  process.exit(2);
+}
+
 await mkdir(outDir, { recursive: true });
 
-const browser = await chromium.launch({ args: ['--enable-unsafe-swiftshader'] });
+const launchOptions = { args: ['--enable-unsafe-swiftshader'] };
+if (browserName === 'edge') {
+  launchOptions.channel = 'msedge';
+}
+const browser = await launchers[browserName === 'edge' ? 'chromium' : browserName].launch(
+  browserName === 'firefox' || browserName === 'webkit' ? {} : launchOptions,
+);
 const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
 let page = await context.newPage();
 
@@ -86,7 +99,7 @@ const state = await page.evaluate(() => {
   };
 });
 
-const label = new URL(url).host.replaceAll(':', '-');
+const label = `${browserName}-${new URL(url).host.replaceAll(':', '-')}`;
 await page.screenshot({ path: join(outDir, `${label}-title.png`) });
 
 check(state.canvasWidth > 0 && state.canvasHeight > 0, 'canvas has no size');
@@ -116,6 +129,7 @@ console.log(
   JSON.stringify(
     {
       url,
+      browser: browserName,
       firstCanvasReadyMs,
       canvasReadyMs,
       retriedAfterColdEdge,

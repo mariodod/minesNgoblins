@@ -149,11 +149,22 @@ for (const viewport of viewports) {
   }
 
   await waitForScene('Boss');
+  // The achievement toast covers the HUD for ~3.2 s and the boss intro ends at
+  // ~2.1 s, so wait for both before capturing the fight itself.
+  await page.waitForTimeout(3400);
+  await shot('08-boss');
   await page.evaluate(() => window.__MINES_DEBUG__?.defeatBoss());
   await waitForHook(() => window.__MINES_TEST__?.bossExitOpen === true);
   await press('E');
   await waitForScene('Results');
-  await shot('08-results');
+  await shot('09-results');
+
+  await press('Enter');
+  await waitForTitle();
+  await selectTitle('Credits');
+  await press('Enter');
+  await waitForScene('Credits');
+  await shot('10-credits');
 
   await context.close();
 }
