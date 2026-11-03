@@ -19,8 +19,7 @@ interface TitleSceneData {
   message?: string;
 }
 
-const DEFAULT_TITLE_MESSAGE =
-  'M7 balance update: tuned enemies, smarter saves, and a full QA pass.';
+const DEFAULT_TITLE_MESSAGE = 'v1.0 is live! Four levels. One worm. One stubborn miner.';
 
 const FONT_FAMILY = '"Courier New", Courier, monospace';
 
@@ -217,7 +216,7 @@ export class TitleScene extends Phaser.Scene {
       .setDepth(2);
 
     this.add
-      .text(GAME_WIDTH / 2, 242, 'UP / DOWN TO SELECT   ENTER TO CONFIRM', {
+      .text(GAME_WIDTH / 2, 234, 'A / D MOVE   SPACE JUMP   X THROW   ESC PAUSE', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#8b959d',
@@ -226,7 +225,16 @@ export class TitleScene extends Phaser.Scene {
       .setDepth(2);
 
     this.add
-      .text(8, 261, `v${APP_VERSION} / M7`, {
+      .text(GAME_WIDTH / 2, 244, 'UP / DOWN TO SELECT   ENTER TO CONFIRM', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '7px',
+        color: '#8b959d',
+      })
+      .setOrigin(0.5)
+      .setDepth(2);
+
+    this.add
+      .text(8, 261, `v${APP_VERSION}`, {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#8b959d',
@@ -235,7 +243,7 @@ export class TitleScene extends Phaser.Scene {
       .setDepth(3);
 
     this.add
-      .text(GAME_WIDTH - 8, 261, 'M7 RELEASE CANDIDATE', {
+      .text(GAME_WIDTH - 8, 261, 'v1.0 RELEASE', {
         fontFamily: FONT_FAMILY,
         fontSize: '7px',
         color: '#8b959d',

@@ -27,6 +27,10 @@ const SECTIONS = [
       'Font: generated 5x7 bitmap font (original)',
     ],
   },
+  {
+    heading: 'LICENSE',
+    lines: ['Code and original assets: MIT License', 'Copyright (c) 2026 mariodod'],
+  },
 ] as const;
 
 /**
@@ -76,13 +80,13 @@ export class CreditsScene extends Phaser.Scene {
         y += 10;
       }
 
-      y += 6;
+      y += 4;
     }
 
     this.add
       .text(
         GAME_WIDTH / 2,
-        y + 2,
+        y + 8,
         'No third-party sprites, tilesets, music, or sound effects.\nAsset licenses: public/assets and public/audio README files.',
         {
           fontFamily: FONT_FAMILY,
@@ -118,7 +122,8 @@ export class CreditsScene extends Phaser.Scene {
     setTestHook({
       ready: true,
       scene: 'Credits',
-      message: 'All art, audio, and font assets are original generated works.',
+      message:
+        'All art, audio, and font assets are original generated works under the MIT License.',
     });
   }
 
