@@ -208,7 +208,7 @@ Development server, heaviest level and the boss arena, headed hardware:
 - On hardware, every sampled scene holds 60 FPS at both resolutions, with p95 frame time within 0.3 ms of the 16.7 ms budget. This is the number that answers "does it hit 60 FPS".
 - The headless 1440p sample reports 56.39 FPS with p95 at 33.3 ms — 282 frames instead of 301. That is SwiftShader rasterizing 3.7 megapixels of canvas with no GPU, not a game-side regression: the same scene is a clean 60.17 FPS at the same resolution when headed. It is recorded rather than hidden because CI runs headless, and a future p95 failure there needs this baseline to be read correctly.
 - Heap stays under 20 MB in the production bundle. The ~56 MB figures are the dev server with unminified modules and source maps, not a production cost.
-- Canvas-ready and load times are well inside the 3-second budget. The slowest observed first paint of the game canvas is 1.83 s on the production bundle at 1080p, and that includes a cold module fetch.
+- Canvas-ready and load times are well inside the 3-second budget on local production builds. The slowest observed first paint of the game canvas is 1.83 s on the production bundle at 1080p, including a cold module fetch. The deployed first request after a fresh Pages deploy measured 3.63 s once while the CDN edge warmed; see [Deployed smoke test](#deployed-smoke-test).
 
 ## Browser matrix
 
@@ -248,15 +248,15 @@ The only `difficulty=` matches are JavaScript class fields (`difficulty=...`), n
 
 `tools/qa/smoke.mjs` was run against the live [mariodod.github.io/minesNgoblins](https://mariodod.github.io/minesNgoblins/) deployment:
 
-| Check                                    | Result                                   |
-| ---------------------------------------- | ---------------------------------------- |
-| Runtime errors                           | 0                                        |
-| Debug hooks exposed                      | none                                     |
-| `?boss=1` / `?spawn=exit` inert          | pass                                     |
-| Canvas ready, warm                       | 436–507 ms over three fresh-browser runs |
-| Canvas ready, first request after deploy | 3629 ms                                  |
+| Check                                    | Result                             |
+| ---------------------------------------- | ---------------------------------- |
+| Runtime errors                           | 0                                  |
+| Debug hooks exposed                      | none                               |
+| `?boss=1` / `?spawn=exit` inert          | pass                               |
+| Canvas ready, warm                       | 436–952 ms over fresh-browser runs |
+| Canvas ready, first request after deploy | 3629 ms                            |
 
-The first request after deployment hit a cold GitHub Pages edge and took 3.63 s. The next three fresh-browser runs took 0.44–0.51 s. That outlier is CDN cache warm-up, not a bundle change: the same artifact measured 1.52 s on local preview. It is recorded here, and as a P3 known issue, so a later cold-start report is read correctly.
+The first request after deployment hit a cold GitHub Pages edge and took 3.63 s. The next three fresh-browser runs took 0.44–0.51 s, and later redeploys of the same bundle measured 0.95–1.40 s on their first request. That outlier is CDN cache warm-up, not a bundle change: the same artifact measured 1.52 s on local preview. It is recorded here, and as a P3 known issue, so a later cold-start report is read correctly.
 
 ## Manual checklist
 
@@ -289,7 +289,7 @@ Items that need a human eye were run in a headed Chromium session against the pr
 | P3       | The four-track music target was cut to three; the boss shares the level track.                                                                                                                                            | Carried from M6.                                                      |
 | P3       | UI copy is co-located with scenes; extracting a copy table waits for a second language.                                                                                                                                   | Carried from M6.                                                      |
 | P3       | The repository has no public license yet.                                                                                                                                                                                 | Decision needed before v1.0.                                          |
-| P3       | The first request to a newly deployed GitHub Pages build can exceed the 3 s load budget while the CDN edge warms: 3.63 s once, then 0.44–0.51 s on fresh-browser runs.                                                    | Infrastructure cache warm-up, not bundle size; recorded above.        |
+| P3       | The first request to a newly deployed GitHub Pages build can exceed the 3 s load budget while the CDN edge warms: 3.63 s once, then 0.44–0.95 s on fresh-browser runs.                                                    | Infrastructure cache warm-up, not bundle size; recorded above.        |
 | P4       | The reporter's exact quit → new-run steps were never captured. The root cause (a destroyed `warningText` in `RunSetupScene`) is fixed and covered by a regression test, but the original repro was not replayed verbatim. | Fixed in v0.7.0; keep the report open until the reporter confirms.    |
 
 No P0 or P1 issues are open.
