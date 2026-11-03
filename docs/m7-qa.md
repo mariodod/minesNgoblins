@@ -72,12 +72,16 @@ All three weapons kill the heaviest Normal enemy in one or two hits and the heav
 
 ### Scripted runs
 
-`tests/e2e/full-run.spec.ts` plays two complete runs end to end and reads the real Results state.
+`tests/e2e/full-run.spec.ts` plays four complete runs end to end and reads the real Results state.
 
-| Run    | Path                                 | Result                                                                                                                                    |
-| ------ | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Normal | Start → four levels → boss → Results | Pacifist, Primitive, Untouchable, and Legend complete; `pacifist`, `primitive`, and `untouchable` achievements unlock; best time recorded |
-| Crazy  | Start → four levels → boss → Results | Pacifist and Legend unavailable; Primitive and Untouchable complete; `crazy_clear` unlocks; boss max HP 120                               |
+| Run        | Path                                 | Result                                                                                                                                    |
+| ---------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Normal     | Start → four levels → boss → Results | Pacifist, Primitive, Untouchable, and Legend complete; `pacifist`, `primitive`, and `untouchable` achievements unlock; best time recorded |
+| Hard       | Start → four levels → boss → Results | 5 player HP, 72 boss HP, run completes                                                                                                    |
+| Impossible | Start → four levels → boss → Results | 4 player HP, 96 boss HP, run completes                                                                                                    |
+| Crazy      | Start → four levels → boss → Results | Pacifist and Legend unavailable; Primitive and Untouchable complete; `crazy_clear` unlocks; boss max HP 120                               |
+
+Hard and Impossible share Normal's exit rule, but they are the difficulties a player is most likely to abandon. Completing both closes the "every difficulty can be completed" criterion with direct evidence rather than inference.
 
 Separately, `tests/e2e/levels.spec.ts` verifies the Crazy all-kill gate on all four levels: the elevator refuses to advance with enemies alive, and advances once the level is empty. On Deep Vein, clearing the level moves the run into the boss arena with `runLevelsCompleted` at 4 and 120 boss HP.
 
@@ -216,11 +220,11 @@ Playwright runs Chromium by default. `BROWSER_MATRIX=1` adds Edge, Firefox, and 
 
 | Browser             | Engine |   Tests | Result                    |
 | ------------------- | ------ | ------: | ------------------------- |
-| Chromium (headless) | Blink  |      59 | 59 passed                 |
+| Chromium (headless) | Blink  |      61 | 61 passed                 |
 | Edge                | Blink  |      18 | 18 passed                 |
 | Firefox             | Gecko  |      18 | 18 passed                 |
 | WebKit              | WebKit |      18 | 15 passed, 3 skipped      |
-| **Total**           |        | **113** | **110 passed, 3 skipped** |
+| **Total**           |        | **115** | **112 passed, 3 skipped** |
 
 The three WebKit skips are the audio spec: Playwright's WebKit build ships without Web Audio, so Phaser's HTML5 fallback cannot decode the WAV pack and the game boots silent by design. Real Safari has Web Audio. WebKit also forces `deviceScaleFactor: 1` because headless software rendering at 2× DPR drops below real-time and breaks input-timing checks for reasons that do not occur on Safari with a GPU; DPR scaling stays covered by Chromium.
 

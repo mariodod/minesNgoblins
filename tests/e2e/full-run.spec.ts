@@ -99,3 +99,27 @@ test('a scripted Crazy run completes with the all-kill rules and badge exclusion
 
   expect(errors).toEqual([]);
 });
+
+// Hard and Impossible use the same exit rules as Normal, but they are the
+// difficulties a player is most likely to abandon; complete each one so the
+// "every difficulty is completable" claim has direct evidence.
+for (const { id, playerMaxHp, bossMaxHp } of [
+  { id: 'hard', playerMaxHp: 5, bossMaxHp: 72 },
+  { id: 'impossible', playerMaxHp: 4, bossMaxHp: 96 },
+] as const) {
+  test(`a scripted ${id} run reaches Results`, async ({ page }) => {
+    const errors = collectPageErrors(page);
+
+    await startRun(page, `/?difficulty=${id}`);
+    await expect.poll(() => readHook<number>(page, 'playerMaxHp')).toBe(playerMaxHp);
+    await expect.poll(() => readHook<string>(page, 'difficulty')).toBe(id);
+
+    await skipToBoss(page);
+    await expect.poll(() => readHook<number>(page, 'bossMaxHp')).toBe(bossMaxHp);
+
+    await finishAtResults(page);
+    await expect.poll(() => readHook<boolean>(page, 'runCompleted')).toBe(true);
+
+    expect(errors).toEqual([]);
+  });
+}
