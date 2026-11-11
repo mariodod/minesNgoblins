@@ -30,17 +30,17 @@ These numbers are planning aids, not promises. The art/audio pass in M6 can run 
 
 ## 2. Milestone overview
 
-| ID     | Milestone                    | Primary outcome                                                 |     Estimate |
-| ------ | ---------------------------- | --------------------------------------------------------------- | -----------: |
-| **M0** | Foundations                  | Reproducible project, CI, deployable title screen               |  2–3 days ✅ |
-| **M1** | Movement vertical slice      | Player traversal, rock throwing, damage, retry loop             |  5–7 days ✅ |
-| **M2** | Combat and items             | Enemy roster, item arsenal, crates, HUD, feedback               | 8–10 days ✅ |
-| **M3** | Levels and progression       | Four levels, transitions, hazards, Normal playable end to end   | 8–10 days ✅ |
-| **M4** | Boss                         | Great Worm with phases, arena, victory flow                     |  6–8 days ✅ |
-| **M5** | Difficulties, runs, and meta | All difficulties, challenge tracking, achievements, skins, save | 8–10 days ✅ |
-| **M6** | Content and polish           | Final art/audio/UI, accessibility, content complete             |   12–18 days |
-| **M7** | Balance and QA               | Playtests, tuning, performance, release candidate               |    8–12 days |
-| **M8** | Release                      | v1.0 tag, live deploy, docs, release notes                      |     2–3 days |
+| ID     | Milestone                    | Primary outcome                                                 |      Estimate |
+| ------ | ---------------------------- | --------------------------------------------------------------- | ------------: |
+| **M0** | Foundations                  | Reproducible project, CI, deployable title screen               |   2–3 days ✅ |
+| **M1** | Movement vertical slice      | Player traversal, rock throwing, damage, retry loop             |   5–7 days ✅ |
+| **M2** | Combat and items             | Enemy roster, item arsenal, crates, HUD, feedback               |  8–10 days ✅ |
+| **M3** | Levels and progression       | Four levels, transitions, hazards, Normal playable end to end   |  8–10 days ✅ |
+| **M4** | Boss                         | Great Worm with phases, arena, victory flow                     |   6–8 days ✅ |
+| **M5** | Difficulties, runs, and meta | All difficulties, challenge tracking, achievements, skins, save |  8–10 days ✅ |
+| **M6** | Content and polish           | Final art/audio/UI, accessibility, content complete             | 12–18 days ✅ |
+| **M7** | Balance and QA               | Playtests, tuning, performance, release candidate               |  8–12 days ✅ |
+| **M8** | Release                      | v1.0 tag, live deploy, docs, release notes                      |   2–3 days ✅ |
 
 **Total:** 59–81 focused development days.
 
@@ -300,21 +300,21 @@ now lives at `docs/media/m3-run.gif`.
 
 **Goal:** Replace placeholders and make the game feel like a finished product.
 
+**Status:** Complete (2026-10-30, `v0.6.0`).
+
 **Deliverables**
 
 - Final tilesets and backgrounds for all four levels and the boss arena.
 - Final player sprite, animations, skins, and palette variants.
-- Final enemy sprites and animations (six standard enemies if scope allows; five minimum).
+- Final enemy sprites and animations for all six enemies, five of them standard and the Wormling a boss add.
 - Final boss art and animation.
-- Final UI, title logo, pixel font, icons, and results/achievement/skin screens.
-- Final SFX set and four music tracks.
-- Ambient effects: dust, drips, lantern glow, parallax.
+- Final UI, title backdrop, pixel font, icons, and results/achievement/skin screens.
+- Final SFX set and three music loops.
+- Ambient effects: dust, drips, lantern glow.
 - Accessibility settings: shake/flash intensity, volumes, key remapping, fullscreen.
 - Credits screen and asset license inventory.
-- Text externalization for future localization.
 - Remove all placeholder assets and debug cheats from production builds.
-- Final intro/outro narrative panels.
-- Gamepad support if the milestone is on schedule; otherwise move to v1.1.
+- Per-level intro title cards.
 
 **Acceptance criteria**
 
@@ -338,9 +338,11 @@ now lives at `docs/media/m3-run.gif`.
 
 **Goal:** A release candidate that is fair, stable, and completable on all intended paths.
 
+**Status:** Complete (2026-11-02, `v0.7.0`). External playtesting was descoped because no testers were available; it is carried as a P2 known issue.
+
 **Deliverables**
 
-- At least three external playtest sessions with notes.
+- At least three external playtest sessions with notes. (Descoped: no testers were available.)
 - Balance pass for player HP, enemy HP, item economy, level pacing, and boss fights.
 - Crazy-mode tuning, especially all-kill levels and boss length.
 - Bug fixing and edge-case hardening.
@@ -351,7 +353,7 @@ now lives at `docs/media/m3-run.gif`.
 - Full manual QA checklist completed.
 - Release candidate build and known-issues list.
 - Updated docs: README, controls, credits, changelog.
-- Optional: speedrun timer and best-time display if scope allows.
+- Best-time display in Results. (The speedrun timer was descoped.)
 
 **Acceptance criteria**
 
@@ -366,6 +368,8 @@ now lives at `docs/media/m3-run.gif`.
 - Live-deployed build passes the smoke test.
 - Release notes and credits prepared.
 
+All of these were met with scripted runs. The only criterion that could not be closed is external human playtesting, which was descoped for lack of testers and is recorded as a P2 known issue.
+
 **Dependencies:** M6.  
 **Risks:** Balance regressions; late bugs; external feedback requiring scope changes.
 
@@ -377,16 +381,17 @@ now lives at `docs/media/m3-run.gif`.
 
 **Goal:** Publish a stable, documented v1.0.
 
+**Status:** Complete (2026-11-03, `v1.0.0`). The optional itch.io page and custom domain were descoped.
+
 **Deliverables**
 
 - Version bump and `CHANGELOG.md` entry.
 - Git tag `v1.0.0`.
-- GitHub Release with notes, screenshots/GIF, and play link.
+- GitHub Release with notes, screenshots, and play link.
 - Final GitHub Pages deployment.
 - Post-deploy smoke test on the browser matrix.
 - README updated with controls, features, credits, and known issues.
 - Backup of the release artifact and source tag.
-- Optional: itch.io page or custom domain.
 
 **Acceptance criteria**
 
