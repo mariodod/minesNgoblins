@@ -21,6 +21,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - The `EnemyDefinition.contactDamage` doc comment was attached to `speed` and pointed at the wrong module. It now documents the field it sits on and names `scaleEnemyDamage` in `src/data/difficulties.ts`.
 - The README and release notes listed alternate keys (`Z`, `J`, `K`, `W`/`S`, `P`) that the shipped game does not bind. The controls tables now list only the real bindings.
+- The technical plan claimed the game required WebGL2 with a friendly unsupported-browser screen. The renderer is `Phaser.AUTO`, which falls back to Canvas, and there is no such screen.
+- The technical plan described projectile pooling, texture atlases, off-screen enemy sleeping, and post-processing filters. None of those exist; the techniques list now names what the game actually does.
+- The damage-pipeline, run-snapshot, and challenge-rule sections named event types and fields that do not exist (`enemy:damaged`, `endedAt`, `isPacifistValid`). They now match the code.
+- The game canvas `aria-label` advertised WASD. It now names the real bindings.
 
 ## [1.0.0] - 2026-11-03
 

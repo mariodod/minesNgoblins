@@ -57,7 +57,7 @@
 **Why Phaser fits this game:**
 
 - **2D-first:** sprites, tilemaps, cameras, animation, particles, input, audio, and scene management are built in.
-- **Arcade Physics:** enough for a platformer with AABB collisions, gravity, one-way platforms, overlap checks, and projectile pooling. No need for a full rigid-body engine.
+- **Arcade Physics:** enough for a platformer with AABB collisions, gravity, one-way platforms, overlap checks, and simple projectiles. No need for a full rigid-body engine.
 - **TypeScript:** first-class types and a large body of examples.
 - **Web deployment:** produces a static bundle that can be hosted on GitHub Pages with no server.
 - **Fast iteration:** Vite hot reload plus simple scene reloads.
@@ -66,7 +66,7 @@
 
 **Constraints accepted:**
 
-- Phaser 4 is WebGL-first, and its Canvas renderer is deprecated. We target modern WebGL2 browsers only.
+- Phaser 4 is WebGL-first. `Phaser.AUTO` prefers WebGL and falls back to the Canvas renderer, so a browser without WebGL still runs the game.
 - Arcade Physics is not a full platformer physics engine. We implement coyote time, jump buffering, one-way platforms, and projectile behavior ourselves on top of it.
 - The engine is a framework, not an editor. Level geometry lives in hand-authored JSON files; entities and logic live in TypeScript.
 
@@ -113,8 +113,8 @@ Godot is the strongest alternative and would be a good choice for a desktop-firs
 ### 4.1 Browser support
 
 - Latest two major versions of Chrome, Edge, Firefox, and Safari.
-- Desktop only; minimum viewport 960×540.
-- WebGL2 required; show a friendly unsupported-browser screen if initialization fails.
+- Desktop only. The canvas scales to the window with an integer zoom, so smaller windows still play.
+- The renderer type is `Phaser.AUTO`, which prefers WebGL and falls back to the Canvas renderer. There is no separate unsupported-browser screen; a browser with neither renderer throws during initialization.
 - No Internet Explorer or legacy mobile support.
 
 ### 4.2 Display and pixel-art settings
@@ -225,7 +225,7 @@ Entity (Phaser.Physics.Arcade.Sprite)
 - Collision bodies use simple rectangles, not per-pixel masks.
 - Enemy behaviors are state machines driven by the shared `Enemy` base class and per-behavior subclasses.
 - The boss uses a dedicated state machine with phases and attack selection.
-- Projectiles are pooled to avoid allocation spikes.
+- Projectiles are created on throw and destroyed when they expire or hit. The throw cooldown keeps the live count small, so pooling was never needed.
 
 ### 5.5 Damage pipeline
 
@@ -251,8 +251,8 @@ Order of operations:
 2. Difficulty and armor adjustments.
 3. HP reduction through the pure `applyDamage` helper in `src/systems/damage.ts`.
 4. Hit feedback (flash, knockback, hit-stop, SFX, particles).
-5. Emit `enemy:damaged` or `player:damaged`.
-6. If HP reaches 0, emit `enemy:killed` or `player:died` with full attribution.
+5. Emit `enemy-damaged` or `player-damaged` on the entity.
+6. If HP reaches 0, emit `enemy-killed` or `player-died` with full attribution.
 7. The active scene reports the attributed event to `RunService`; pure challenge functions derive badge validity from the snapshot.
 
 This ensures Pacifist, Primitive, and Crazy all see the same source-of-truth data.
@@ -282,29 +282,25 @@ interface RunSnapshot {
   bossAttempts: number;
   bossDefeated: boolean;
   bossDamageTaken: number;
-  outcome: 'abandoned' | 'victory' | null;
-  endedAt: number | null;
+  outcome: RunOutcome;
+  finishedAt: number;
   runDurationMs: number;
 }
 ```
 
-Challenge rules are pure functions over that snapshot plus the difficulty config:
+Challenge rules are pure functions over that snapshot plus the difficulty config. `getChallengeProgress` reports the live state during a run; `evaluateChallenges` turns the same rules into final badges once the boss dies.
 
 ```ts
-function isPacifistAvailable(difficulty: DifficultyConfig): boolean {
-  return difficulty.pacifistAllowed;
+function pacifistProgress(run: RunSnapshot): ChallengeProgress {
+  // Fails on the first standard-enemy kill; unavailable on Crazy.
 }
 
-function isPacifistValid(run: RunSnapshot): boolean {
-  return run.kills === 0;
+function primitiveProgress(run: RunSnapshot): ChallengeProgress {
+  // Fails on the first secondary-item use or the first non-rock kill.
 }
 
-function isPrimitiveValid(run: RunSnapshot): boolean {
-  return run.itemUses === 0 && run.killRecords.every((kill) => kill.source === 'rock');
-}
-
-function isUntouchableValid(run: RunSnapshot): boolean {
-  return run.damageTaken === 0 && run.deaths === 0;
+function untouchableProgress(run: RunSnapshot): ChallengeProgress {
+  // Fails on any damage taken or any death.
 }
 ```
 
@@ -478,16 +474,14 @@ Per milestone, run a written checklist covering:
 
 Shipped measurements (1920×1080): 60.1–60.2 FPS on hardware, about 19–20 MB JS heap, and a 1,564 kB JavaScript bundle that gzips to 408 kB. See [M6 QA Notes](m6-qa.md) and [M7 QA Notes](m7-qa.md).
 
-Techniques:
+Techniques in use:
 
-- Object pools for rocks, bullets, hit particles, and damage text if added.
-- Texture atlases; avoid many small draw calls.
-- No per-frame allocations in hot entity update loops.
-- Limit screen shake and particle bursts.
-- Use Arcade Physics with simple AABB bodies; no per-pixel collision.
-- Pause/sleep off-screen enemies where safe, but keep Crazy enemy counts authoritative.
-- Profile in Chrome and Firefox at 1080p and 1440p.
-- Do not use Phaser 4's heaviest filters for core readability; use them sparingly for boss spectacle.
+- Simple AABB bodies throughout; no per-pixel collision and no rigid-body simulation.
+- Screen shake and particle bursts are capped, and the player can turn both down in Options.
+- Levels are small enough that every authored enemy stays active; nothing is culled or slept.
+- One generated spritesheet per entity type and one tile set per theme, so the draw-call count stays low without an atlas packer.
+- No post-processing filters are used anywhere, which keeps the text and telegraph edges sharp.
+- Frame rate is sampled at 1080p and 1440p with `tools/qa/profile.mjs`.
 
 ---
 
@@ -623,7 +617,7 @@ Notes:
 | Pixel scaling/readability issues             | Low        | Medium | Fixed 480×270; integer scaling; the generated 5×7 bitmap font                                   |
 | Save corruption or schema changes            | Low        | Medium | Versioned schema, validation, backup key, tests                                                 |
 | Browser audio autoplay blocks music          | Low        | Low    | Unlock audio on the first user gesture                                                          |
-| Performance drops with particles/boss        | Low        | Medium | Budgets, pooling, profiling, screen-shake and flash settings                                    |
+| Performance drops with particles/boss        | Low        | Medium | Frame budgets, profiling, screen-shake and flash settings                                       |
 | "5 lives" ambiguity                          | Resolved   | Low    | Interpreted as 5 HP on Normal; death restarts the current level with full HP                    |
 | GitHub Pages base path breaks assets         | Low        | Medium | Set `base` correctly; smoke-test the deployed build, not only local dev                         |
 | Fresh-player onboarding is unverified        | High       | Medium | Carried as a P2 known issue; the title screen lists the core controls to reduce the risk        |

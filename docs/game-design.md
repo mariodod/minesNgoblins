@@ -37,7 +37,7 @@ The player advances through four handcrafted mine levels, dodges or defeats enem
 
 ## 3. Target audience and platform
 
-- **Platform:** Desktop web browsers (Chrome, Edge, Firefox, Safari; WebGL2 required).
+- **Platform:** Desktop web browsers (Chrome, Edge, Firefox, Safari). WebGL is preferred; the Canvas renderer is the fallback.
 - **Input:** Keyboard first. Gamepad support is a stretch goal for v1.1.
 - **Session length:** 15–25 minutes for a complete Normal run; individual levels 2–4 minutes.
 - **Audience:** Players who enjoy retro action platformers, precision challenges, speedruns, and self-imposed challenge runs.
@@ -492,7 +492,7 @@ Every run records:
 - Ore collected.
 - Difficulty and completion state.
 
-The tracking system listens to gameplay events such as `enemy:killed`, `player:damaged`, and `item:used`. A challenge rule is a pure validation function over that data. This keeps rules testable and prevents ad-hoc checks scattered across entities.
+The tracking system listens to gameplay events such as `enemy-killed`, `player-damaged`, and `player-item-use`. A challenge rule is a pure validation function over that data. This keeps rules testable and prevents ad-hoc checks scattered across entities.
 
 ### 11.2 Challenge runs
 

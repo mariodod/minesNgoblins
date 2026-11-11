@@ -8,7 +8,7 @@ const canvas = game.canvas;
 
 canvas.setAttribute(
   'aria-label',
-  'Mines and Goblins game canvas. Use arrow keys and Enter, or WASD and Space.',
+  'Mines and Goblins game canvas. Move with A and D or the arrow keys, jump with Space, throw with X, and press Escape to pause.',
 );
 canvas.setAttribute('role', 'application');
 canvas.setAttribute('tabindex', '0');
