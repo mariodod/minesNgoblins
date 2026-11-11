@@ -22,15 +22,15 @@ Mines & Goblins is a browser-first, retro action platformer about a stubborn min
 | Action       | Default input             |
 | ------------ | ------------------------- |
 | Move         | `A` / `D` or Left / Right |
-| Jump         | `Space` or `Z`            |
-| Throw rock   | `X` or `J`                |
-| Use item     | `C` or `K`                |
+| Jump         | `Space`                   |
+| Throw rock   | `X`                       |
+| Use item     | `C`                       |
 | Interact     | `E`                       |
-| Aim up/down  | `W` / `S` or Up / Down    |
+| Aim up/down  | `Up` / `Down`             |
 | Drop through | `Down` + `Jump`           |
-| Pause        | `Esc` or `P`              |
+| Pause        | `Esc`                     |
 
-Every action can be rebound in **Options → Controls**. The title screen lists the core bindings.
+Every action can be rebound in **Options → Controls**. The title screen lists the core bindings. Left/Right and Up/Down arrows always work alongside the bound movement keys.
 
 ## Screenshots
 

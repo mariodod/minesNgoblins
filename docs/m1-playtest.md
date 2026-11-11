@@ -14,7 +14,7 @@ These passes were run internally with automated browser scripts and screenshot r
 | Move          | `A` / `D` or Left / Right |
 | Jump          | `Space` or `Z`            |
 | Throw rock    | `X` or `J`                |
-| Aim up/down   | `W` / `S` or Up / Down    |
+| Aim up/down   | `Up` / `Down`             |
 | Drop through  | `Down` + `Jump`           |
 | Debug overlay | `F3` (development builds) |
 

@@ -19,13 +19,13 @@ Desktop browser, keyboard only. Start a run, pick a difficulty, and descend. The
 | Action       | Default input             |
 | ------------ | ------------------------- |
 | Move         | `A` / `D` or Left / Right |
-| Jump         | `Space` or `Z`            |
-| Throw rock   | `X` or `J`                |
-| Use item     | `C` or `K`                |
+| Jump         | `Space`                   |
+| Throw rock   | `X`                       |
+| Use item     | `C`                       |
 | Interact     | `E`                       |
-| Aim up/down  | `W` / `S` or Up / Down    |
+| Aim up/down  | `Up` / `Down`             |
 | Drop through | `Down` + `Jump`           |
-| Pause        | `Esc` or `P`              |
+| Pause        | `Esc`                     |
 
 ## Screenshots
 
@@ -122,7 +122,7 @@ The dev server runs at `http://127.0.0.1:5173/`. Choose **Start Run**, pick a di
 
 The default bindings are listed in [Play now](#play-now). Every action can be rebound in **Options → Controls**.
 
-Rocks are unlimited and deal 1 damage. The one-slot secondary item holds a limited-use Knife, Flintlock, or Rune Scroll; picking up the same item adds ammo up to its cap, while a different item replaces it. Crates contain authored ore, salves, or items, and pedestals hold items that require `E` to collect. Falling into a gap or losing all hearts restarts the level after a short death overlay.
+Rocks are unlimited and deal 1 damage. The one-slot secondary item holds a limited-use Knife, Flintlock, or Rune Scroll; picking up the same item adds ammo up to its cap, while a different item replaces it. Crates contain authored ore, salves, or items, and pedestals hold items that require `E` to collect. Falling into a gap or losing all hearts restarts the level automatically after the death animation.
 
 Development builds accept `?difficulty=normal|hard|impossible|crazy` to preselect a difficulty. `?level=<id>` preselects the starting level, while `?spawn=exit` and `?boss=1` bypass the difficulty screen for direct QA. Production builds ignore these queries. The boss test API exposes `hitBoss`, `skipBossPhase`, `defeatBoss`, `defeatPlayer`, `damagePlayer`, and `healPlayer` on `window.__MINES_DEBUG__`; level scenes expose `defeatAllEnemies` on `window.__MINES_LEVEL_DEBUG__` so the Crazy exit gate can be verified.
 

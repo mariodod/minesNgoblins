@@ -120,12 +120,15 @@ The player is a compact, readable pixel-art miner.
 | Action                        | Default input             | Behavior                                                |
 | ----------------------------- | ------------------------- | ------------------------------------------------------- |
 | Move left / right             | `A` / `D` or Left / Right | Accelerated run with friction                           |
-| Jump                          | `Space` or `Z`            | Variable-height jump                                    |
+| Jump                          | `Space`                   | Variable-height jump                                    |
 | Drop through one-way platform | Down + Jump               | Brief collision disable                                 |
-| Throw rock                    | `X` or `J`                | Arc projectile; hold Up/Down to angle                   |
-| Use item                      | `C` or `K`                | Uses the equipped secondary item                        |
-| Pause                         | `Esc` or `P`              | Opens pause menu                                        |
+| Throw rock                    | `X`                       | Arc projectile; hold Up/Down to angle                   |
+| Use item                      | `C`                       | Uses the equipped secondary item                        |
+| Pause                         | `Esc`                     | Opens pause menu                                        |
 | Interact                      | `E`                       | Takes items from pedestals; activates the exit/elevator |
+
+Every one of these actions except aiming is rebindable in Options → Controls.
+Left/Right and Up/Down arrows always work alongside the bound movement keys.
 
 **Movement feel targets (starting values, tuned in M1):**
 

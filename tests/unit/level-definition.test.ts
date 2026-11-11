@@ -1,12 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { LevelValidationError, parseLevelDefinition } from '../../src/data/level-definition';
-import {
-  getLevelIndex,
-  LEVEL_ASSETS,
-  LEVEL_COUNT,
-  LEVEL_ORDER,
-} from '../../src/data/level-registry';
+import { LEVEL_ASSETS } from '../../src/data/level-registry';
 
 function readMap(path: string): Record<string, unknown> {
   return JSON.parse(
@@ -142,17 +137,6 @@ describe('parseLevelDefinition', () => {
 });
 
 describe('authored run levels', () => {
-  it('defines four levels in run order', () => {
-    expect(LEVEL_COUNT).toBe(4);
-    expect(LEVEL_ORDER).toEqual([
-      'shaft-entrance',
-      'goblin-tunnels',
-      'crystal-caverns',
-      'deep-vein',
-    ]);
-    expect(LEVEL_ASSETS.map((asset) => asset.number)).toEqual([1, 2, 3, 4]);
-  });
-
   it.each(LEVEL_ASSETS)('validates $id', (asset) => {
     const level = parseLevelDefinition(readMap(asset.path));
 
@@ -163,7 +147,6 @@ describe('authored run levels', () => {
     expect(level.exit.width).toBeGreaterThan(0);
     expect(level.exit.height).toBeGreaterThan(0);
     expect(level.enemies.length).toBeGreaterThan(0);
-    expect(getLevelIndex(level.id)).toBe(asset.number - 1);
   });
 
   it('places crystal decorations in the caverns and deep vein', () => {

@@ -15,10 +15,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Dead code: the unused `TILE_SIZE` constant, the unused `PropType` alias, the `ACHIEVEMENTS_BY_ID` map and its `getAchievement` lookup, and the `save-service` re-exports of keybind and skin symbols that every caller already imported from their real home.
 - Stale claims about a Tiled map pipeline, Aseprite and OGG tooling, a localization layer, an in-game reset-save action, and an `UNLICENSED` license across the docs and pack READMEs.
+- Duplicated registry assertions in `tests/unit/level-definition.test.ts`, which now leaves the run-order checks to `tests/unit/level-registry.test.ts`.
 
 ### Fixed
 
 - The `EnemyDefinition.contactDamage` doc comment was attached to `speed` and pointed at the wrong module. It now documents the field it sits on and names `scaleEnemyDamage` in `src/data/difficulties.ts`.
+- The README and release notes listed alternate keys (`Z`, `J`, `K`, `W`/`S`, `P`) that the shipped game does not bind. The controls tables now list only the real bindings.
 
 ## [1.0.0] - 2026-11-03
 
