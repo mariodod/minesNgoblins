@@ -113,7 +113,7 @@ The remaining `level=` and `difficulty=` hits are property assignments such as `
 
 ## Manual release checklist
 
-Run these before tagging M7's release candidate:
+This checklist was carried into M7 and completed there; the M7 results are recorded in [M7 QA Notes](m7-qa.md). The list is kept for reference:
 
 1. Walk every level from spawn to elevator; jump onto every platform and confirm none is unreachable (the BFS reachability unit test covers the authored map, a human confirms the feel).
 2. Trigger the pause menu mid-jump, mid-flash, and during boss telegraphs.
@@ -127,11 +127,11 @@ Run these before tagging M7's release candidate:
 10. Corrupt the save in devtools and confirm the backup and Title notice.
 11. Check 1366×768, 1920×1080, and 2560×1440 for letterboxing and readable text.
 
-## Known follow-ups for M7
+## Follow-ups, and where they ended
 
-- Human route pacing for Normal, Hard, Impossible, and Crazy, including a timed Crazy full clear.
-- Boss fairness review with the final art and audio.
-- A separate results music track (the four-track target was cut to three).
-- Full-suite runs on Edge, Firefox, and WebKit in CI instead of the smoke subset.
-- UI copy is still co-located with its scenes; extracting it into a copy table is deferred until a second language is scheduled.
-- Repository license decision.
+- Human route pacing for Normal, Hard, Impossible, and Crazy, including a timed Crazy full clear. Done in M7 with scripted runs; no human tester was available, so fresh-player onboarding is still unverified.
+- Boss fairness review with the final art and audio. Done in M7.
+- A separate results music track (the four-track target was cut to three). Still cut; Results reuses the title theme.
+- Full-suite runs on Edge, Firefox, and WebKit in CI instead of the smoke subset. Still open. The matrix runs a fixed spec list on those engines and CI stays Chromium-only.
+- UI copy is still co-located with its scenes; extracting it into a copy table is deferred until a second language is scheduled. Still open, and localization is out of scope for v1.
+- Repository license decision. Resolved in M8: MIT.

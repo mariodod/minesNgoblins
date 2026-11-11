@@ -97,7 +97,9 @@ the prompt shows `LOCKED: N LEFT` and the elevator refuses to leave.
 
 ## Deferred
 
-- Ghost and wormling enemies are not part of the M3 standard roster.
+- The Wormling is a boss-arena add and never appears in a standard level. There
+  is no ghost enemy in the shipped game; the design document's ghost was
+  dropped before M2 and never implemented.
 - Boss mechanics, challenge rules, difficulty selection UI, and meta progression
   remain in M4/M5.
 - Mid-run saving remains out of scope for v1.

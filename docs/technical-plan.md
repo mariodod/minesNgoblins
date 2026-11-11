@@ -1,8 +1,8 @@
 # Mines & Goblins — Technical Plan
 
-**Version:** 0.6  
-**Date:** 2026-10-30  
-**Status:** M6 complete at `v0.6.0`; final generated art, audio, and bitmap font packs, accessibility settings, credits, and release documentation shipped
+**Version:** 1.0  
+**Date:** 2026-11-03  
+**Status:** Shipped at `v1.0.0`; the game, its documentation, and the release pipeline below describe the shipped state
 
 ---
 
@@ -27,26 +27,26 @@
 
 ## 2. Decision summary
 
-| Area                   | Decision                                      |
-| ---------------------- | --------------------------------------------- |
-| Platform               | Desktop web, static hosting                   |
-| Language               | TypeScript, `strict` mode                     |
-| Game framework         | **Phaser 4.2.x**                              |
-| Build/dev server       | Vite                                          |
-| UI                     | Phaser scenes and bitmap/pixel text           |
-| Level format           | Tiled JSON (`.tmj` / `.json`)                 |
-| Physics                | Phaser Arcade Physics                         |
-| State                  | Custom typed event bus + run/session services |
-| Persistence            | Versioned `localStorage` JSON                 |
-| Unit/integration tests | Vitest                                        |
-| Browser smoke tests    | Playwright                                    |
-| Lint/format            | ESLint + Prettier                             |
-| CI/CD                  | GitHub Actions → GitHub Pages                 |
-| Package manager        | npm (lockfile committed)                      |
-| Runtime                | Node.js 24 LTS for development/CI             |
-| Art                    | Aseprite; PNG spritesheets/atlases            |
-| Audio                  | Phaser Web Audio; OGG music, WAV/OGG SFX      |
-| Versioning             | SemVer + Git tags per milestone               |
+| Area             | Decision                                           |
+| ---------------- | -------------------------------------------------- |
+| Platform         | Desktop web, static hosting                        |
+| Language         | TypeScript 6, `strict` mode                        |
+| Game framework   | **Phaser 4.2.1**                                   |
+| Build/dev server | Vite 8                                             |
+| UI               | Phaser scenes and a generated 5×7 bitmap font      |
+| Level format     | Hand-authored JSON in `public/maps/`               |
+| Physics          | Phaser Arcade Physics                              |
+| State            | Typed run/session services, no event bus framework |
+| Persistence      | Versioned `localStorage` JSON                      |
+| Unit tests       | Vitest 5                                           |
+| Browser tests    | Playwright 1.64                                    |
+| Lint/format      | ESLint 10 + Prettier 3                             |
+| CI/CD            | GitHub Actions → GitHub Pages                      |
+| Package manager  | npm (lockfile committed)                           |
+| Runtime          | Node.js 24 for development/CI                      |
+| Art              | Generated in code by `tools/assets/`               |
+| Audio            | Phaser Web Audio; 16 kHz mono WAV                  |
+| Versioning       | SemVer + Git tags per milestone                    |
 
 ---
 
@@ -58,18 +58,17 @@
 
 - **2D-first:** sprites, tilemaps, cameras, animation, particles, input, audio, and scene management are built in.
 - **Arcade Physics:** enough for a platformer with AABB collisions, gravity, one-way platforms, overlap checks, and projectile pooling. No need for a full rigid-body engine.
-- **Tiled support:** native tilemap loading aligns with the handcrafted-level plan.
 - **TypeScript:** first-class types and a large body of examples.
 - **Web deployment:** produces a static bundle that can be hosted on GitHub Pages with no server.
 - **Fast iteration:** Vite hot reload plus simple scene reloads.
-- **Current stable:** Phaser 4 launched in April 2026 and the current stable line is 4.2.x (4.2.1 at the time of planning, July 2026). Phaser 4 has a rebuilt WebGL renderer, unified filters, and modern performance characteristics. It is mature enough to start a new project, while Phaser 3.90 remains the fallback if a blocking issue appears.
+- **Current stable:** Phaser 4 launched in April 2026 and the project ships on 4.2.1. Phaser 4 has a rebuilt WebGL renderer, unified filters, and modern performance characteristics.
 - **License:** MIT.
 
 **Constraints accepted:**
 
 - Phaser 4 is WebGL-first, and its Canvas renderer is deprecated. We target modern WebGL2 browsers only.
-- Arcade Physics is not a full platformer physics engine. We will implement coyote time, jump buffering, one-way platforms, and projectile behavior ourselves on top of it.
-- The engine is a framework, not an editor. Level layout lives in Tiled; entities and logic live in TypeScript.
+- Arcade Physics is not a full platformer physics engine. We implement coyote time, jump buffering, one-way platforms, and projectile behavior ourselves on top of it.
+- The engine is a framework, not an editor. Level geometry lives in hand-authored JSON files; entities and logic live in TypeScript.
 
 **Version policy:** pin the exact Phaser version in `package.json` and commit the lockfile. Upgrade deliberately at milestone boundaries, not automatically.
 
@@ -92,24 +91,24 @@ Godot is the strongest alternative and would be a good choice for a desktop-firs
 
 ## 4. Stack details
 
-| Layer           | Tool                                     | Notes                                                                              |
-| --------------- | ---------------------------------------- | ---------------------------------------------------------------------------------- |
-| Runtime         | Node.js 24 LTS                           | Use the current active LTS at bootstrap; pin in `.nvmrc`                           |
-| Package manager | npm                                      | Commit `package-lock.json`; do not mix package managers                            |
-| Language        | TypeScript 5.x                           | `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes` where practical |
-| Framework       | Phaser 4.2.x                             | Pin exact version                                                                  |
-| Bundler         | Vite                                     | ESM, fast HMR, static build                                                        |
-| Level editor    | Tiled 1.11+                              | JSON/TMJ export; object layers for entities                                        |
-| Art             | Aseprite                                 | Export spritesheets/atlases; keep source files                                     |
-| Audio           | Phaser Web Audio                         | OGG music; WAV/OGG SFX; no Howler needed                                           |
-| Testing         | Vitest                                   | Pure systems and data validation                                                   |
-| Browser tests   | Playwright                               | Smoke-test boot, start, movement, pause                                            |
-| Lint            | ESLint 9 flat config + typescript-eslint | No `any` at boundaries without justification                                       |
-| Format          | Prettier                                 | Single source of formatting truth                                                  |
-| CI              | GitHub Actions                           | install → lint → typecheck → test → build                                          |
-| Hosting         | GitHub Pages                             | Static artifact deploy from `main`                                                 |
-| Save            | `localStorage`                           | Versioned schema, runtime validation                                               |
-| Debug           | Phaser debug graphics + custom overlay   | Dev-only, tree-shaken or gated                                                     |
+| Layer           | Tool                                      | Notes                                                                |
+| --------------- | ----------------------------------------- | -------------------------------------------------------------------- |
+| Runtime         | Node.js 24                                | Required by `engines.node`; CI installs the same major               |
+| Package manager | npm                                       | Commit `package-lock.json`; do not mix package managers              |
+| Language        | TypeScript 6.x                            | `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`   |
+| Framework       | Phaser 4.2.1                              | Pin exact version                                                    |
+| Bundler         | Vite 8                                    | ESM, fast HMR, static build                                          |
+| Level format    | Hand-authored JSON                        | Validated by `src/data/level-definition.ts` at load                  |
+| Art             | Generators in `tools/assets/`             | PNG spritesheets, tiles, and a 5×7 bitmap font, all produced by code |
+| Audio           | Phaser Web Audio                          | 16 kHz mono WAV for music and SFX; no Howler needed                  |
+| Testing         | Vitest 5                                  | Pure systems and data validation                                     |
+| Browser tests   | Playwright 1.64                           | Smoke-test boot, start, movement, pause                              |
+| Lint            | ESLint 10 flat config + typescript-eslint | No `any` at boundaries without justification                         |
+| Format          | Prettier 3                                | Single source of formatting truth                                    |
+| CI              | GitHub Actions                            | install → format:check → lint → typecheck → test → build → e2e       |
+| Hosting         | GitHub Pages                              | Static artifact deploy from `main`                                   |
+| Save            | `localStorage`                            | Versioned schema, runtime validation                                 |
+| Debug           | Phaser debug graphics + custom overlay    | Dev-only, gated behind `import.meta.env.DEV`                         |
 
 ### 4.1 Browser support
 
@@ -150,41 +149,47 @@ main.ts
       ├─ PreloadScene       (asset manifest, loading bar)
       ├─ TitleScene
       ├─ RunSetupScene      (difficulty + challenge preview)
-      ├─ LevelScene         (tilemap, entities, hazards, exit)
+      ├─ LevelScene         (level geometry, entities, hazards, exit)
       ├─ BossScene          (Great Worm arena, phases, supplies, victory)
-      ├─ HUDScene           (overlay, always active during play)
+      ├─ HudScene           (overlay, always active during play)
       ├─ PauseScene         (run pause overlay)
-      ├─ SettingsScene      (volume and screen-shake overlay)
+      ├─ SettingsScene      (volume, shake, flash, fullscreen overlay)
+      ├─ ControlsScene      (key rebinding overlay)
       ├─ ResultsScene
       ├─ AchievementsScene
-      └─ SkinsScene
+      ├─ SkinsScene
+      ├─ CreditsScene
+      └─ ToastScene         (non-blocking achievement notices)
 ```
 
 `LevelScene` is reused for all four standard levels, parameterized by a level ID. `BossScene` is separate because its camera, music, and entity logic differ.
 
 ### 5.2 Services and ownership
 
-| Service / module        | Responsibility                                                     |
-| ----------------------- | ------------------------------------------------------------------ |
-| `SaveService`           | Load, validate, back up, recover, and write save data              |
-| `RunService`            | Current run state, difficulty, timers, attribution, boss lifecycle |
-| `systems/challenges.ts` | Pure Pacifist/Primitive/Untouchable/Legend evaluation and reasons  |
-| `AchievementService`    | Trigger evaluation, once-only unlocks, reward-skin synchronization |
-| `data/skins.ts`         | Skin definitions, palette data, sanitization, and texture keys     |
-| `AudioService`          | Buses, music transitions, SFX throttling, unlock                   |
-| `InputService`          | Keyboard mappings, buffered actions, future gamepad adapter        |
-| `LevelScene` + data     | Load authored maps, instantiate entities, enforce exit rules       |
+| Service / module        | Responsibility                                                       |
+| ----------------------- | -------------------------------------------------------------------- |
+| `SaveService`           | Load, validate, back up, recover, and write save data                |
+| `RunService`            | Current run state, difficulty, timers, attribution, boss lifecycle   |
+| `systems/challenges.ts` | Pure Pacifist/Primitive/Untouchable/Legend evaluation and reasons    |
+| `systems/inventory.ts`  | Single secondary-item slot, use counts, pickup and replacement rules |
+| `systems/damage.ts`     | Pure HP math, damage sources, and frontal-hit detection              |
+| `AchievementService`    | Trigger evaluation, once-only unlocks, reward-skin synchronization   |
+| `data/skins.ts`         | Skin definitions, palette data, sanitization, and texture keys       |
+| `AudioService`          | Buses, music transitions, SFX throttling, unlock                     |
+| `InputService`          | Keyboard mappings and buffered actions                               |
+| `LevelScene` + data     | Load authored maps, instantiate entities, enforce exit rules         |
 
-Services are created once at boot and accessed through a small typed service registry or Phaser's `registry`. Avoid global mutable singletons in tests; inject dependencies where practical.
+Services are created once at boot and accessed through Phaser's `registry`. Avoid global mutable singletons in tests; inject dependencies where practical.
 
 ### 5.3 Scene responsibilities
 
 - Scenes own presentation and local lifecycle.
 - Scenes must not directly write save data; they call services.
 - `LevelScene` and `BossScene` report kills, damage, deaths, item uses, ore, and boss attempts to `RunService` at the moment they happen.
-- `HUDScene` renders snapshots supplied by the active gameplay scene, including the Crazy enemies-remaining counter.
+- `HudScene` renders snapshots supplied by the active gameplay scene, including the Crazy enemies-remaining counter.
 - `PauseScene` pauses `LevelScene`/`BossScene` and shows the current challenge-track summary.
-- `SettingsScene` pauses its caller, applies volume and screen-shake changes immediately, and persists them through `SaveService`.
+- `SettingsScene` pauses its caller, applies volume, screen-shake, flash, and fullscreen changes immediately, and persists them through `SaveService`.
+- `ControlsScene` rebinds every action and writes through `SaveService`.
 - `ToastScene` renders non-blocking achievement unlock notices above gameplay.
 - Scene transitions use a short fade; gameplay state is not persisted across a browser refresh in v1.
 
@@ -196,43 +201,55 @@ Use composition with a small number of focused base classes:
 Entity (Phaser.Physics.Arcade.Sprite)
   ├─ Player
   ├─ Enemy
+  │    ├─ PracticeDummy
   │    ├─ Bat
   │    ├─ Goblin
   │    ├─ Skeleton
   │    ├─ Beetle
-  │    ├─ Ghost
   │    └─ Wormling
+  ├─ Boss
+  │    ├─ GreatWorm
+  │    ├─ BossRock
+  │    └─ Shockwave
+  ├─ Pickup
+  │    ├─ Crate
+  │    └─ ItemPickup
+  ├─ Hazard
+  │    └─ FallingRock
   └─ Projectile
        ├─ Rock
-       ├─ Knife
-       ├─ Bullet
-       └─ MagicOrb
+       ├─ Bone
+       └─ ItemProjectile (knife, bullet, rune scroll)
 ```
 
 - Collision bodies use simple rectangles, not per-pixel masks.
-- Enemy behaviors are state machines (`idle`, `patrol`, `chase`, `windup`, `attack`, `hurt`, `dead`).
-- Boss uses a dedicated state machine with phases and attack selection.
+- Enemy behaviors are state machines driven by the shared `Enemy` base class and per-behavior subclasses.
+- The boss uses a dedicated state machine with phases and attack selection.
 - Projectiles are pooled to avoid allocation spikes.
 
 ### 5.5 Damage pipeline
 
-All damage flows through one function:
+All damage flows through one shape:
 
 ```ts
+type DamageSource = 'rock' | 'knife' | 'bullet' | 'magic' | 'enemy' | 'hazard' | 'environment';
+
 interface DamageEvent {
-  targetId: string;
   amount: number;
-  source: 'rock' | 'knife' | 'bullet' | 'magic' | 'enemy' | 'hazard' | 'environment';
+  source: DamageSource;
+  sourceX: number;
+  sourceY: number;
   sourceEntityId?: string;
-  isLethal?: boolean;
+  /** Horizontal velocity of the projectile at impact, used for directional armor. */
+  impactVx?: number;
 }
 ```
 
 Order of operations:
 
 1. Source checks target invulnerability.
-2. Difficulty/armor adjustments, if any.
-3. HP reduction.
+2. Difficulty and armor adjustments.
+3. HP reduction through the pure `applyDamage` helper in `src/systems/damage.ts`.
 4. Hit feedback (flash, knockback, hit-stop, SFX, particles).
 5. Emit `enemy:damaged` or `player:damaged`.
 6. If HP reaches 0, emit `enemy:killed` or `player:died` with full attribution.
@@ -313,17 +330,17 @@ Enemy spawns compute effective HP at spawn time from base HP, level bonus, and t
 
 ### 5.8 Level pipeline
 
-1. Design the level in Tiled.
-2. Export JSON/TMJ into `public/maps/`.
-3. Object layers reference stable string IDs from `src/data/`.
-4. A validation test parses every map and checks:
+1. Author the level as a JSON file in `public/maps/`.
+2. Reference stable string IDs from `src/data/` for enemies, items, and prop types.
+3. `parseLevelDefinition` validates every map before play:
    - Known object types only.
-   - Exactly one player spawn.
-   - At least one exit.
-   - Enemy/item IDs exist.
-   - All enemies are reachable enough to be counted (manual review plus a debug reachability overlay).
-5. `LevelScene` builds collision groups, instantiates enemies/pickups, sets camera bounds, and emits `level:started`.
-6. On exit overlap/interact, `level:completed` is emitted and the run advances.
+   - A player spawn inside the level bounds.
+   - At least one exit rectangle.
+   - Enemy and item IDs exist.
+   - Geometry inside the level bounds and a `killY` below them.
+4. A unit test parses every shipped map and asserts the same rules, plus that the authored platforms stay reachable.
+5. `LevelScene` builds collision groups, instantiates enemies and pickups, sets camera bounds, and starts the level.
+6. On exit overlap plus interact, the scene advances to the next level or the boss.
 
 ### 5.9 Save pipeline
 
@@ -341,28 +358,39 @@ Enemy spawns compute effective HP at spawn time from base HP, level bonus, and t
 All tunable gameplay data lives in typed data modules:
 
 ```text
+src/config/
+  constants.ts        (title, canvas size, app version)
+  tuning.ts           (player, rock, projectile, enemy, feedback, and hazard tuning)
 src/data/
+  achievements.ts
+  assets.ts           (asset-manifest.json loader and typed asset records)
+  boss.ts
   difficulties.ts
   enemies.ts
   items.ts
-  levels.ts
-  achievements.ts
+  level-definition.ts (level schema and runtime validation)
+  level-registry.ts   (run order and per-level display metadata)
   skins.ts
-  strings/en.ts
-  tuning.ts
+  themes.ts
 ```
 
 Example:
 
 ```ts
 export interface EnemyDefinition {
-  id: string;
+  id: EnemyId;
   displayName: string;
+  behavior: EnemyBehavior;
+  spriteKey: string;
   baseHp: number;
   contactDamage: number;
   speed: number;
-  behavior: 'bat' | 'goblin' | 'skeleton' | 'beetle' | 'ghost' | 'wormling';
-  spriteKey: string;
+  flying: boolean;
+  patrolRadius: number;
+  detectRange: number;
+  windupMs: number;
+  attackMs: number;
+  recoverMs: number;
   hitbox: { width: number; height: number };
 }
 ```
@@ -371,7 +399,7 @@ Rules:
 
 - No magic numbers in entity classes when the value belongs in tuning data.
 - Level maps reference IDs, not raw stats.
-- Data is validated at boot in dev/test builds; invalid data fails fast.
+- Data is validated at boot; invalid data fails fast.
 - Balance changes should usually be data-only.
 
 ---
@@ -407,7 +435,7 @@ Target: high coverage of pure systems (80%+ lines for `systems/`, `data/`, and r
 - Pause/resume works.
 - Options persist after reload.
 - A smoke test runs on each PR and before deploy.
-- `BROWSER_MATRIX=1` adds Edge, Firefox, and WebKit projects for the M6 browser matrix; the default project stays Chromium so the timing-sensitive boss checks keep one renderer.
+- `BROWSER_MATRIX=1` adds Edge, Firefox, and WebKit projects; the default project stays Chromium so the timing-sensitive boss checks keep one renderer. The matrix runs a fixed spec list (title, movement, pause, settings, audio, accessibility) because those are the specs that are renderer-independent.
 
 ### 7.4 Manual QA
 
@@ -429,7 +457,8 @@ Per milestone, run a written checklist covering:
 
 - Challenge-run tests use fixed event sequences.
 - No random loot in v1; any future randomness must be seeded and recorded.
-- Playwright tests expose a narrow `window.__MINES_TEST__` hook only in development/test builds, never production. `window.__MINES_DEBUG__` carries the boss-arena helpers, and `window.__MINES_LEVEL_DEBUG__` carries the level-only `defeatAllEnemies` helper used to verify the Crazy exit gate.
+- Playwright tests expose a narrow `window.__MINES_TEST__` hook only in development builds, never production. `window.__MINES_DEBUG__` carries the boss-arena helpers, and `window.__MINES_LEVEL_DEBUG__` carries the level-only `defeatAllEnemies` helper used to verify the Crazy exit gate.
+- The production bundle is scanned after every build to confirm none of those globals or the development query shortcuts (`?boss=1`, `?spawn=exit`, `?level=`, `?difficulty=`) survive into the shipped build.
 
 ---
 
@@ -447,7 +476,7 @@ Per milestone, run a written checklist covering:
 | Memory             | Under 200 MB                  |
 | Save size          | Under 100 KB                  |
 
-M6 measured results (1920×1080, 5-second sample): 60.2 FPS headless with software rendering, 60.1 FPS headed, about 19–20 MB JS heap, 1.73 MB total load, and a 407 kB gzipped JavaScript bundle. See [M6 QA Notes](m6-qa.md).
+Shipped measurements (1920×1080): 60.1–60.2 FPS on hardware, about 19–20 MB JS heap, and a 1,564 kB JavaScript bundle that gzips to 408 kB. See [M6 QA Notes](m6-qa.md) and [M7 QA Notes](m7-qa.md).
 
 Techniques:
 
@@ -466,36 +495,36 @@ Techniques:
 
 ### 9.1 GitHub Actions pipeline
 
-On every pull request and push to `main`:
+On every pull request and push to `main` (`.github/workflows/ci.yml`):
 
 ```text
 npm ci
+→ npm run format:check
 → npm run lint
 → npm run typecheck
 → npm run test
 → npm run build
-→ Playwright smoke test (built preview)
-→ upload build artifact
+→ Playwright Chromium suite
 ```
 
-On `main`, deploy the artifact to GitHub Pages.
+On `main`, a second workflow (`.github/workflows/deploy.yml`) runs lint, typecheck, unit tests, and the build, then publishes `dist/` to GitHub Pages.
 
 ### 9.2 Environment and base path
 
-- Vite `base` must match the repository path (`/minesNgoblins/`) or the configured custom domain.
-- Use relative asset URLs where possible.
-- Provide a 404 fallback page for SPA-style routes if needed; a single-page game should not require routing.
+- Vite `base` must match the repository path (`/minesNgoblins/`) or the configured custom domain. It defaults to the repository path in production builds and can be overridden with `VITE_BASE_PATH`.
 - No environment secrets are needed for v1.
 
 ### 9.3 Release process
 
 1. Freeze scope for the milestone.
-2. Run the full test suite and manual QA checklist.
-3. Update `CHANGELOG.md` and version in `package.json`.
+2. Run the full test suite and the QA checklist.
+3. Update `CHANGELOG.md`, `package.json`, and the release notes.
 4. Tag the release (`v0.x.0`, `v1.0.0`).
 5. Deploy from the tagged commit.
-6. Smoke-test the live URL on the browser matrix.
-7. Announce with screenshots/GIFs in the README or GitHub release.
+6. Smoke-test the live URL with `tools/qa/smoke.mjs` on every engine.
+7. Publish the GitHub Release with the notes, the `dist` archive, and the screenshots.
+
+The `v1.0.0` release followed exactly this path; its notes live in [release-notes-v1.0.0.md](release-notes-v1.0.0.md).
 
 ---
 
@@ -507,8 +536,10 @@ minesNgoblins/
     game-design.md
     technical-plan.md
     roadmap.md
-    m6-qa.md
     asset-licenses.md
+    release-notes-v1.0.0.md
+    m1-playtest.md … m7-qa.md
+    media/
   public/
     assets/
       sprites/
@@ -525,9 +556,11 @@ minesNgoblins/
       music/
       README.md
     maps/
+    favicon.svg
   tools/
     assets/            (art + bitmap font generators)
     audio/             (WAV synthesis generators)
+    qa/                (smoke, screenshots, profiling scripts)
   src/
     main.ts
     game.ts
@@ -535,6 +568,7 @@ minesNgoblins/
     scenes/
     entities/
     systems/
+    services/
     ui/
     data/
     types/
@@ -551,14 +585,15 @@ minesNgoblins/
   tsconfig.json
   eslint.config.js
   playwright.config.ts
+  LICENSE
   README.md
   CHANGELOG.md
 ```
 
 Notes:
 
-- `public/` assets are served as-is and referenced by Phaser's loader.
-- Keep source art/audio in a separate `art-source/` or `audio-source/` directory only if repository size remains reasonable; otherwise store large source files in releases and keep exported assets in the repo.
+- `public/` assets are served as-is and referenced by Phaser's loader through `src/data/asset-manifest.json`.
+- Every art and audio asset is generated by the committed scripts in `tools/`; there are no binary source files to keep elsewhere.
 - `docs/` is the source of truth for design and process.
 
 ---
@@ -570,28 +605,28 @@ Notes:
 - Save data stays in the browser.
 - Avoid `eval`, remote code loading, and unsanitized HTML injection.
 - Pin dependencies and review `npm audit` at milestone boundaries; do not auto-merge major upgrades.
-- Add a restrictive Content Security Policy meta tag if it does not interfere with Phaser/Vite.
-- Track every third-party asset license in `docs/asset-licenses.md` before release.
+- No Content Security Policy meta tag is shipped. The page loads only same-origin assets, but adding a CSP would need to allow the inline styles Phaser injects, and it was not worth the risk before v1.
+- Every third-party asset and dependency license is tracked in `docs/asset-licenses.md`.
 
 ---
 
 ## 12. Risks and mitigations
 
-| Risk                                         | Likelihood | Impact | Mitigation                                                                                                 |
-| -------------------------------------------- | ---------- | ------ | ---------------------------------------------------------------------------------------------------------- |
-| Scope creep (procedural levels, more biomes) | High       | High   | Freeze v1 scope; keep a stretch backlog; reject additions that do not serve the core loop                  |
-| Phaser 4 migration/API gaps                  | Medium     | Medium | Pin 4.2.x; build a movement/physics spike in M0–M1; fall back to Phaser 3.90 only if blocked               |
-| Game feel does not feel tight                | Medium     | High   | Prototype movement first; tune coyote time, buffer, jump cut; playtest early                               |
-| Crazy mode is tedious rather than hard       | High       | Medium | Data-driven HP; tune enemy counts, base HP, item supply; playtest Crazy in M5 and M7                       |
-| Boss collision/behavior is hard to control   | Medium     | High   | Prototype segments/weak point in M1–M2; keep hitboxes simple; build boss in M4 with a dedicated debug view |
-| Challenge rules have edge cases              | High       | Medium | Central event model; pure rule functions; explicit tests; results screen explains failures                 |
-| Art/audio production takes longer than code  | High       | High   | Placeholder-first; palette-swap skins; start final art early; commission or scope down                     |
-| Pixel scaling/readability issues             | Medium     | Medium | Fixed 480×270; test common displays; use bitmap font and strong silhouettes                                |
-| Save corruption or schema changes            | Low        | Medium | Versioned schema, validation, backup key, tests                                                            |
-| Browser audio autoplay blocks music          | High       | Low    | Unlock audio on first user gesture; show a clear start prompt                                              |
-| Performance drops with particles/boss        | Medium     | Medium | Budgets, pooling, profiling, reduced-effects option                                                        |
-| "5 lives" ambiguity                          | Resolved   | Low    | Interpreted as 5 HP on Normal; death restarts the current level with full HP                               |
-| GitHub Pages base path breaks assets         | Low        | Medium | Set `base` correctly; smoke-test the deployed build, not only local dev                                    |
+| Risk                                         | Likelihood | Impact | Mitigation                                                                                      |
+| -------------------------------------------- | ---------- | ------ | ----------------------------------------------------------------------------------------------- |
+| Scope creep (procedural levels, more biomes) | High       | High   | Freeze v1 scope; keep a stretch backlog; reject additions that do not serve the core loop       |
+| Game feel does not feel tight                | Low        | High   | Tuned coyote time, jump buffer, and jump cut; locked by `tests/unit/level-reachability.test.ts` |
+| Crazy mode is tedious rather than hard       | Medium     | Medium | Data-driven HP; the M7 balance pass cut the Crazy multiplier from ×5 to ×3                      |
+| Boss collision/behavior is hard to control   | Low        | High   | Simple segment hitboxes; scripted playtests measure the rock-only fight                         |
+| Challenge rules have edge cases              | Medium     | Medium | Central event model; pure rule functions; explicit tests; results screen explains failures      |
+| Art/audio production takes longer than code  | Resolved   | Low    | Everything is generated in code by `tools/assets/` and `tools/audio/`                           |
+| Pixel scaling/readability issues             | Low        | Medium | Fixed 480×270; integer scaling; the generated 5×7 bitmap font                                   |
+| Save corruption or schema changes            | Low        | Medium | Versioned schema, validation, backup key, tests                                                 |
+| Browser audio autoplay blocks music          | Low        | Low    | Unlock audio on the first user gesture                                                          |
+| Performance drops with particles/boss        | Low        | Medium | Budgets, pooling, profiling, screen-shake and flash settings                                    |
+| "5 lives" ambiguity                          | Resolved   | Low    | Interpreted as 5 HP on Normal; death restarts the current level with full HP                    |
+| GitHub Pages base path breaks assets         | Low        | Medium | Set `base` correctly; smoke-test the deployed build, not only local dev                         |
+| Fresh-player onboarding is unverified        | High       | Medium | Carried as a P2 known issue; the title screen lists the core controls to reduce the risk        |
 
 ---
 
@@ -614,9 +649,8 @@ Then:
 4. Add Vitest and a first pure test.
 5. Add Playwright smoke test and config.
 6. Add GitHub Actions CI and Pages deploy workflows.
-7. Add npm scripts: `dev`, `build`, `preview`, `lint`, `typecheck`, `test`, `test:e2e`.
+7. Add npm scripts: `dev`, `build`, `preview`, `lint`, `typecheck`, `test`, `test:e2e`, `assets`, `format`.
 8. Verify `npm run build` output loads from the GitHub Pages base path.
-9. Tag `v0.0.1` after the deployed title screen works.
 
 ---
 
@@ -624,6 +658,8 @@ Then:
 
 | Date       | Decision                                                                                                  | Status         |
 | ---------- | --------------------------------------------------------------------------------------------------------- | -------------- |
+| 2026-11-03 | M8 MIT license, `v1.0.0` tag, GitHub Release, and final deploy                                            | Done           |
+| 2026-11-02 | M7 balance pass (Crazy enemy HP ×5 → ×3), scripted full-run playtests, and performance measurements       | Done           |
 | 2026-10-19 | M0 scaffold implemented (Vite, TypeScript, Phaser, ESLint, Vitest, Playwright)                            | Done           |
 | 2026-10-19 | M1 movement slice implemented (player, level scene, rocks, dummy, HUD, debug)                             | Done           |
 | 2026-10-21 | M2 combat, enemies, items, hazards, and HUD implemented at `v0.2.0`                                       | Done           |
@@ -636,11 +672,12 @@ Then:
 | 2026-10-22 | Pause and Settings use dedicated overlay scenes above Level and HUD                                       | Done           |
 | 2026-10-19 | Use Phaser 4.2.x + TypeScript + Vite                                                                      | Accepted       |
 | 2026-10-19 | Browser-first, static hosting on GitHub Pages                                                             | Accepted       |
-| 2026-10-19 | Handcrafted Tiled levels, no procedural generation in v1                                                  | Accepted       |
+| 2026-10-19 | Handcrafted levels, no procedural generation in v1                                                        | Accepted       |
 | 2026-10-19 | One secondary item slot; deterministic authored pickups                                                   | Accepted       |
 | 2026-10-19 | Local-only save data; no backend                                                                          | Accepted       |
 | 2026-10-19 | Internal resolution 480×270, 16×16 tiles                                                                  | Accepted in M1 |
 | 2026-10-22 | "5 lives" means 5 HP; death restarts the current level with carried entry state                           | Resolved in M3 |
 | 2026-10-22 | Boss uses a separate HP curve: base 48 × 1/1.5/2/2.5 by difficulty                                        | Resolved in M4 |
-| TBD        | Game UI localization scope                                                                                | Open           |
-| TBD        | Repository and asset licenses                                                                             | Open           |
+| 2026-10-19 | Levels are hand-authored JSON validated at load, not Tiled exports                                        | Resolved in M6 |
+| 2026-11-03 | Repository and assets are released under the MIT License                                                  | Resolved in M8 |
+| 2026-11-03 | The game UI is English only; no localization layer ships in v1                                            | Resolved in M8 |

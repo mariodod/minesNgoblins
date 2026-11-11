@@ -4,6 +4,22 @@ All notable changes to this project are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses semantic versioning once public releases begin.
 
+## [Unreleased]
+
+### Changed
+
+- Full review pass over the code, documentation, and tests. The design document, technical plan, roadmap, README, release notes, and the asset-pack READMEs now describe the shipped game: the hand-authored JSON level format, the generated art and audio, the real enemy roster, the current stack versions, and the actual UI and save schemas.
+- The obsolete Mine Ghost enemy, enemy ore drops, moving platforms, and steam vents were removed from the design document; they were never implemented.
+
+### Removed
+
+- Dead code: the unused `TILE_SIZE` constant, the unused `PropType` alias, the `ACHIEVEMENTS_BY_ID` map and its `getAchievement` lookup, and the `save-service` re-exports of keybind and skin symbols that every caller already imported from their real home.
+- Stale claims about a Tiled map pipeline, Aseprite and OGG tooling, a localization layer, an in-game reset-save action, and an `UNLICENSED` license across the docs and pack READMEs.
+
+### Fixed
+
+- The `EnemyDefinition.contactDamage` doc comment was attached to `speed` and pointed at the wrong module. It now documents the field it sits on and names `scaleEnemyDamage` in `src/data/difficulties.ts`.
+
 ## [1.0.0] - 2026-11-03
 
 ### Added

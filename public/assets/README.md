@@ -44,8 +44,7 @@ with no antialiasing or runtime texture generation.
 
 All files in this directory are original works created for Mines & Goblins by
 the project authors. No third-party sprites, tilesets, fonts, or textures are
-included. The pack is covered by the repository license (currently
-`UNLICENSED`; all rights reserved) until a public license is chosen.
+included. The pack is covered by the repository's MIT License.
 
 ## Regeneration
 

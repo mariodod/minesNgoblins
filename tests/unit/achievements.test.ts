@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ACHIEVEMENTS, getAchievement, type AchievementId } from '../../src/data/achievements';
+import { ACHIEVEMENTS, type AchievementId } from '../../src/data/achievements';
 import type { DifficultyId } from '../../src/data/difficulties';
 import { SECONDARY_ITEM_IDS } from '../../src/data/items';
 import { AchievementService } from '../../src/services/achievement-service';
@@ -156,7 +156,6 @@ describe('achievement data', () => {
     );
 
     for (const achievement of ACHIEVEMENTS) {
-      expect(getAchievement(achievement.id)).toBe(achievement);
       expect(achievement.name.length).toBeGreaterThan(0);
       expect(achievement.description.length).toBeGreaterThan(0);
     }

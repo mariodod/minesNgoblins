@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   createDefaultSaveData,
-  DEFAULT_KEYBINDS,
   loadSave,
   MemoryStorage,
   parseSaveData,
   SAVE_KEY,
   SaveService,
 } from '../../src/services/save-service';
+import { DEFAULT_KEYBINDS } from '../../src/services/keybinds';
 
 describe('save data', () => {
   it('creates independent defaults', () => {

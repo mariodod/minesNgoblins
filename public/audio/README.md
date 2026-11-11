@@ -36,8 +36,7 @@ used.
 
 All files in this directory are original works created for Mines & Goblins by
 the project authors. No third-party recordings or sample packs are included.
-The pack is covered by the repository license (currently `UNLICENSED`; all
-rights reserved) until a public license is chosen.
+The pack is covered by the repository's MIT License.
 
 ## Regeneration
 

@@ -94,7 +94,6 @@ Created by [mariodod](https://github.com/mariodod). All art, audio, the bitmap f
 
 - **Phaser 4.2** — MIT
 - **Vite** — MIT
-- **Tiled** (map editor) — GPL, used as a tool only
 - **Playwright** — Apache-2.0
 - **Vitest** — MIT
 

@@ -95,7 +95,7 @@ These numbers are planning aids, not promises. The art/audio pass in M6 can run 
 - Player entity with acceleration, friction, variable jump, coyote time, and jump buffering.
 - One-way platforms and drop-through.
 - Camera follow with deadzone and level bounds.
-- One test level built in Tiled (or a provisional JSON map if Tiled pipeline is not ready).
+- One test level authored as a hand-written JSON map.
 - Rock throwing: horizontal/angled aim, arc, one bounce, 1 damage, cooldown.
 - One practice enemy/dummy with HP and hit reaction.
 - Player HP, damage, invulnerability frames, knockback, death, and level restart.
@@ -174,7 +174,7 @@ These numbers are planning aids, not promises. The art/audio pass in M6 can run 
 
 **Deliverables**
 
-- Four Tiled levels: Shaft Entrance, Goblin Tunnels, Crystal Caverns, The Deep Vein.
+- Four hand-authored JSON levels: Shaft Entrance, Goblin Tunnels, Crystal Caverns, The Deep Vein.
 - Level-specific decorations, hazards, enemy placement, item placement, exits.
 - Level transitions, intro cards, and elevator/exit flow.
 - Boss placeholder arena at the end of Level 4 or a separate placeholder scene.
@@ -209,7 +209,7 @@ floor gaps from 64px to 48px to leave a fair jump margin, and a short preview GI
 now lives at `docs/media/m3-run.gif`.
 
 **Dependencies:** M2.  
-**Risks:** Level design time; Tiled pipeline friction; pacing and readability.
+**Risks:** Level design time; map authoring friction; pacing and readability.
 
 **Exit gate:** This is the first "game-shaped" build. Record a short playtest video/GIF for the README and use it to validate the core loop before adding meta systems.
 
@@ -426,7 +426,7 @@ A milestone is done when:
 ```text
 M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7 → M8
                 └──────→ M4 (boss prototype can start after M1)
-M2/M3: level design and Tiled pipeline can overlap with combat work
+M2/M3: level design and map authoring can overlap with combat work
 M3/M6: final art production should start during M3, not M6
 M6/M7: audio integration can overlap with final art
 ```
@@ -435,7 +435,7 @@ M6/M7: audio integration can overlap with final art
 
 **Parallelizable work**
 
-- Level design in Tiled while coding enemies.
+- Level design in JSON maps while coding enemies.
 - Sprite production (player, enemies, tiles) while systems are being built.
 - Music/SFX composition while boss and meta systems are built.
 - Documentation updates at every milestone.

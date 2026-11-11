@@ -14,7 +14,6 @@ export interface LevelPoint {
 }
 
 export type EnemyType = EnemyId;
-export type PropType = 'crate' | 'crystal' | 'lantern' | 'pedestal';
 export type HazardType = 'spikes' | 'falling-rock';
 
 export interface EnemySpawn extends LevelPoint {

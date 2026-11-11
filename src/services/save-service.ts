@@ -2,18 +2,8 @@ import { DEFAULT_SKIN_ID, isSkinId } from '../data/skins';
 import { isSecondaryItemId, type SecondaryItemId } from '../data/items';
 import { DEFAULT_KEYBINDS, parseKeybinds, type KeybindSettings } from './keybinds';
 
-export {
-  DEFAULT_KEYBINDS,
-  KEYBIND_ROWS,
-  keybindLabel,
-  normalizeKeybind,
-  type KeybindAction,
-  type KeybindSettings,
-} from './keybinds';
-
 export const SAVE_KEY = 'minesNgoblins.save.v1';
 export const SAVE_VERSION = 1;
-export { DEFAULT_SKIN_ID } from '../data/skins';
 
 const SAVE_BACKUP_PREFIX = 'minesNgoblins.save.backup.';
 

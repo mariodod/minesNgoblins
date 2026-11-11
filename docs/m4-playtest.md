@@ -103,7 +103,8 @@ sequences, hole selection, body damage, Wormling HP, and boss run lifecycle.
 - No external human playtest has been run for M4.
 - The pacing bot used development healing; normal player survivability still
   needs a manual pass.
-- Crazy fight duration and damage pressure are not yet measured.
+- Crazy fight duration and damage pressure are not yet measured. (Measured later
+  in M7; see [M7 QA Notes](m7-qa.md).)
 - Results is intentionally a placeholder; badges, achievements, unlocks, and
   failed-run reasons belong to M5.
 - Boss art, stage dressing, and audio remain placeholders until M6.

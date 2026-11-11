@@ -5,7 +5,7 @@
 **Level:** Shaft Entrance - Movement Test  
 **Environment:** Windows, Chromium via Playwright 1.64.1, 1280×720 for input passes and 1920×1080 for the performance pass.
 
-These passes were run internally with automated browser scripts and screenshot review. They are not external player tests; external playtesting is planned for M7.
+These passes were run internally with automated browser scripts and screenshot review. They are not external player tests, and no external playtest was ever run for this project; fresh-player onboarding remains an open P2 item in the v1.0 release notes.
 
 ## Controls
 
@@ -112,7 +112,7 @@ No movement or combat values were changed during M1. The initial values passed t
 ## Known limitations and follow-ups
 
 - Practice dummies are static targets with no attack behavior; M2 adds real enemy state machines.
-- The level is a provisional JSON map, not a Tiled export yet.
+- The level is a provisional hand-authored JSON map.
 - Player, enemies, and pickups still use one-frame placeholder art.
 - SFX are synthesized WebAudio placeholders, not authored assets.
 - There is no pause menu, settings screen, or item slot yet.

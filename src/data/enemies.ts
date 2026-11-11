@@ -14,11 +14,11 @@ export interface EnemyDefinition {
   behavior: EnemyBehavior;
   spriteKey: string;
   baseHp: number;
-  contactDamage: number;
   /**
-   * Enemy damage multiplier applies to contact and projectiles.
-   * Damage is scaled by difficulty in `damage.ts`, never here.
+   * Base contact damage before difficulty scaling. The difficulty multiplier
+   * is applied by `scaleEnemyDamage` in `src/data/difficulties.ts`, never here.
    */
+  contactDamage: number;
   speed: number;
   flying: boolean;
   /** Ground enemies patrol around their spawn point within this radius. */

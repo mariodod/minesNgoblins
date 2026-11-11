@@ -145,11 +145,3 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
     isEarned: (context) => wonRun(context.run) && context.run.difficultyId === 'crazy',
   },
 ];
-
-export const ACHIEVEMENTS_BY_ID: Record<AchievementId, AchievementDefinition> = Object.fromEntries(
-  ACHIEVEMENTS.map((achievement) => [achievement.id, achievement]),
-) as Record<AchievementId, AchievementDefinition>;
-
-export function getAchievement(id: AchievementId): AchievementDefinition {
-  return ACHIEVEMENTS_BY_ID[id];
-}

@@ -1,9 +1,9 @@
 # Mines & Goblins — Game Design Document
 
-**Version:** 0.1 (draft for review)  
-**Date:** 2026-10-19  
-**Status:** Planning  
-**Working title:** Mines & Goblins
+**Version:** 1.0  
+**Date:** 2026-11-03  
+**Status:** Shipped at `v1.0.0`  
+**Title:** Mines & Goblins
 
 ---
 
@@ -60,7 +60,6 @@ The player advances through four handcrafted mine levels, dodges or defeats enem
 ```text
 Title
   → choose difficulty
-  → run intro
   → level 1
   → level 2
   → level 3
@@ -79,11 +78,11 @@ Title
 
 ### 4.3 Failure and retry
 
-- Reaching 0 HP triggers a short death animation and a retry prompt.
-- Retrying restarts the current level from its entrance with full HP and the run's persistent statistics intact.
+- Reaching 0 HP triggers the death animation; after 1.3 seconds the level fades out and restarts automatically with full HP.
+- The run's persistent statistics survive the restart.
 - Pacifist and Primitive runs remain eligible after a death. Untouchable runs do not.
 - Boss deaths restart the boss encounter, not the whole run.
-- The pause menu offers **Resume**, **Restart Level**, **Options**, and **Quit Run**.
+- The pause menu offers **Resume**, **Restart Level**, **Options**, and **Quit Run**. In the boss arena, _Restart Level_ becomes _Restart Fight_.
 
 ### 4.4 Session goals and meta loop
 
@@ -247,18 +246,17 @@ Enemies do not respawn. Enemy counts are finite and tracked for the Crazy-mode e
 
 ### 7.2 Enemy roster
 
-| Enemy                | Base HP | Role               | Behavior                                                            | Counterplay                                    |
-| -------------------- | ------: | ------------------ | ------------------------------------------------------------------- | ---------------------------------------------- |
-| **Cave Bat**         |       1 | Flying nuisance    | Flutters in a sine pattern toward the player's vertical position    | Jump/duck; one rock kills                      |
-| **Goblin Scavenger** |       2 | Basic pressure     | Patrols; charges when the player is close and on the same level     | Jump over the charge; throw while it recovers  |
-| **Skeleton Thrower** |       2 | Ranged denial      | Keeps distance and lobs bones in an arc                             | Close the gap or arc a rock over cover         |
-| **Armored Beetle**   |       3 | Positioning puzzle | Slow patrol; stone hits from the front are deflected                | Hit its exposed back after it turns or charges |
-| **Mine Ghost**       |       2 | Terror/pressure    | Drifts through terrain; phases out and becomes briefly invulnerable | Wait for the materialized window; keep moving  |
-| **Wormling**         |       3 | Burrow ambusher    | Burrows under the floor and emerges near the player                 | Watch dust; move after the emerge telegraph    |
+| Enemy                | Base HP | Role               | Behavior                                                                 | Counterplay                                    |
+| -------------------- | ------: | ------------------ | ------------------------------------------------------------------------ | ---------------------------------------------- |
+| **Cave Bat**         |       1 | Flying nuisance    | Flutters in a sine pattern toward the player's vertical position         | Jump/duck; one rock kills                      |
+| **Goblin Scavenger** |       2 | Basic pressure     | Patrols; charges when the player is close and on the same level          | Jump over the charge; throw while it recovers  |
+| **Skeleton Thrower** |       2 | Ranged denial      | Keeps distance and lobs bones in an arc                                  | Close the gap or arc a rock over cover         |
+| **Armored Beetle**   |       3 | Positioning puzzle | Slow patrol; stone hits from the front are deflected                     | Hit its exposed back after it turns or charges |
+| **Wormling**         |       3 | Boss-arena add     | Crawls out of a burrow hole toward the player after a short grace period | Watch the emerge plume; clear or dodge the add |
 
 **Boss:** the Great Worm, detailed in section 9.
 
-The v1 target is six standard enemies. M2 implements the first four; the Ghost and Wormling arrive with the later levels. If scope becomes tight, the roster can ship with five without changing the core design.
+Five standard enemies fill the four levels, and the sixth (Wormling) appears only in the boss arena as a summoned add. There is no roaming ghost enemy. All six entries are implemented and data-driven in `src/data/enemies.ts`.
 
 ### 7.3 Enemy health progression
 
@@ -283,8 +281,7 @@ Example (Normal):
 | Goblin Scavenger |       2 |       3 |       3 |       4 |
 | Skeleton Thrower |       2 |       3 |       3 |       4 |
 | Armored Beetle   |       3 |       4 |       4 |       5 |
-| Mine Ghost       |       — |       — |       3 |       4 |
-| Wormling         |       — |       — |       — |       5 |
+| Wormling         |       — |       — |       — |       — |
 
 Difficulty multipliers are applied after the level bonus. M7 set the Crazy multiplier to ×3, so a Level 4 Goblin has 12 HP instead of the ×5 value of 20 HP that shipped through M6. A full Crazy clear costs about 309 rock hits (≈2 minutes of pure throwing at the 400 ms cooldown) instead of 515, and the heaviest single enemy takes 15 hits (≈6 seconds of perfect aim) instead of 25. Crazy is still defined by one-hit death and the mandatory all-kill gate; the damage multiplier stays ×5 so any contact is lethal.
 
@@ -304,11 +301,11 @@ Difficulty multipliers are applied after the level bonus. M7 set the Crazy multi
 - Crazy has 1 player HP, so any positive damage is lethal.
 - Invulnerability frames prevent a single contact from draining multiple hearts.
 
-### 7.5 Enemy drops and population
+### 7.5 Enemy population
 
-- Enemies drop ore at a low, authored rate. They do not drop weapons in v1.
+- Enemies never drop ore or weapons. Ore and items come only from authored crates and pedestals.
 - Maximum active enemies per level: 14. Maximum simultaneous active enemies: 8. This keeps encounters readable and performance predictable.
-- Enemy spawns are authored in Tiled; no wave spawning except the boss's Wormling summons.
+- Enemy spawns are authored directly in each level's JSON file; no wave spawning except the boss's Wormling summons.
 - In Crazy, the HUD shows `Enemies remaining: N`. The exit remains visibly locked until N reaches 0.
 - Level design must guarantee that every enemy is reachable and killable in Crazy. No enemy may be trapped behind an unopenable gate or permanently invulnerable.
 
@@ -322,7 +319,7 @@ Difficulty multipliers are applied after the level bonus. M7 set the Crazy multi
 | --- | ------------------------- | ----------- | --------------------------------------------- | --------------------------- |
 | 1   | **Shaft Entrance**        | 2–3 screens | Movement, rocks, crates, first pit            | Bats, Goblins               |
 | 2   | **Goblin Tunnels**        | 3–4 screens | One-way platforms, spikes, skeletons          | Goblins, Skeletons, Beetles |
-| 3   | **Crystal Caverns**       | 3–4 screens | Vertical routes, moving platforms, ghosts     | Bats, Ghosts, Beetles       |
+| 3   | **Crystal Caverns**       | 3–4 screens | Vertical routes, long crystal drops           | Bats, Beetles               |
 | 4   | **The Deep Vein**         | 4–5 screens | Combined hazards, gauntlet, heavy pressure    | All standard enemies        |
 | 5   | **The Great Worm's Nest** | Boss arena  | Burrow holes, falling rocks, supply pedestals | Great Worm + Wormlings      |
 
@@ -330,15 +327,13 @@ The internal resolution is **480×270**, with **16×16 tiles**. Levels scroll sm
 
 ### 8.2 Hazards
 
-| Hazard                | Behavior                                     | Damage |
-| --------------------- | -------------------------------------------- | ------ |
-| Spikes                | Static, visible, avoidable                   | 1      |
-| Falling rocks         | Dust telegraph, shadow, then fall            | 2      |
-| Bottomless pit        | Instant death and level restart              | Lethal |
-| Moving platform       | Safe traversal; can crush? No crushing in v1 | None   |
-| Steam vent (optional) | Periodic, telegraphed burst                  | 1      |
+| Hazard         | Behavior                          | Damage |
+| -------------- | --------------------------------- | ------ |
+| Spikes         | Static, visible, avoidable        | 1      |
+| Falling rocks  | Dust telegraph, shadow, then fall | 2      |
+| Bottomless pit | Instant death and level restart   | Lethal |
 
-For v1, the core hazard set is spikes, falling rocks, and pits. Steam vents are a stretch element if Level 4 needs extra texture.
+For v1, the hazard set is spikes, falling rocks, and pits. There are no moving platforms, crushing hazards, or steam vents; vertical traversal uses static one-way platforms.
 
 ### 8.3 Level design rules
 
@@ -354,26 +349,35 @@ For v1, the core hazard set is spikes, falling rocks, and pits. Steam vents are 
 10. **Pacifist routes exist.** Each combat room needs a dodge route, a higher route, or a timing window that avoids kills.
 11. **Performance budget.** Avoid more than 8 active enemies and 40 active projectiles.
 
-### 8.4 Tiled map structure
+### 8.4 Level file structure
 
-| Layer / object layer | Purpose                                                                     |
-| -------------------- | --------------------------------------------------------------------------- |
-| `background-far`     | Parallax backdrop                                                           |
-| `background-near`    | Parallax mine structures                                                    |
-| `terrain`            | Solid collision tiles                                                       |
-| `one-way`            | Jump-through platforms                                                      |
-| `hazards`            | Spikes, falling-rock triggers, pits                                         |
-| `decor`              | Non-colliding visual details                                                |
-| `objects`            | Player spawn, enemy spawns, crates, items, exit, checkpoints, camera bounds |
+Each level is a hand-authored JSON file in `public/maps/`, loaded and validated at runtime by `parseLevelDefinition` in `src/data/level-definition.ts`. There is no Tiled pipeline and no separate tileset asset: geometry is a list of rectangles.
 
-Object properties use stable IDs defined in TypeScript data files. A validation script/test will fail the build if a map references an unknown enemy, item, or exit type.
+| Field             | Type             | Purpose                                                 |
+| ----------------- | ---------------- | ------------------------------------------------------- |
+| `id`              | string           | Matches the entry in `src/data/level-registry.ts`       |
+| `name`            | string           | Display name in the HUD                                 |
+| `tileSize`        | number           | Must be `16`                                            |
+| `widthTiles`      | number           | Level width; world size is `widthTiles × tileSize`      |
+| `heightTiles`     | number           | Level height; world size is `heightTiles × tileSize`    |
+| `spawn`           | point            | Player start position                                   |
+| `solids`          | rectangle list   | Solid collision geometry                                |
+| `oneWayPlatforms` | rectangle list   | Jump-through platforms                                  |
+| `enemies`         | typed spawn list | `{ type, x, y }` using an ID from `src/data/enemies.ts` |
+| `props`           | typed prop list  | `crate`, `crystal`, `lantern`, or `pedestal`            |
+| `hazards`         | typed rect list  | `spikes` or `falling-rock`                              |
+| `exit`            | rectangle        | Elevator interaction zone                               |
+| `enemyHpBonus`    | integer          | Optional per-level HP bonus                             |
+| `killY`           | number           | Y coordinate below which the player dies                |
+
+Crate contents and pedestal items use the IDs from `src/data/items.ts` (`knife`, `flintlock`, `rune-scroll`, `healing-salve`, `ore`). The validator rejects unknown IDs, out-of-bounds rectangles, a missing exit, and a missing player spawn, so a malformed map cannot reach play.
 
 ### 8.5 Pacing
 
 - Levels escalate from open, readable spaces to tighter, layered rooms.
 - Level 1 teaches movement and throwing with low punishment.
 - Level 2 introduces ranged pressure and positioning.
-- Level 3 introduces verticality and a "phasing" threat.
+- Level 3 introduces verticality and longer falls.
 - Level 4 is a best-of roster gauntlet with little downtime.
 - The boss is a dedicated spectacle and skill check, not a remix room.
 
@@ -422,7 +426,7 @@ A colossal worm that has burrowed through the heart of the mine. It attacks from
 ### 9.5 Victory
 
 - The final hit triggers slow motion, a screen-wide rumble, and the worm's collapse.
-- The arena settles and the elevator opens. Press Interact anywhere to leave, or advance automatically after a short delay.
+- The arena settles and the elevator opens at the right edge. Walk into it and press Interact to leave; there is no automatic advance.
 - The Results screen appears with run stats, completed and failed challenge badges, newly unlocked achievements, and unlocked skins.
 - Boss defeat is the only completion condition for a run.
 
@@ -553,20 +557,25 @@ Skins are equipped from the Skins screen and persist in the local save. No skin 
 
 ```text
 Boot → Title
-Title → Start Run → Difficulty Select → Run Intro → Level 1 … Level 4 → Boss → Results
+Title → Start Run → Difficulty Select → Level 1 … Level 4 → Boss → Results
 Title → Achievements
 Title → Skins
-Title → Options
+Title → Options → Controls
+Title → Credits
 Level → Pause → Resume / Restart Level / Options / Quit Run
-Death → Game Over → Retry Level / Quit Run
+Death → fade out → level restarts with full HP
 Boss defeated → Results → Title
 ```
+
+Death is not a separate scene: the player dies, the level fades out after
+1.3 seconds, and the level restarts automatically with full HP. Quitting a run
+is only available from the pause menu.
 
 ### 12.2 HUD
 
 - **Top left:** hearts, current HP.
-- **Top center:** level name and progress (e.g., "2 — Goblin Tunnels").
-- **Top right:** secondary item icon and remaining uses; rock icon with infinity symbol.
+- **Top center:** level progress and name, e.g. `2/4  GOBLIN TUNNELS  [NORMAL]`. The boss fight replaces it with `BOSS`.
+- **Top right:** secondary item icon and remaining uses, an ore count, and the unlimited-rock indicator `ROCK INF`.
 - **Crazy mode only:** enemies remaining counter.
 - **Boss fight:** boss name, large health bar, phase pips.
 - Run badges are not shown during play by default. Pause lists the four challenge states, and Results shows the final badges with failure reasons.
@@ -578,12 +587,12 @@ The HUD is minimal, readable at 480×270, and uses a pixel font. Important state
 - **Title:** Start Run, Achievements, Skins, Options, Credits.
 - **Difficulty select:** cards with player HP, enemy modifiers, and special rules; warning if Pacifist is incompatible with Crazy.
 - **Pause:** Resume, Restart Level, Options, Quit Run.
-- **Options:** master/music/SFX volume, mute, screen shake, flash intensity, fullscreen, and key remapping.
+- **Options:** master/music/SFX volume, mute, screen shake, flash intensity, fullscreen, and a link to Controls.
 - **Controls:** rebind Move Left, Move Right, Jump, Throw Stone, Use Item, Interact, and Pause; reset to defaults.
 - **Achievements:** grid with locked/unlocked state and descriptions.
 - **Skins:** preview and equip.
 - **Credits:** engine and tool credits plus the original-asset license inventory.
-- **Results:** clear time, deaths, kills, damage taken, items used, ore, badges, achievements unlocked, skins unlocked.
+- **Results:** clear time, kills, damage taken, deaths, item uses, ore, levels cleared, boss attempts, boss damage, best time, badges, achievements unlocked, and skins unlocked.
 
 ### 12.4 Accessibility
 
@@ -595,8 +604,8 @@ The HUD is minimal, readable at 480×270, and uses a pixel font. Important state
 - No flashing above 3 Hz.
 - High-contrast interactables and telegraphs.
 - Text uses clear labels and is not embedded in images.
-- Optional gamepad support is planned for v1.1.
-- The game is desktop-only in v1; no touch controls.
+- The game is desktop-only; no touch controls.
+- Gamepad support is not implemented; it sits in the stretch backlog.
 
 ### 12.5 Save data
 
@@ -609,6 +618,7 @@ interface SaveDataV1 {
     masterVolume: number;
     musicVolume: number;
     sfxVolume: number;
+    muted: boolean;
     screenShake: 'full' | 'reduced' | 'off';
     flashIntensity: 'full' | 'reduced' | 'off';
     equippedSkin: string;
@@ -622,7 +632,7 @@ interface SaveDataV1 {
     bestRunTimeMs: number | null;
     totalDeaths: number;
     totalKills: number;
-    usedItems: string[];
+    usedItems: SecondaryItemId[];
   };
 }
 ```
@@ -631,7 +641,7 @@ interface SaveDataV1 {
 - `keybinds` stores physical `KeyboardEvent.code` values (`KeyA`, `Space`, `Escape`), so bindings keep their key positions across layouts. Older short names such as `SPACE` are upgraded on load.
 - A corrupt or outdated save is backed up under `minesNgoblins.save.backup.<timestamp>` and replaced with defaults after a user-visible notice.
 - There is no account, cloud sync, or online leaderboard.
-- A "Reset Save" action requires confirmation.
+- There is no in-game "reset save" action; deleting the browser storage is the only way to wipe progress.
 - Mid-run progress is not saved in v1. Refreshing or closing the browser ends the run.
 
 ---
@@ -643,27 +653,27 @@ interface SaveDataV1 {
 - **Pixel art:** 16-bit console era, chunky and readable, not faux-3D.
 - **Internal resolution:** 480×270, 16×16 tiles; nearest-neighbor scaling.
 - **Palette:** limited per area. Mine browns and charcoal, lantern amber, goblin green, crystal teal, and a hot crimson for danger.
-- **Player:** 24×32 px silhouette, miner's helmet with a small lamp, satchel, scarf. The lamp can be a visual anchor in dark rooms.
-- **Enemies:** strong silhouettes; eyes and silhouettes readable at small sizes.
-- **Boss:** large segmented worm, 160–240 px across the arena, with clear head, segmented body, and exposed weak point. Multiple animated parts.
-- **Backgrounds:** two parallax layers, timber supports, rails, crystals, distant cave voids. Subtle dust and dripping water.
+- **Player:** 16×24 px silhouette, miner's helmet with a small lamp, satchel, scarf.
+- **Enemies:** strong silhouettes; eyes and silhouettes readable at small sizes. Frames range from 14×10 (bat) to 20×14 (beetle).
+- **Boss:** large segmented worm, 160–240 px across the arena, with clear head, segmented body, and exposed weak point. The head sprite is 40×32.
+- **Backgrounds:** one non-scrolling backdrop per chapter, plus repeating timber pillars, a ceiling beam, and hanging lanterns drawn in the same palette. Subtle drifting dust motes.
 - **VFX:** dust puffs, rock chips, sparks, hit flashes, ground rumble, screen shake, lantern glow. No excessive bloom or modern particle noise.
 - **Skins:** palette swaps with distinct color identity; no geometry changes.
 
 ### 13.2 Animation budget
 
-| Entity         | Animations                                                                                     |
-| -------------- | ---------------------------------------------------------------------------------------------- |
-| Player         | Idle (4), run (6), jump (2), fall (2), throw (3), hurt (2), death (5)                          |
-| Standard enemy | Idle/patrol (4), attack/wind-up (3), hurt (1), death (4)                                       |
-| Boss           | Idle/emerge (6), bite (6), spit (5), charge (6), stunned (4), death (10), phase transition (4) |
-| UI             | Button states, achievement toast, skin preview idle                                            |
+| Entity         | Animations                                                        |
+| -------------- | ----------------------------------------------------------------- |
+| Player         | Idle (2), run (4), jump (1), hurt (1) — 8 frames at 16×24         |
+| Standard enemy | Idle (2), move (2), wind-up (1), attack (1) — 6 frames per type   |
+| Boss head      | Idle (1), roar (1) — 2 frames at 40×32; the body is drawn in code |
+| UI             | Button states, achievement toast, skin preview idle               |
 
 ### 13.3 Audio
 
 - Chiptune-adjacent music with a dark, adventurous tone.
 - Tracks: title, mine levels (one looping track), boss. Title, Options, Credits, and Results share the title theme. Three loops ship in v1; a separate results track is a stretch goal.
-- SFX: jump, land, throw, rock bounce, knife throw, gunshot, magic cast, hit, enemy hurt, enemy death, player hurt, pickup, crate break, elevator, boss roar, rumble, phase transition, victory.
+- SFX: jump, land, throw, rock bounce, knife throw, gunshot, magic cast, hit, enemy hurt, enemy death, player hurt, pickup, crate break, elevator, boss roar, rumble, phase transition, victory. The full inventory is 32 sound effects plus the three loops.
 - Audio buses: master, music, SFX, routed through Phaser's sound manager.
 - Browser audio must unlock on the first user interaction (title click/key press).
 - All music and SFX are original works synthesized by the committed generators in `tools/audio/`; the inventory lives in `docs/asset-licenses.md`.
@@ -671,9 +681,9 @@ interface SaveDataV1 {
 
 ### 13.4 Narrative presentation
 
-- A short intro crawl establishes the mine, the missing crew, and the worm.
-- Environmental storytelling through abandoned equipment, rails, warning signs, and bones.
-- A short ending panel after the boss. No dialogue trees, cutscene system, or voice acting in v1.
+- Each level opens with a one-line title card drawn from the level registry, e.g. "Timber creaks overhead. Scavengers have claimed the lower rails."
+- Environmental storytelling through timber supports, rails, lanterns, crystals, and bones.
+- The Results screen closes the run with the clear time, kills, deaths, and challenge verdicts. There is no separate ending panel, dialogue system, cutscene engine, or voice acting in v1.
 - Tone: ominous but playful; the miner is stubborn rather than heroic.
 
 ---
@@ -720,14 +730,14 @@ The balance pass in M7 prioritizes feel over exact numbers. The values in this d
 | ------------------- | ---------------------: |
 | Standard levels     |                      4 |
 | Boss arenas         |                      1 |
-| Standard enemies    |          6 (minimum 5) |
+| Standard enemies    |                      6 |
 | Secondary weapons   |                      3 |
 | Utility pickups     | 2 (healing salve, ore) |
 | Difficulties        |                      4 |
 | Challenge runs      | 3 + triple combination |
 | Achievements        |                     12 |
 | Skins               |                      9 |
-| Music tracks        |                      4 |
+| Music tracks        |                      3 |
 | Internal resolution |                480×270 |
 
 ---
@@ -743,7 +753,7 @@ The balance pass in M7 prioritizes feel over exact numbers. The values in this d
 - Melee combat, dodge roll, or stomp attacks.
 - Destructible terrain.
 - Multiple playable characters with different stats.
-- Localization beyond English (the text layer is i18n-ready).
+- Localization beyond English. There is no text-extraction layer in v1; all strings are inline in the scenes.
 - Desktop packaging (Tauri/Electron) — possible later.
 - Steam/itch.io store integration.
 
@@ -761,23 +771,23 @@ The balance pass in M7 prioritizes feel over exact numbers. The values in this d
 - Photo mode or replay export.
 - Steam achievements/cloud saves if the game moves beyond the browser.
 
-## 19. Open questions and assumptions
+## 19. Resolved questions and remaining assumptions
 
 1. **"Five lives" meaning.** Resolved in M3: five means 5 HP/hearts, not 5 retries. Death restarts the current level with full HP.
-2. **Scope.** Four standard levels plus one boss is the v1 target. Confirm this is enough content.
+2. **Scope.** Shipped: four standard levels plus one boss arena.
 3. **Boss HP scaling.** Resolved in M4: the boss has 48 base HP and a separate 1/1.5/2/2.5 difficulty curve, producing 48/72/96/120. Normal pacing was checked at 2:01 with a scripted rock-only bot; M7 kept 120 HP for Crazy after confirming the fight sits inside the 5–8 minute target band with imperfect aim.
-4. **Game language.** Game UI is English for v1, while docs/code are English. Spanish UI can be added later. Confirm.
+4. **Game language.** Resolved: the game UI is English and the repository is English-only. Spanish is listed in the stretch backlog.
 5. **Art and audio sourcing.** Resolved in M6: original generated art, audio, and bitmap font from the committed scripts in `tools/`; no third-party assets.
-6. **License.** The repository is `UNLICENSED` for now; the original asset inventory is documented in `docs/asset-licenses.md`. Choose a public license before release.
+6. **License.** Resolved in M8: the project is released under the MIT License, which covers the code and the original assets. The inventory lives in `docs/asset-licenses.md`.
 7. **Difficulty unlocks.** Resolved in M5: all modes are available from the start for accessibility and challenge, with a recommended Normal pick and warnings for Impossible and Crazy.
-8. **Mid-run save.** Not planned for v1. A browser refresh ends the run. Confirm this is acceptable.
-
----
+8. **Mid-run save.** Resolved for v1: no mid-run saving. A browser refresh ends the run.
 
 ## 20. Revision history
 
-| Version | Date       | Notes                                                                                        |
-| ------- | ---------- | -------------------------------------------------------------------------------------------- |
-| 0.3     | 2026-10-30 | M6: final generated art/audio/font, bitmap text, accessibility settings, credits, licenses   |
-| 0.2     | 2026-10-24 | M5: difficulty select, challenge badges, achievements, skins, Results reporting, and save v1 |
-| 0.1     | 2026-10-19 | Initial design document based on the project brief                                           |
+| Version | Date       | Notes                                                                                            |
+| ------- | ---------- | ------------------------------------------------------------------------------------------------ |
+| 1.0     | 2026-11-03 | M8/v1.0: MIT license, release packaging, and this document brought in line with the shipped game |
+| 0.4     | 2026-11-02 | M7: Crazy balance (×3 enemy HP), scripted full-run playtests, performance and load budget        |
+| 0.3     | 2026-10-30 | M6: final generated art/audio/font, bitmap text, accessibility settings, credits, licenses       |
+| 0.2     | 2026-10-24 | M5: difficulty select, challenge badges, achievements, skins, Results reporting, and save v1     |
+| 0.1     | 2026-10-19 | Initial design document based on the project brief                                               |

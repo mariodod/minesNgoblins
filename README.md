@@ -79,10 +79,10 @@ The game is built around short, replayable runs. Players dodge or defeat enemies
 
 | Area         | Choice                                                             |
 | ------------ | ------------------------------------------------------------------ |
-| Language     | TypeScript (strict)                                                |
-| Game engine  | Phaser 4.2.x                                                       |
-| Build tool   | Vite                                                               |
-| Level editor | Tiled (JSON maps)                                                  |
+| Language     | TypeScript 6 (strict)                                              |
+| Game engine  | Phaser 4.2.1                                                       |
+| Build tool   | Vite 8                                                             |
+| Level format | Hand-authored JSON maps, validated at load                         |
 | Art          | Generated pixel-art pack, 16×16 tiles, 480×270 internal resolution |
 | Audio        | Generated WAV pack + Phaser Web Audio                              |
 | Tests        | Vitest + Playwright                                                |
@@ -173,7 +173,7 @@ Release `v1.0.0` is tagged from the deployed commit. To roll back, re-run the de
 ## Project conventions
 
 - All documentation, source code, comments, commit messages, and project discussion are in **English**.
-- Game UI text is English for v1, with the text layer kept ready for localization.
+- Game UI text is English. There is no localization layer in v1.
 - Assets must be original, commissioned, or clearly licensed. The generated art and audio packs are original work; the full inventory is in [`docs/asset-licenses.md`](docs/asset-licenses.md).
 - Manual QA notes live in `docs/m1-playtest.md`, `docs/m2-playtest.md`, `docs/m3-playtest.md`, `docs/m4-playtest.md`, `docs/m5-test-matrix.md`, `docs/m6-qa.md`, and `docs/m7-qa.md`.
 
@@ -183,7 +183,6 @@ Created by [mariodod](https://github.com/mariodod). All art, audio, the bitmap f
 
 - **Engine:** [Phaser](https://phaser.io/) 4.2 (MIT)
 - **Build:** [Vite](https://vite.dev/) (MIT)
-- **Maps:** [Tiled](https://www.mapeditor.org/) JSON (GPL, used as a tool only)
 - **Tests:** [Playwright](https://playwright.dev/) (Apache-2.0) and [Vitest](https://vitest.dev/) (MIT)
 
 The in-game **Credits** screen and [`docs/asset-licenses.md`](docs/asset-licenses.md) list every asset and third-party tool.
