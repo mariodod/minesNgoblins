@@ -25,6 +25,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - The technical plan described projectile pooling, texture atlases, off-screen enemy sleeping, and post-processing filters. None of those exist; the techniques list now names what the game actually does.
 - The damage-pipeline, run-snapshot, and challenge-rule sections named event types and fields that do not exist (`enemy:damaged`, `endedAt`, `isPacifistValid`). They now match the code.
 - The game canvas `aria-label` advertised WASD. It now names the real bindings.
+- The technical plan's testing section described a mocked-Phaser integration harness, an 80% coverage target with no coverage tool, and a bundle scan wired into CI. None of those exist; the sections now describe the actual suite and name the bundle scan as a manual step.
+- The technical plan's performance table mixed unmeasured budgets with measured values. It now separates the two and says which metrics are not instrumented.
 
 ## [1.0.0] - 2026-11-03
 

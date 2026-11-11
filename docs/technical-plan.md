@@ -395,7 +395,7 @@ Rules:
 
 - No magic numbers in entity classes when the value belongs in tuning data.
 - Level maps reference IDs, not raw stats.
-- Data is validated at boot; invalid data fails fast.
+- Data is validated when it is loaded; invalid data fails fast.
 - Balance changes should usually be data-only.
 
 ---
@@ -413,15 +413,16 @@ Rules:
 - Level manifest validation.
 - Projectile cooldowns and ammo caps (pure logic where possible).
 
-Target: high coverage of pure systems (80%+ lines for `systems/`, `data/`, and rule logic), not an arbitrary global percentage.
+Target: cover the pure systems in `systems/` and `data/` directly, rather than chase a global percentage. The repository does not run a coverage tool, so coverage is judged by reading which branches the tests exercise, not by a reported number.
 
 ### 7.2 Integration tests
 
-- Scene boot with a mocked Phaser context where practical.
 - Event attribution: simulate a rock kill, a magic kill, and a hazard kill, then assert run state.
 - Level load: map → spawned entities → exit lock state.
 - Crazy mode: an enemy remains → exit stays locked; zero enemies → the exit opens and advances. Covered on all four levels by `tests/e2e/levels.spec.ts` through the DEV `__MINES_LEVEL_DEBUG__` helper.
 - Achievement persistence across a save/load round trip.
+
+There is no mocked-Phaser scene-boot harness. Scene-level behavior is covered by the Playwright suite instead; the unit tests stay on the pure systems and data modules.
 
 ### 7.3 Browser tests (Playwright)
 
@@ -430,7 +431,7 @@ Target: high coverage of pure systems (80%+ lines for `systems/`, `data/`, and r
 - Keyboard input moves the player and throws a rock (using a dev/test-only state hook).
 - Pause/resume works.
 - Options persist after reload.
-- A smoke test runs on each PR and before deploy.
+- The full Chromium suite runs on every pull request and on every push to `main`.
 - `BROWSER_MATRIX=1` adds Edge, Firefox, and WebKit projects; the default project stays Chromium so the timing-sensitive boss checks keep one renderer. The matrix runs a fixed spec list (title, movement, pause, settings, audio, accessibility) because those are the specs that are renderer-independent.
 
 ### 7.4 Manual QA
@@ -454,25 +455,32 @@ Per milestone, run a written checklist covering:
 - Challenge-run tests use fixed event sequences.
 - No random loot in v1; any future randomness must be seeded and recorded.
 - Playwright tests expose a narrow `window.__MINES_TEST__` hook only in development builds, never production. `window.__MINES_DEBUG__` carries the boss-arena helpers, and `window.__MINES_LEVEL_DEBUG__` carries the level-only `defeatAllEnemies` helper used to verify the Crazy exit gate.
-- The production bundle is scanned after every build to confirm none of those globals or the development query shortcuts (`?boss=1`, `?spawn=exit`, `?level=`, `?difficulty=`) survive into the shipped build.
+- The production bundle is scanned for those globals and the development query shortcuts (`?boss=1`, `?spawn=exit`, `?level=`, `?difficulty=`) before a release. The scan is a manual step; it is not wired into CI.
 
 ---
 
 ## 8. Performance plan
 
-| Target             | Budget                        |
-| ------------------ | ----------------------------- |
-| Frame rate         | 60 FPS, fixed simulation step |
-| Active enemies     | 8 simultaneous, 14 per level  |
-| Active projectiles | 40                            |
-| Particle count     | Under 200 simultaneous        |
-| Draw calls         | Under 100 typical             |
-| Initial JS bundle  | Under 5 MB compressed target  |
-| Initial total load | Under 3 seconds on broadband  |
-| Memory             | Under 200 MB                  |
-| Save size          | Under 100 KB                  |
+Design budgets:
 
-Shipped measurements (1920×1080): 60.1–60.2 FPS on hardware, about 19–20 MB JS heap, and a 1,564 kB JavaScript bundle that gzips to 408 kB. See [M6 QA Notes](m6-qa.md) and [M7 QA Notes](m7-qa.md).
+| Target             | Budget                       |
+| ------------------ | ---------------------------- |
+| Frame rate         | 60 FPS                       |
+| Active enemies     | 8 simultaneous, 14 per level |
+| Active projectiles | 40                           |
+| Initial total load | Under 3 seconds on broadband |
+| Save size          | Under 100 KB                 |
+
+Shipped measurements:
+
+| Metric                         | Measured                                       |
+| ------------------------------ | ---------------------------------------------- |
+| Frame rate at 1920×1080        | 60.1–60.2 FPS on hardware                      |
+| JavaScript heap                | About 19–20 MB                                 |
+| Production bundle              | 1,564 kB, 408 kB gzip                          |
+| Canvas ready on the live build | 715–1,768 ms across four engines (release run) |
+
+Draw calls, particle counts, and total memory are not instrumented, so they are not reported here. See [M6 QA Notes](m6-qa.md) and [M7 QA Notes](m7-qa.md) for the profiling runs.
 
 Techniques in use:
 
