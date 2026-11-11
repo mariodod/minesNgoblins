@@ -111,7 +111,7 @@ The player's survivability is represented by **hearts (HP)**. The source brief s
 - Taking damage applies a small knockback and a brief hit-stop.
 - Falling into a bottomless pit is an instant death, regardless of HP.
 - Health pickups are rare; there is no regenerating health.
-- If the "5 lives" wording is intended to mean a limited stock of retries instead of hearts, that can be added later without changing combat. This is an open question in section 19.
+- If a limited-retry arcade mode is ever wanted, it can be added later without changing combat. See section 19.
 
 ### 5.2 Movement
 
@@ -474,7 +474,7 @@ The brief says the player starts with five lives on Normal, while the higher dif
 - Death restarts the current level with full HP.
 - A future option can add a limited-retry arcade mode without changing the core rules.
 
-This interpretation is listed as an open question for confirmation.
+This interpretation was resolved in M3 and is recorded in section 19.
 
 ---
 
