@@ -320,10 +320,10 @@ Difficulty multipliers are applied after the level bonus. M7 set the Crazy multi
 
 | #   | Level                     | Length      | New elements                                  | Enemy focus                 |
 | --- | ------------------------- | ----------- | --------------------------------------------- | --------------------------- |
-| 1   | **Shaft Entrance**        | 2–3 screens | Movement, rocks, crates, first pit            | Bats, Goblins               |
-| 2   | **Goblin Tunnels**        | 3–4 screens | One-way platforms, spikes, skeletons          | Goblins, Skeletons, Beetles |
-| 3   | **Crystal Caverns**       | 3–4 screens | Vertical routes, long crystal drops           | Bats, Beetles               |
-| 4   | **The Deep Vein**         | 4–5 screens | Combined hazards, gauntlet, heavy pressure    | All standard enemies        |
+| 1   | **Shaft Entrance**        | 2.7 screens | Movement, rocks, crates, first pit            | All five, one of each       |
+| 2   | **Goblin Tunnels**        | 3.7 screens | One-way platforms, spikes, skeletons          | Goblins, Skeletons, Beetles |
+| 3   | **Crystal Caverns**       | 4.3 screens | Vertical routes, long crystal drops           | Bats, Beetles               |
+| 4   | **The Deep Vein**         | 5.3 screens | Combined hazards, gauntlet, heavy pressure    | All four standard enemies   |
 | 5   | **The Great Worm's Nest** | Boss arena  | Burrow holes, falling rocks, supply pedestals | Great Worm + Wormlings      |
 
 The internal resolution is **480×270**, with **16×16 tiles**. Levels scroll smoothly and can be wider and taller than the screen. The camera follows the player with a deadzone and clamps to level bounds.

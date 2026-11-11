@@ -67,6 +67,17 @@ the prompt shows `LOCKED: N LEFT` and the elevator refuses to leave.
   player can spend resources rather than hoard them.
 - Exit at the far right, immediately before the boss placeholder.
 
+### Shipped level sizes
+
+The maps in `public/maps/` are 16 px per tile. The four levels measure:
+
+| Level           | Tiles    | Pixels | Screens | Enemy HP bonus | Enemies |
+| --------------- | -------- | ------ | ------- | -------------: | ------: |
+| Shaft Entrance  | 80 × 20  | 1280   | 2.7     |              0 |       5 |
+| Goblin Tunnels  | 112 × 20 | 1792   | 3.7     |              1 |       7 |
+| Crystal Caverns | 128 × 24 | 2048   | 4.3     |              1 |       9 |
+| The Deep Vein   | 160 × 24 | 2560   | 5.3     |              2 |      11 |
+
 ## Route validation
 
 - Every level can be completed with rocks alone; no door, crate, or pedestal is
